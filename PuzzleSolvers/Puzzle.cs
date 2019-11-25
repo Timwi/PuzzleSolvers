@@ -12,9 +12,7 @@ namespace PuzzleSolvers
         public int Size;
         public int MinValue;
         public int MaxValue;
-
         public List<Constraint> Constraints = new List<Constraint>();
-
 
         public static int?[] TranslateGivens(string givens)
         {
@@ -98,13 +96,7 @@ namespace PuzzleSolvers
             return sudoku;
         }
 
-        public static Puzzle ThermometerSudoku(params int[][] thermometers)
-        {
-            var sudoku = Sudoku();
-            for (var i = 0; i < thermometers.Length; i++)
-                sudoku.Constraints.Add(new LessThanConstraint { AffectedCells = thermometers[i], BackgroundColor = (ConsoleColor) (i + 1) });
-            return sudoku;
-        }
+        public static Puzzle ThermometerSudoku(params int[][] thermometers) => ThermometerSudoku(null, thermometers);
         public static Puzzle ThermometerSudoku(int?[] givens, params int[][] thermometers)
         {
             var sudoku = Sudoku(givens);
@@ -112,6 +104,7 @@ namespace PuzzleSolvers
                 sudoku.Constraints.Add(new LessThanConstraint { AffectedCells = thermometers[i], BackgroundColor = (ConsoleColor) (i + 1) });
             return sudoku;
         }
+
 
 
         // Implementation of the solver
