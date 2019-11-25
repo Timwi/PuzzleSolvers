@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace PuzzleSolvers
 {
@@ -21,6 +20,9 @@ namespace PuzzleSolvers
 
         public override IEnumerable<Constraint> MarkTaken(bool[][] takens, int?[] grid, int ix, int val, int minValue, int maxValue)
         {
+            if (!AffectedCells.Contains(ix))
+                return null;
+
             var sumAlready = 0;
             var stillNeed = AffectedCells.Length;
             foreach (var cell in AffectedCells)
