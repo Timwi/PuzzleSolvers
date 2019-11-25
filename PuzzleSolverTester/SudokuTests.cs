@@ -14,7 +14,7 @@ namespace PuzzleSolverTester
         {
             var solutions = Puzzle.Sudoku(Puzzle.TranslateGivens("3...5...8.9..7.5.....8.41...2.7.....5...28..47.....6...6....8....2...9.1.1.9.5...")).Solve().ToArray();
             Assert.IsNotNull(solutions);
-            Assert.AreEqual(solutions.Length, 1);
+            Assert.AreEqual(1, solutions.Length);
             Assert.IsTrue(solutions[0].SequenceEqual(new[] { 3, 4, 6, 1, 5, 9, 2, 7, 8, 1, 9, 8, 2, 7, 6, 5, 4, 3, 2, 7, 5, 8, 3, 4, 1, 9, 6, 6, 2, 4, 7, 9, 1, 3, 8, 5, 5, 3, 9, 6, 2, 8, 7, 1, 4, 7, 8, 1, 5, 4, 3, 6, 2, 9, 9, 6, 3, 4, 1, 2, 8, 5, 7, 4, 5, 2, 3, 8, 7, 9, 6, 1, 8, 1, 7, 9, 6, 5, 4, 3, 2 }));
         }
 
@@ -27,7 +27,7 @@ namespace PuzzleSolverTester
             )
                 .Solve().ToArray();
             Assert.IsNotNull(solutions);
-            Assert.AreEqual(solutions.Length, 1);
+            Assert.AreEqual(1, solutions.Length);
             Assert.IsTrue(solutions[0].SequenceEqual(new[] { 3, 6, 4, 8, 9, 1, 5, 2, 7, 1, 8, 9, 3, 7, 4, 2, 6, 5, 5, 4, 2, 1, 6, 8, 7, 3, 9, 6, 2, 5, 7, 1, 9, 8, 4, 3, 2, 1, 3, 9, 8, 7, 4, 5, 6, 9, 3, 7, 4, 5, 6, 1, 8, 2, 8, 7, 6, 5, 2, 3, 9, 1, 4, 4, 9, 8, 2, 3, 5, 6, 7, 1, 7, 5, 1, 6, 4, 2, 3, 9, 8 }));
         }
 
@@ -36,12 +36,12 @@ namespace PuzzleSolverTester
         {
             var solutions = Puzzle.NoTouchSudoku(Puzzle.TranslateGivens("4...5...6.5.3.1.2...2...9...9.8.3.6.3.......9.6.9.5.7...4...8...2.1.9.4.9...3...2")).Solve().ToArray();
             Assert.IsNotNull(solutions);
-            Assert.AreEqual(solutions.Length, 1);
+            Assert.AreEqual(1, solutions.Length);
             Assert.IsTrue(solutions[0].SequenceEqual(new[] { 4, 1, 9, 2, 5, 8, 7, 3, 6, 6, 5, 7, 3, 9, 1, 4, 2, 8, 8, 3, 2, 4, 7, 6, 9, 1, 5, 7, 9, 1, 8, 2, 3, 5, 6, 4, 3, 4, 5, 6, 1, 7, 2, 8, 9, 2, 6, 8, 9, 4, 5, 3, 7, 1, 1, 7, 4, 5, 6, 2, 8, 9, 3, 5, 2, 3, 1, 8, 9, 6, 4, 7, 9, 8, 6, 7, 3, 4, 1, 5, 2 }));
         }
 
         [Test]
-        public void TestThermometerSudokus()
+        public void TestThermometerSudoku1()
         {
             var solutions = Puzzle.ThermometerSudoku(Puzzle.TranslateGivens(".4.6.7.3...............................................7.....9....3.5.......1...."),
                 Puzzle.TranslateCoordinates("A2-6"),
@@ -52,10 +52,14 @@ namespace PuzzleSolverTester
             )
                 .Solve().ToArray();
             Assert.IsNotNull(solutions);
-            Assert.AreEqual(solutions.Length, 1);
+            Assert.AreEqual(1, solutions.Length);
             Assert.IsTrue(solutions[0].SequenceEqual(new[] { 9, 4, 8, 6, 2, 7, 1, 3, 5, 2, 6, 7, 5, 3, 1, 9, 8, 4, 5, 3, 1, 9, 4, 8, 2, 7, 6, 6, 9, 2, 8, 5, 4, 3, 1, 7, 7, 5, 3, 1, 6, 9, 4, 2, 8, 8, 1, 4, 2, 7, 3, 5, 6, 9, 3, 7, 5, 4, 8, 2, 6, 9, 1, 1, 8, 6, 3, 9, 5, 7, 4, 2, 4, 2, 9, 7, 1, 6, 8, 5, 3 }));
+        }
 
-            var solutions2 = Puzzle.ThermometerSudoku(
+        [Test]
+        public void TestThermometerSudoku2()
+        {
+            var solutions = Puzzle.ThermometerSudoku(
                 Puzzle.TranslateCoordinates("D4,C4,B4,A4,A3,A2,A1"),
                 Puzzle.TranslateCoordinates("D4,D3,D2,D1,C1,B1"),
                 Puzzle.TranslateCoordinates("F1-2"),
@@ -69,9 +73,9 @@ namespace PuzzleSolverTester
                 Puzzle.TranslateCoordinates("I8-9,H9,G9,F9,E9")
             )
                 .Solve().ToArray();
-            Assert.IsNotNull(solutions2);
-            Assert.AreEqual(solutions2.Length, 1);
-            Assert.IsTrue(solutions2[0].SequenceEqual(new[] { 9, 8, 7, 6, 3, 4, 1, 2, 5, 6, 2, 1, 5, 7, 8, 3, 4, 9, 5, 4, 3, 2, 1, 9, 8, 7, 6, 4, 3, 2, 1, 8, 6, 5, 9, 7, 1, 7, 5, 9, 2, 3, 4, 6, 8, 8, 9, 6, 7, 4, 5, 2, 1, 3, 7, 6, 4, 8, 5, 1, 9, 3, 2, 3, 5, 9, 4, 6, 2, 7, 8, 1, 2, 1, 8, 3, 9, 7, 6, 5, 4 }));
+            Assert.IsNotNull(solutions);
+            Assert.AreEqual(1, solutions.Length);
+            Assert.IsTrue(solutions[0].SequenceEqual(new[] { 9, 8, 7, 6, 3, 4, 1, 2, 5, 6, 2, 1, 5, 7, 8, 3, 4, 9, 5, 4, 3, 2, 1, 9, 8, 7, 6, 4, 3, 2, 1, 8, 6, 5, 9, 7, 1, 7, 5, 9, 2, 3, 4, 6, 8, 8, 9, 6, 7, 4, 5, 2, 1, 3, 7, 6, 4, 8, 5, 1, 9, 3, 2, 3, 5, 9, 4, 6, 2, 7, 8, 1, 2, 1, 8, 3, 9, 7, 6, 5, 4 }));
         }
 
         [Test]
@@ -97,7 +101,7 @@ namespace PuzzleSolverTester
             puzzle.Constraints.Add(new SumConstraint { Sum = 4, AffectedCells = Puzzle.TranslateCoordinates("H9,I8") });
             var solutions = puzzle.Solve().ToArray();
             Assert.IsNotNull(solutions);
-            Assert.AreEqual(solutions.Length, 1);
+            Assert.AreEqual(1, solutions.Length);
             Assert.IsTrue(solutions[0].SequenceEqual(new[] { 7, 3, 5, 1, 9, 6, 8, 4, 2, 4, 9, 1, 8, 5, 2, 7, 3, 6, 6, 2, 8, 4, 3, 7, 1, 5, 9, 1, 8, 7, 9, 4, 3, 2, 6, 5, 9, 4, 2, 6, 7, 5, 3, 8, 1, 3, 5, 6, 2, 1, 8, 4, 9, 7, 5, 6, 3, 7, 8, 1, 9, 2, 4, 8, 1, 4, 5, 2, 9, 6, 7, 3, 2, 7, 9, 3, 6, 4, 5, 1, 8 }));
         }
 
@@ -135,7 +139,7 @@ namespace PuzzleSolverTester
             puzzle.Constraints.AddRange(Constraint.KillerCage(35, Puzzle.TranslateCoordinates("G-H7-8,G9,I7"), ConsoleColor.DarkYellow));
             var solutions = puzzle.Solve().ToArray();
             Assert.IsNotNull(solutions);
-            Assert.AreEqual(solutions.Length, 1);
+            Assert.AreEqual(1, solutions.Length);
             Assert.IsTrue(solutions[0].SequenceEqual(new[] { 8, 3, 4, 2, 6, 1, 5, 7, 9, 1, 2, 6, 7, 5, 9, 8, 3, 4, 9, 7, 5, 3, 8, 4, 1, 2, 6, 3, 5, 2, 6, 4, 8, 7, 9, 1, 6, 9, 1, 5, 3, 7, 2, 4, 8, 7, 4, 8, 9, 1, 2, 3, 6, 5, 2, 1, 3, 4, 9, 5, 6, 8, 7, 5, 6, 9, 8, 7, 3, 4, 1, 2, 4, 8, 7, 1, 2, 6, 9, 5, 3 }));
         }
 
@@ -158,7 +162,7 @@ namespace PuzzleSolverTester
             });
             var solutions = puzzle.Solve().ToArray();
             Assert.IsNotNull(solutions);
-            Assert.AreEqual(solutions.Length, 1);
+            Assert.AreEqual(1, solutions.Length);
             Assert.IsTrue(solutions[0].SequenceEqual(new[] { 1, 2, 5, 3, 4, 6, 7, 9, 8, 4, 8, 7, 5, 9, 1, 3, 6, 2, 3, 6, 9, 2, 8, 7, 5, 1, 4, 7, 5, 4, 9, 6, 2, 8, 3, 1, 6, 1, 2, 8, 3, 5, 9, 4, 7, 9, 3, 8, 1, 7, 4, 6, 2, 5, 2, 7, 1, 6, 5, 3, 4, 8, 9, 8, 4, 3, 7, 2, 9, 1, 5, 6, 5, 9, 6, 4, 1, 8, 2, 7, 3 }));
         }
     }
