@@ -22,7 +22,7 @@ namespace PuzzleSolvers
                     {
                         var region = Regions[j];
                         var newConstraint = new SumConstraint { Sum = sum, AffectedCells = region };
-                        for (var cell = 0; cell < region.Length; cell++)
+                        foreach (var cell in region)
                             if (grid[cell] != null)
                                 newConstraint.MarkTaken(takens, grid, cell, grid[cell].Value, minValue, maxValue);
                         newConstraints.Add(newConstraint);
