@@ -105,6 +105,35 @@ namespace PuzzleSolvers
             return sudoku;
         }
 
+        /// <summary>
+        /// Returns a Sudoku surrounded by numbers. Every number indicates the sum of the first few cells visible from that location. Between <paramref name="minLength"/>
+        /// and <paramref name="maxLength"/> cells may be included in that sum.
+        /// </summary>
+        /// <param name="givens">The numbers pre-filled inside the grid, or <c>null</c> if no givens are provided.</param>
+        /// <param name="minLength">The minimum number of cells included in the sum in each clue.</param>
+        /// <param name="maxLength">The maximum number of cells included in the sum in each clue.</param>
+        /// <param name="cluesClockwiseFromTopLeft">The clues outside the grid, given in clockwise order from the top of the left column.</param>
+        public static Puzzle FrameSudoku(int?[] givens, int minLength, int maxLength, params int[] cluesClockwiseFromTopLeft)
+        {
+            if (cluesClockwiseFromTopLeft == null)
+                throw new ArgumentNullException(nameof(cluesClockwiseFromTopLeft));
+            if (cluesClockwiseFromTopLeft.Length != 36)
+                throw new ArgumentException("‘cluesClockwiseFromTopLeft’ should provide exactly 36 clues (9 per side of the grid).", nameof(cluesClockwiseFromTopLeft));
+
+            var sudoku = Sudoku(givens);
+            for (var col = 0; col < 9; col++)
+            {
+                sudoku.Constraints.Add(new SumAlternativeConstraint { Sum = cluesClockwiseFromTopLeft[col], AffectedCellGroups = Enumerable.Range(minLength, maxLength - minLength + 1).Select(len => Enumerable.Range(0, len).Select(row => 9 * row + col).ToArray()).ToArray() });
+                sudoku.Constraints.Add(new SumAlternativeConstraint { Sum = cluesClockwiseFromTopLeft[8 - col + 18], AffectedCellGroups = Enumerable.Range(minLength, maxLength - minLength + 1).Select(len => Enumerable.Range(0, len).Select(row => 9 * (8 - row) + col).ToArray()).ToArray() });
+            }
+            for (var row = 0; row < 9; row++)
+            {
+                sudoku.Constraints.Add(new SumAlternativeConstraint { Sum = cluesClockwiseFromTopLeft[row + 9], AffectedCellGroups = Enumerable.Range(minLength, maxLength - minLength + 1).Select(len => Enumerable.Range(0, len).Select(col => 9 * row + (8 - col)).ToArray()).ToArray() });
+                sudoku.Constraints.Add(new SumAlternativeConstraint { Sum = cluesClockwiseFromTopLeft[8 - row + 27], AffectedCellGroups = Enumerable.Range(minLength, maxLength - minLength + 1).Select(len => Enumerable.Range(0, len).Select(col => 9 * row + col).ToArray()).ToArray() });
+            }
+            return sudoku;
+        }
+
 
 
         // Implementation of the solver
