@@ -23,8 +23,8 @@ namespace PuzzleSolvers
             return givens.Select(ch => ch == '.' ? (int?) null : ch - '0').ToArray();
         }
 
-        public ConsoleColoredString SolutionToConsoleString(int[] solution) =>
-            solution.Split(9).Select((chunk, row) => chunk.Select((val, col) => (val + " ").ToString().Color(findColor(col + 9 * row), findBackgroundColor(col + 9 * row))).JoinColoredString()).JoinColoredString("\n");
+        public ConsoleColoredString SudokuSolutionToConsoleString(int[] solution) =>
+            solution.Split(9).Select((chunk, row) => chunk.Select((val, col) => (val + " ").Color(findColor(col + 9 * row), findBackgroundColor(col + 9 * row))).JoinColoredString()).JoinColoredString("\n");
 
         private ConsoleColor? findColor(int ix) => Constraints.Aggregate((ConsoleColor?) null, (prev, c) => prev ?? c.CellColor(ix));
         private ConsoleColor? findBackgroundColor(int ix) => Constraints.Aggregate((ConsoleColor?) null, (prev, c) => prev ?? c.CellBackgroundColor(ix));
@@ -50,11 +50,11 @@ namespace PuzzleSolvers
                 if (!m.Success)
                     throw new ArgumentException(string.Format(@"The region “{0}” is not in a valid format. Expected a column letter (or a range of columns, e.g. A-D) followed by a row digit (or a range of rows, e.g. 1-4).", part), nameof(str));
                 var col = m.Groups["col"].Value[0] - 'A';
-                var colr = m.Groups["colr"].Success ? m.Groups["colr"].Value[0] - 'A' : (int?) null;
+                var colr = m.Groups["colr"].Success ? m.Groups["colr"].Value[0] - 'A' : col;
                 var row = m.Groups["row"].Value[0] - '1';
-                var rowr = m.Groups["rowr"].Success ? m.Groups["rowr"].Value[0] - '1' : (int?) null;
-                for (var c = col; c <= (colr ?? col); c++)
-                    for (var r = row; r <= (rowr ?? row); r++)
+                var rowr = m.Groups["rowr"].Success ? m.Groups["rowr"].Value[0] - '1' : row;
+                for (var c = col; c <= col; c++)
+                    for (var r = row; r <= row; r++)
                         cells.Add(c + gridWidth * r);
             }
             return cells.ToArray();
@@ -158,14 +158,19 @@ namespace PuzzleSolvers
         {
             var fewestPossibleValues = int.MaxValue;
             var ix = -1;
-            for (var i = 0; i < Size; i++)
+            for (var cell = 0; cell < Size; cell++)
             {
-                if (filledInValues[i] != null)
+                if (filledInValues[cell] != null)
                     continue;
-                var count = takens[i].Count(b => !b);
+                var count = 0;
+                for (var v = 0; v < takens[cell].Length; v++)
+                    if (!takens[cell][v])
+                        count++;
+                if (count == 0)
+                    yield break;
                 if (count < fewestPossibleValues)
                 {
-                    ix = i;
+                    ix = cell;
                     fewestPossibleValues = count;
                 }
             }
@@ -175,9 +180,6 @@ namespace PuzzleSolvers
                 yield return filledInValues.Select(val => val.Value).ToArray();
                 yield break;
             }
-
-            if (fewestPossibleValues == 0)
-                yield break;
 
             for (var val = 0; val < takens[ix].Length; val++)
             {

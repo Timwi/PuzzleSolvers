@@ -26,7 +26,7 @@ namespace PuzzleSolverTester
 
             foreach (var solution in puzzle.Solve())
             {
-                ConsoleUtil.WriteLine(puzzle.SolutionToConsoleString(solution));
+                ConsoleUtil.WriteLine(puzzle.SudokuSolutionToConsoleString(solution));
                 Console.WriteLine($"Took {(DateTime.UtcNow - startTime).TotalSeconds:0.0} sec");
                 Console.WriteLine();
                 count++;
