@@ -1,23 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace PuzzleSolvers
 {
-    public class GivenConstraint : Constraint
+    /// <summary>Describes a given in a puzzle (a value already pre-filled at the start).</summary>
+    public sealed class GivenConstraint : Constraint
     {
-        public int Location;
-        public int Value;
+        /// <summary>The index of the cell that contains this given.</summary>
+        public int Location { get; private set; }
+        /// <summary>The value of the given.</summary>
+        public int Value { get; private set; }
 
-        public override void MarkInitialTakens(bool[][] takens, int minValue, int maxValue)
+        /// <summary>Constructor.</summary>
+        public GivenConstraint(int location, int value) { Location = location; Value = value; }
+
+        /// <summary>Override; see base;</summary>
+        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
         {
             for (var i = 0; i < takens[Location].Length; i++)
                 if (i + minValue != Value)
                     takens[Location][i] = true;
+            return Enumerable.Empty<Constraint>();
         }
 
-        public override IEnumerable<Constraint> MarkTaken(bool[][] takens, int?[] grid, int ix, int val, int minValue, int maxValue) => null;
-
+        /// <summary>Override; see base;</summary>
         public override ConsoleColor? CellColor(int ix) => ix == Location ? (ConsoleColor?) ConsoleColor.White : null;
     }
 }

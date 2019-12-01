@@ -1,41 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace PuzzleSolvers
 {
+    /// <summary>
+    ///     Describes a constraint in a number-placement puzzle where either one of several regions must have a specified sum.</summary>
     public class SumAlternativeConstraint : Constraint
     {
-        public int[][] AffectedCellGroups;
-        public int Sum;
+        /// <summary>The desired sum.</summary>
+        public int Sum { get; private set; }
 
-        private int[] _distinctAffectedCells;
+        /// <summary>
+        ///     Contains the regions affected by the constraint. At least one of these regions must have the sum specified by
+        ///     <see cref="Sum"/>. Each region is an array of cell indices.</summary>
+        public int[][] Regions { get; private set; }
 
-        public override void MarkInitialTakens(bool[][] takens, int minValue, int maxValue)
+        private readonly int[] _distinctAffectedCells;
+
+        /// <summary>Constructor.</summary>
+        public SumAlternativeConstraint(int sum, params IEnumerable<int>[] regions)
         {
-            _distinctAffectedCells = AffectedCellGroups.SelectMany(x => x).Distinct().ToArray();
-
-            // Mark values as taken that are impossible for ALL of the groups of cells
-            foreach (var cell in _distinctAffectedCells)
-                for (var v = 0; v < takens[cell].Length; v++)
-                    if (Enumerable.Range(0, AffectedCellGroups.Length).All(grIx =>
-                        // If any of the groups don’t affect this cell, we cannot assume that any value is impossible
-                        AffectedCellGroups[grIx].Contains(cell) && (
-                            // Mark values that are too small (e.g. if you need a sum of 17 with two cells, and maxValue is 9, you need at least an 8)
-                            v + minValue < (Sum - maxValue * (AffectedCellGroups[grIx].Length - 1)) ||
-                            // Mark values that are too large (e.g. if you need a sum of 3 with two cells, and minValue is 1, you can’t have more than 2)
-                            v + minValue > (Sum - minValue * (AffectedCellGroups[grIx].Length - 1)))))
-                        takens[cell][v] = true;
+            Sum = sum;
+            Regions = regions.Select(r => r.ToArray()).ToArray();
+            _distinctAffectedCells = Regions.SelectMany(x => x).Distinct().ToArray();
         }
 
-        public override IEnumerable<Constraint> MarkTaken(bool[][] takens, int?[] grid, int ix, int val, int minValue, int maxValue)
+        /// <summary>Override; see base.</summary>
+        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
         {
-            var sumsAlready = new int[AffectedCellGroups.Length];
-            var stillNeed = AffectedCellGroups.Select(gr => gr.Length).ToArray();
+            if (ix != null && !Regions.Any(region => region.Contains(ix.Value)))
+                return null;
+
+            var sumsAlready = new int[Regions.Length];
+            var stillNeed = Regions.Select(gr => gr.Length).ToArray();
             foreach (var cell in _distinctAffectedCells)
                 if (grid[cell] != null)
-                    for (var grIx = 0; grIx < AffectedCellGroups.Length; grIx++)
-                        if (AffectedCellGroups[grIx].Contains(cell))
+                    for (var grIx = 0; grIx < Regions.Length; grIx++)
+                        if (Regions[grIx].Contains(cell))
                         {
                             sumsAlready[grIx] += grid[cell].Value + minValue;
                             stillNeed[grIx]--;
@@ -52,12 +53,14 @@ namespace PuzzleSolvers
             foreach (var cell in _distinctAffectedCells)
                 if (grid[cell] == null)
                     for (var v = 0; v < takens[cell].Length; v++)
-                        if (!takens[cell][v] && Enumerable.Range(0, AffectedCellGroups.Length).All(grIx =>
+                        if (!takens[cell][v] && Enumerable.Range(0, Regions.Length).All(grIx =>
                             // Groups in which all cells have already been filled no longer contribute to this constraint
                             stillNeed[grIx] == 0 ||
-                            // The rest of this condition is the same as in MarkInitialTakens()
-                            AffectedCellGroups[grIx].Contains(cell) && (
+                            // If ANY of the groups don’t affect this cell, we cannot assume that any value is impossible
+                            Regions[grIx].Contains(cell) && (
+                                // Mark values that are too small (e.g. if you need a sum of 17 with two cells, and maxValue is 9, you need at least an 8)
                                 v + minValue < (Sum - sumsAlready[grIx] - maxValue * (stillNeed[grIx] - 1)) ||
+                                // Mark values that are too large (e.g. if you need a sum of 3 with two cells, and minValue is 1, you can’t have more than 2)
                                 v + minValue > (Sum - sumsAlready[grIx] - minValue * (stillNeed[grIx] - 1)))))
                             takens[cell][v] = true;
 

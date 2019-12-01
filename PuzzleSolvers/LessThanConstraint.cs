@@ -5,51 +5,63 @@ using System.Text;
 
 namespace PuzzleSolvers
 {
+    /// <summary>
+    ///     Describes a constraint in a number-placement puzzle (such as a Thermometer Sudoku) where a series of cells must be
+    ///     in ascending order.</summary>
     public class LessThanConstraint : Constraint
     {
-        // Every cell is assumed to be greater than the previous; in other words, the values in these cells must be in ascending order
-        public int[] AffectedCells;
-        public ConsoleColor? BackgroundColor;
+        /// <summary>
+        ///     Contains the region of cells affected by this constraint (the “thermometer”). The order of cells in this array
+        ///     is significant as the constraint assumes these to be ordered from smallest to largest value.</summary>
+        public int[] AffectedCells { get; private set; }
 
-        public override void MarkInitialTakens(bool[][] takens, int minValue, int maxValue)
+        /// <summary>
+        ///     Specifies an optional background color to be used when outputting a solution using <see
+        ///     cref="Puzzle.SudokuSolutionToConsoleString(int[], int)"/>.</summary>
+        public ConsoleColor? BackgroundColor { get; private set; }
+
+        /// <summary>Constructor.</summary>
+        public LessThanConstraint(IEnumerable<int> affectedCells, ConsoleColor? backgroundColor = null)
         {
-            var min = minValue;
-            var max = maxValue - AffectedCells.Length + 1;
-            for (var i = 0; i < AffectedCells.Length; i++)
-            {
-                var t = takens[AffectedCells[i]];
-                for (var val = 0; val < t.Length; val++)
-                    if (val + minValue < min || val + minValue > max)
-                        t[val] = true;
-                min++;
-                max++;
-            }
+            AffectedCells = affectedCells.ToArray();
+            BackgroundColor = backgroundColor;
         }
 
-        public override IEnumerable<Constraint> MarkTaken(bool[][] takens, int?[] grid, int ix, int val, int minValue, int maxValue)
+        /// <summary>Override; see base.</summary>
+        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
         {
-            var p = Array.IndexOf(AffectedCells, ix);
-            if (p == -1)
-                return null;
-
-            for (var i = 0; i < AffectedCells.Length; i++)
+            // At the start, mark cells along the sequence. For example, the second cell can’t be 1, the third can’t be 1 or 2, etc.
+            if (ix == null)
             {
-                if (i < p)
+                var min = minValue;
+                var max = maxValue - AffectedCells.Length + 1;
+                for (var q = 0; q < AffectedCells.Length; q++)
                 {
-                    var vMax = takens[AffectedCells[i]].Length;
-                    for (var v = Math.Max(0, val - p + i + 1); v < vMax; v++)
-                        takens[AffectedCells[i]][v] = true;
+                    for (var v = 0; v < takens[AffectedCells[q]].Length; v++)
+                        if (v + minValue < min || v + minValue > max)
+                            takens[AffectedCells[q]][v] = true;
+                    min++;
+                    max++;
                 }
-                else if (i > p)
-                {
-                    var vMax = Math.Min(takens[AffectedCells[i]].Length, val + i - p);
-                    for (var v = 0; v < vMax; v++)
-                        takens[AffectedCells[i]][v] = true;
-                }
+            }
+
+            // Also make sure that all the values in the grid are considered.
+            for (var p = 0; p < AffectedCells.Length; p++)
+            {
+                // Consider all placed values only if ix == null (performance optimization).
+                if ((ix != null && AffectedCells[p] != ix.Value) || grid[AffectedCells[p]] == null)
+                    continue;
+
+                var val = grid[AffectedCells[p]].Value;
+                for (var q = 0; q < AffectedCells.Length; q++)
+                    for (var v = 0; v < takens[AffectedCells[q]].Length; v++)
+                        if ((q < p && v > val - p + q) || (q > p && v < val - p + q))
+                            takens[AffectedCells[q]][v] = true;
             }
             return null;
         }
 
+        /// <summary>Override; see base;</summary>
         public override ConsoleColor? CellBackgroundColor(int ix) => AffectedCells.Contains(ix) ? BackgroundColor : null;
     }
 }
