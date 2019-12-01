@@ -12,6 +12,7 @@ namespace PuzzleSolverTester
         [Test]
         public void TestSudoku()
         {
+            // Standard Sudoku; taken from Cracking the Cryptic: https://www.youtube.com/watch?v=wuduuLVGKDQ
             assertUniqueSolution(
                 new Puzzle(81, 1, 9, Constraint.Sudoku(), Constraint.Givens("3...5...8.9..7.5.....8.41...2.7.....5...28..47.....6...6....8....2...9.1.1.9.5...")),
                 3, 4, 6, 1, 5, 9, 2, 7, 8, 1, 9, 8, 2, 7, 6, 5, 4, 3, 2, 7, 5, 8, 3, 4, 1, 9, 6, 6, 2, 4, 7, 9, 1, 3, 8, 5, 5, 3, 9, 6, 2, 8, 7, 1, 4, 7, 8, 1, 5, 4, 3, 6, 2, 9, 9, 6, 3, 4, 1, 2, 8, 5, 7, 4, 5, 2, 3, 8, 7, 9, 6, 1, 8, 1, 7, 9, 6, 5, 4, 3, 2);
@@ -20,6 +21,8 @@ namespace PuzzleSolverTester
         [Test]
         public void TestJigsawSudoku()
         {
+            // Jigsaw Sudoku; taken from Cracking the Cryptic: https://www.youtube.com/watch?v=wuduuLVGKDQ
+            // This test has additional givens added to make it run faster. The version from the video takes this solver several seconds.
             assertUniqueSolution(
                 new Puzzle(81, 1, 9,
                     Constraint.JigsawSudoku("A-G1,E2,G2;A2-8,B6-7;B2-5,C5-7,D5,D7;C2-4,D2-4,E-F3,F2;H1-5,G3,E-G4;I1-6,G5-6,H6;E-F5-7,D6,G-H7;B-E8,A-E9;I7,F-I8-9".Split(';').Select(str => Constraint.TranslateCoordinates(str)).ToArray()),
@@ -30,6 +33,7 @@ namespace PuzzleSolverTester
         [Test]
         public void TestNoTouchSudoku()
         {
+            // No-touch Sudoku; taken from Cracking the Cryptic: https://www.youtube.com/watch?v=L4tWOtwLhP4
             assertUniqueSolution(
                 new Puzzle(81, 1, 9,
                     Constraint.Sudoku(),
@@ -41,6 +45,8 @@ namespace PuzzleSolverTester
         [Test]
         public void TestThermometerSudoku()
         {
+            // Thermometer Sudoku with givens; taken from Cracking the Cryptic: https://www.youtube.com/watch?v=RRSFXCpBBek
+            // There’s also a version with more thermometers and no givens (https://www.youtube.com/watch?v=KTth49YrQVU) but it takes this solver several seconds.
             assertUniqueSolution(
                 new Puzzle(81, 1, 9,
                     Constraint.Sudoku(),
@@ -54,7 +60,8 @@ namespace PuzzleSolverTester
         [Test]
         public void TestSumSudoku()
         {
-            // Tests a sum Sudoku with no givens and no uniqueness constraints
+            // Sum Sudoku, or “Little Killer” Sudoku, with no givens and no extra uniqueness constraints
+            // Taken from Cracking the Cryptic: https://www.youtube.com/watch?v=4T_zQkNp5X0
             assertUniqueSolution(
                 new Puzzle(81, 1, 9,
                     Constraint.Sudoku(),
@@ -81,7 +88,8 @@ namespace PuzzleSolverTester
         [Test]
         public void TestKillerSudoku()
         {
-            // Tests a Sudoku with sum-and-uniqueness constraints
+            // Killer Sudoku, where each cage has a sum and a uniqueness constraint
+            // Taken from DailyKillerSudoku.com
             assertUniqueSolution(
                 new Puzzle(81, 1, 9,
                     Constraint.Sudoku(),
@@ -93,7 +101,8 @@ namespace PuzzleSolverTester
         [Test]
         public void TestEqualSumsSudoku()
         {
-            // Tests a Sudoku in which several regions must have the same sum, but the sum is not given
+            // Tests a Sudoku in which several regions must have the same sum, but the sum is not given.
+            // Taken from Cracking the Cryptic: https://www.youtube.com/watch?v=nkSXluRoV0w
             assertUniqueSolution(
                 new Puzzle(81, 1, 9,
                     Constraint.Sudoku(),
@@ -105,8 +114,9 @@ namespace PuzzleSolverTester
         [Test]
         public void TestIrregularFrameSudoku()
         {
+            // Irregular Frame Sudoku; taken from Cracking the Cryptic: https://www.youtube.com/watch?v=dW5mYUi0XkQ
             assertUniqueSolution(
-                new Puzzle(81, 1, 9, Constraint.Sudoku(), Constraint.FrameSums(2, 3, 9, 9, 11, 13, 13, 10, 8, 19, 13, 19, 10, 10, 18, 6, 6, 8, 23, 9, 13, 8, 11, 10, 6, 17, 18, 5, 10, 15, 16, 17, 6, 8, 9, 8, 19, 14, 17, 7)),
+                new Puzzle(81, 1, 9, Constraint.Sudoku(), Constraint.FrameSums(2, 3, 9, 9, /* sum clues start here */ 11, 13, 13, 10, 8, 19, 13, 19, 10, 10, 18, 6, 6, 8, 23, 9, 13, 8, 11, 10, 6, 17, 18, 5, 10, 15, 16, 17, 6, 8, 9, 8, 19, 14, 17, 7)),
                 3, 4, 5, 7, 2, 6, 8, 9, 1, 8, 9, 2, 3, 1, 4, 5, 6, 7, 1, 7, 6, 8, 5, 9, 3, 4, 2, 7, 3, 9, 6, 8, 5, 1, 2, 4, 6, 2, 8, 9, 4, 1, 7, 5, 3, 4, 5, 1, 2, 7, 3, 6, 8, 9, 2, 6, 4, 5, 3, 7, 9, 1, 8, 5, 1, 3, 4, 9, 8, 2, 7, 6, 9, 8, 7, 1, 6, 2, 4, 3, 5);
         }
 
@@ -114,6 +124,7 @@ namespace PuzzleSolverTester
         public void TestOddEvenSudoku()
         {
             // Here’s an interesting Sudoku which has two solutions — one in which all the constrained cells are odd, and one in which they are all even.
+            // Taken from Cracking the Cryptic: https://www.youtube.com/watch?v=pzVy93NhOzY
             var solutions = new Puzzle(81, 1, 9,
                 Constraint.Sudoku(),
                 Constraint.Givens("....4..9......9..6..9...7.....7...6.1...6...5.2...5.....3...4..2..4...5..7..5...."),
