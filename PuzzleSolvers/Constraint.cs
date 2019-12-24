@@ -10,6 +10,15 @@ namespace PuzzleSolvers
     /// <summary>Abstract base class for all constraints in a puzzle.</summary>
     public abstract class Constraint
     {
+        /// <summary>The group of cells affected by this constraint.</summary>
+        public int[] AffectedCells { get; private set; }
+
+        /// <summary>
+        ///     Constructor for derived types.</summary>
+        /// <param name="affectedCells">
+        ///     The set of cells affected by this constraint.</param>
+        protected Constraint(IEnumerable<int> affectedCells) { AffectedCells = affectedCells.ToArray(); }
+
         /// <summary>
         ///     Constraint implementations must modify <paramref name="takens"/> to mark values as taken that are known to be
         ///     impossible given the specified incomplete grid.</summary>
@@ -159,7 +168,7 @@ namespace PuzzleSolvers
         ///     cref="Puzzle.SudokuSolutionToConsoleString(int[], int)"/>.</param>
         /// <returns>
         ///     A collection containing the two required constraints.</returns>
-        public static IEnumerable<Constraint> KillerCage(int sum, int[] affectedCells, ConsoleColor? backgroundColor = null)
+        public static IEnumerable<Constraint> KillerCage(int sum, IEnumerable<int> affectedCells, ConsoleColor? backgroundColor = null)
         {
             yield return new SumConstraint(sum, affectedCells);
             yield return new UniquenessConstraint(affectedCells, backgroundColor);

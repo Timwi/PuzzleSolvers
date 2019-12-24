@@ -13,7 +13,7 @@ namespace PuzzleSolvers
         public int[][] Regions { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public EqualSumsConstraint(params IEnumerable<int>[] regions) { Regions = regions.Select(r => r.ToArray()).ToArray(); }
+        public EqualSumsConstraint(params IEnumerable<int>[] regions) : base(regions.SelectMany(r => r).Distinct()) { Regions = regions.Select(r => r.ToArray()).ToArray(); }
 
         /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)

@@ -15,14 +15,11 @@ namespace PuzzleSolvers
         ///     <see cref="Sum"/>. Each region is an array of cell indices.</summary>
         public int[][] Regions { get; private set; }
 
-        private readonly int[] _distinctAffectedCells;
-
         /// <summary>Constructor.</summary>
-        public SumAlternativeConstraint(int sum, params IEnumerable<int>[] regions)
+        public SumAlternativeConstraint(int sum, params IEnumerable<int>[] regions) : base(regions.SelectMany(r => r).Distinct())
         {
             Sum = sum;
             Regions = regions.Select(r => r.ToArray()).ToArray();
-            _distinctAffectedCells = Regions.SelectMany(x => x).Distinct().ToArray();
         }
 
         /// <summary>Override; see base.</summary>
@@ -33,7 +30,7 @@ namespace PuzzleSolvers
 
             var sumsAlready = new int[Regions.Length];
             var stillNeed = Regions.Select(gr => gr.Length).ToArray();
-            foreach (var cell in _distinctAffectedCells)
+            foreach (var cell in AffectedCells)
                 if (grid[cell] != null)
                     for (var grIx = 0; grIx < Regions.Length; grIx++)
                         if (Regions[grIx].Contains(cell))
@@ -50,7 +47,7 @@ namespace PuzzleSolvers
             // EXCEPT for groups in which all the cells have already been filled because their sum is wrong
             // (if it were correct, the check further up would have already returned).
 
-            foreach (var cell in _distinctAffectedCells)
+            foreach (var cell in AffectedCells)
                 if (grid[cell] == null)
                     for (var v = 0; v < takens[cell].Length; v++)
                         if (!takens[cell][v] && Enumerable.Range(0, Regions.Length).All(grIx =>

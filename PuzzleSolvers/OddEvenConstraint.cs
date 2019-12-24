@@ -9,9 +9,6 @@ namespace PuzzleSolvers
     /// <summary>Describes a constraint in which a group of cells can be only all evens or all odds.</summary>
     public sealed class OddEvenConstraint : Constraint
     {
-        /// <summary>The group of cells affected by this constraint.</summary>
-        public int[] AffectedCells { get; private set; }
-
         /// <summary>Specifies the specific flavor of this constraint.</summary>
         public OddEvenType Type { get; private set; }
 
@@ -21,10 +18,9 @@ namespace PuzzleSolvers
         public ConsoleColor? BackgroundColor { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public OddEvenConstraint(OddEvenType type, IEnumerable<int> affectedCells, ConsoleColor? backgroundColor = null)
+        public OddEvenConstraint(OddEvenType type, IEnumerable<int> affectedCells, ConsoleColor? backgroundColor = null) : base(affectedCells)
         {
             Type = type;
-            AffectedCells = affectedCells.ToArray();
             BackgroundColor = backgroundColor;
         }
 

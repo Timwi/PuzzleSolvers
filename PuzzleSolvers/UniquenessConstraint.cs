@@ -9,7 +9,7 @@ namespace PuzzleSolvers
     public class UniquenessConstraint : Constraint
     {
         /// <summary>The cells that must have different values.</summary>
-        public int[] AffectedCells { get; private set; }
+        public new int[] AffectedCells => base.AffectedCells;
 
         /// <summary>
         ///     An optional background color to be used when outputting a solution through <see
@@ -17,9 +17,8 @@ namespace PuzzleSolvers
         public ConsoleColor? BackgroundColor { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public UniquenessConstraint(IEnumerable<int> affectedCells, ConsoleColor? backgroundColor = null)
+        public UniquenessConstraint(IEnumerable<int> affectedCells, ConsoleColor? backgroundColor = null) : base(affectedCells)
         {
-            AffectedCells = affectedCells.ToArray();
             BackgroundColor = backgroundColor;
         }
 

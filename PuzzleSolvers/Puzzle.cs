@@ -116,6 +116,7 @@ namespace PuzzleSolvers
                         count++;
                 if (count == 0)
                     yield break;
+                count -= numConstraintsPerCell[cell];
                 if (count < fewestPossibleValues)
                 {
                     ix = cell;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace PuzzleSolvers
 {
@@ -18,7 +19,7 @@ namespace PuzzleSolvers
         ///     The width of the grid.</param>
         /// <param name="height">
         ///     The height of the grid.</param>
-        public NoTouchConstraint(int width, int height) { GridWidth = width; GridHeight = height; }
+        public NoTouchConstraint(int width, int height) : base(Enumerable.Range(0, width * height)) { GridWidth = width; GridHeight = height; }
 
         /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)

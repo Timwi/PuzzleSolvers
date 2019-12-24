@@ -13,7 +13,7 @@ namespace PuzzleSolvers
         /// <summary>
         ///     Contains the region of cells affected by this constraint (the “thermometer”). The order of cells in this array
         ///     is significant as the constraint assumes these to be ordered from smallest to largest value.</summary>
-        public int[] AffectedCells { get; private set; }
+        public new int[] AffectedCells => base.AffectedCells;
 
         /// <summary>
         ///     Specifies an optional background color to be used when outputting a solution using <see
@@ -21,9 +21,8 @@ namespace PuzzleSolvers
         public ConsoleColor? BackgroundColor { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public LessThanConstraint(IEnumerable<int> affectedCells, ConsoleColor? backgroundColor = null)
+        public LessThanConstraint(IEnumerable<int> affectedCells, ConsoleColor? backgroundColor = null) : base(affectedCells)
         {
-            AffectedCells = affectedCells.ToArray();
             BackgroundColor = backgroundColor;
         }
 

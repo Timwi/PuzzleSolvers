@@ -10,12 +10,12 @@ namespace PuzzleSolvers
     public class SumConstraint : Constraint
     {
         /// <summary>The region of cells that must have the sum specified by <see cref="Sum"/>.</summary>
-        public int[] AffectedCells { get; private set; }
+        public new int[] AffectedCells => base.AffectedCells;
         /// <summary>The desired sum.</summary>
         public int Sum { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public SumConstraint(int sum, IEnumerable<int> affectedCells) { Sum = sum; AffectedCells = affectedCells.ToArray(); }
+        public SumConstraint(int sum, IEnumerable<int> affectedCells) : base(affectedCells) { Sum = sum; }
 
         /// <summary>Override; see base;</summary>
         public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)

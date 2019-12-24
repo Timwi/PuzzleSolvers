@@ -13,7 +13,7 @@ namespace PuzzleSolvers
         public int Value { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public GivenConstraint(int location, int value) { Location = location; Value = value; }
+        public GivenConstraint(int location, int value) : base(new[] { location }) { Location = location; Value = value; }
 
         /// <summary>Override; see base;</summary>
         public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
