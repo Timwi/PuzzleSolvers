@@ -12,7 +12,7 @@ namespace PuzzleSolverTester
         [Test]
         public void TestSudoku()
         {
-            // Standard Sudoku; taken from Cracking the Cryptic: https://www.youtube.com/watch?v=wuduuLVGKDQ
+            // Standard Sudoku
             assertUniqueSolution(
                 new Puzzle(81, 1, 9, Constraint.Sudoku(), Constraint.Givens("3...5...8.9..7.5.....8.41...2.7.....5...28..47.....6...6....8....2...9.1.1.9.5...")),
                 3, 4, 6, 1, 5, 9, 2, 7, 8, 1, 9, 8, 2, 7, 6, 5, 4, 3, 2, 7, 5, 8, 3, 4, 1, 9, 6, 6, 2, 4, 7, 9, 1, 3, 8, 5, 5, 3, 9, 6, 2, 8, 7, 1, 4, 7, 8, 1, 5, 4, 3, 6, 2, 9, 9, 6, 3, 4, 1, 2, 8, 5, 7, 4, 5, 2, 3, 8, 7, 9, 6, 1, 8, 1, 7, 9, 6, 5, 4, 3, 2);
