@@ -74,12 +74,21 @@ namespace PuzzleSolvers
         ///     The solution to be colored.</param>
         /// <param name="width">
         ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
-        public ConsoleColoredString SudokuSolutionToConsoleString(int[] solution, int width = 9)
+        public ConsoleColoredString SudokuSolutionToConsoleString(int?[] solution, int width = 9)
         {
             ConsoleColor? findColor(int ix) => Constraints.Aggregate((ConsoleColor?) null, (prev, c) => prev ?? c.CellColor(ix));
             ConsoleColor? findBackgroundColor(int ix) => Constraints.Aggregate((ConsoleColor?) null, (prev, c) => prev ?? c.CellBackgroundColor(ix));
-            return solution.Split(width).Select((chunk, row) => chunk.Select((val, col) => (val + " ").Color(findColor(col + width * row), findBackgroundColor(col + width * row))).JoinColoredString()).JoinColoredString("\n");
+            return solution.Split(width).Select((chunk, row) => chunk.Select((val, col) => ((val == null ? "?" : val.Value.ToString()) + " ").Color(val == null ? ConsoleColor.DarkGray : findColor(col + width * row), findBackgroundColor(col + width * row))).JoinColoredString()).JoinColoredString("\n");
         }
+
+        /// <summary>
+        ///     Converts a Sudoku solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered by some
+        ///     constraints.</summary>
+        /// <param name="solution">
+        ///     The solution to be colored.</param>
+        /// <param name="width">
+        ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
+        public ConsoleColoredString SudokuSolutionToConsoleString(int[] solution, int width = 9) => SudokuSolutionToConsoleString(solution.Select(val => val.Nullable()).ToArray(), width);
 
 
 
@@ -88,7 +97,7 @@ namespace PuzzleSolvers
         private int _numVals;
 
         /// <summary>Returns a lazy sequence containing the solutions for this puzzle.</summary>
-        public IEnumerable<int[]> Solve()
+        public IEnumerable<int[]> Solve(bool showDebugOutput = false)
         {
             _numVals = MaxValue - MinValue + 1;
             var cells = new int?[Size];
@@ -99,10 +108,17 @@ namespace PuzzleSolvers
             foreach (var constraint in Constraints)
                 constraint.MarkTakens(takens, cells, null, MinValue, MaxValue);
 
-            return solve(cells, takens, Constraints).Select(solution => solution.Select(val => val + MinValue).ToArray());
+            var numConstraintsPerCell = new int[Size];
+            foreach (var constraint in Constraints)
+                foreach (var cell in constraint.AffectedCells)
+                    numConstraintsPerCell[cell]++;
+
+            return solve(cells, takens, Constraints, numConstraintsPerCell, showDebugOutput).Select(solution => solution.Select(val => val + MinValue).ToArray());
         }
 
-        private IEnumerable<int[]> solve(int?[] filledInValues, bool[][] takens, List<Constraint> constraints)
+        private const int debugOutputMaxRecursionDepth = 10;
+
+        private IEnumerable<int[]> solve(int?[] filledInValues, bool[][] takens, List<Constraint> constraints, int[] numConstraintsPerCell, bool showDebugOutput, int recursionDepth = 0)
         {
             var fewestPossibleValues = int.MaxValue;
             var ix = -1;
@@ -135,6 +151,15 @@ namespace PuzzleSolvers
                 if (takens[ix][val])
                     continue;
 
+                if (showDebugOutput && recursionDepth < debugOutputMaxRecursionDepth)
+                {
+                    Console.CursorLeft = 0;
+                    Console.CursorTop = recursionDepth;
+                    ConsoleUtil.Write($"Cell {ix}: " + Enumerable.Range(0, takens[ix].Length).Select(v => (v + MinValue).ToString().Color(
+                        takens[ix][v] ? ConsoleColor.DarkBlue : v == val ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
+                        v == val ? ConsoleColor.DarkGreen : ConsoleColor.Black)).JoinColoredString(" "));
+                }
+
                 // Attempt to put the value into this cell
                 filledInValues[ix] = val;
                 var takensCopy = takens.Select(arr => arr.ToArray()).ToArray();
@@ -143,9 +168,9 @@ namespace PuzzleSolvers
                 // but for performance reasons we want to keep the original list if none of the constraints changed
                 List<Constraint> constraintsCopy = null;
 
-                for (var i = 0; i < Constraints.Count; i++)
+                for (var i = 0; i < constraints.Count; i++)
                 {
-                    var constraint = Constraints[i];
+                    var constraint = constraints[i];
                     var newConstraints = constraint.MarkTakens(takensCopy, filledInValues, ix, MinValue, MaxValue);
                     if (newConstraints != null)
                     {
@@ -172,10 +197,17 @@ namespace PuzzleSolvers
                         constraintsCopy.Add(constraint);
                 }
 
-                foreach (var solution in solve(filledInValues, takensCopy, constraintsCopy ?? constraints))
+                foreach (var solution in solve(filledInValues, takensCopy, constraintsCopy ?? constraints, numConstraintsPerCell, showDebugOutput, recursionDepth + 1))
                     yield return solution;
             }
             filledInValues[ix] = null;
+
+            if (showDebugOutput && recursionDepth < debugOutputMaxRecursionDepth)
+            {
+                Console.CursorLeft = 0;
+                Console.CursorTop = recursionDepth;
+                Console.Write(new string(' ', Console.BufferWidth - 1));
+            }
         }
     }
 }
