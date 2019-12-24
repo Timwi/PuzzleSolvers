@@ -139,6 +139,35 @@ namespace PuzzleSolverTester
             Assert.IsTrue(solutions.Any(s => s.SequenceEqual(new[] { 7, 6, 2, 5, 4, 8, 3, 9, 1, 4, 3, 1, 2, 7, 9, 5, 8, 6, 8, 5, 9, 6, 1, 3, 7, 2, 4, 3, 4, 5, 7, 8, 2, 1, 6, 9, 1, 9, 8, 3, 6, 4, 2, 7, 5, 6, 2, 7, 1, 9, 5, 8, 4, 3, 5, 8, 3, 9, 2, 6, 4, 1, 7, 2, 1, 6, 4, 3, 7, 9, 5, 8, 9, 7, 4, 8, 5, 1, 6, 3, 2 })));
         }
 
+        [Test]
+        public void TestSumOrProductSudoku()
+        {
+            // Tests OrConstraint by combining a SumConstraint and a ProductConstraint (SumOrProductConstraint is just a helper class for exactly that)
+            // Taken from Cracking the Cryptic: https://www.youtube.com/watch?v=53VH-vLWBUg
+            assertUniqueSolution(new Puzzle(81, 1, 9, Constraint.Sudoku(), Ut.NewArray<Constraint>(
+                new GivenConstraint(location: 3 + 9 * 4, value: 9),
+                new SumOrProductConstraint(15, Enumerable.Range(0, 2).Select(i => 1 + i * 8)),
+                new SumOrProductConstraint(9, Enumerable.Range(0, 3).Select(i => 2 + i * 8)),
+                new SumOrProductConstraint(24, Enumerable.Range(0, 4).Select(i => 3 + i * 8)),
+                new SumOrProductConstraint(6, Enumerable.Range(0, 5).Select(i => 4 + i * 8)),
+
+                new SumOrProductConstraint(14, Enumerable.Range(0, 2).Select(i => 17 - i * 10)),
+                new SumOrProductConstraint(9, Enumerable.Range(0, 3).Select(i => 26 - i * 10)),
+                new SumOrProductConstraint(21, Enumerable.Range(0, 4).Select(i => 35 - i * 10)),
+                new SumOrProductConstraint(29, Enumerable.Range(0, 5).Select(i => 44 - i * 10)),
+
+                new SumOrProductConstraint(16, Enumerable.Range(0, 2).Select(i => 79 - i * 8)),
+                new SumOrProductConstraint(10, Enumerable.Range(0, 3).Select(i => 78 - i * 8)),
+                new SumOrProductConstraint(23, Enumerable.Range(0, 4).Select(i => 77 - i * 8)),
+                new SumOrProductConstraint(49, Enumerable.Range(0, 5).Select(i => 76 - i * 8)),
+
+                new SumOrProductConstraint(12, Enumerable.Range(0, 2).Select(i => 63 + i * 10)),
+                new SumOrProductConstraint(18, Enumerable.Range(0, 3).Select(i => 54 + i * 10)),
+                new SumOrProductConstraint(24, Enumerable.Range(0, 4).Select(i => 45 + i * 10)),
+                new SumOrProductConstraint(8, Enumerable.Range(0, 5).Select(i => 36 + i * 10))
+            )), 8, 9, 3, 7, 2, 5, 4, 6, 1, 6, 4, 7, 1, 3, 9, 5, 2, 8, 2, 5, 1, 8, 6, 4, 7, 9, 3, 5, 3, 9, 6, 7, 1, 8, 4, 2, 1, 6, 8, 9, 4, 2, 3, 5, 7, 7, 2, 4, 3, 5, 8, 9, 1, 6, 3, 7, 2, 4, 9, 6, 1, 8, 5, 4, 1, 5, 2, 8, 7, 6, 3, 9, 9, 8, 6, 5, 1, 3, 2, 7, 4);
+        }
+
         private void assertUniqueSolution(Puzzle puzzle, params int[] expectedSolution)
         {
             var solutions = puzzle.Solve().Take(2).ToArray();
