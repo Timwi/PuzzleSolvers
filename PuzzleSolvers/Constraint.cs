@@ -10,14 +10,23 @@ namespace PuzzleSolvers
     /// <summary>Abstract base class for all constraints in a puzzle.</summary>
     public abstract class Constraint
     {
-        /// <summary>The group of cells affected by this constraint.</summary>
+        /// <summary>The group of cells affected by this constraint, or <c>null</c> if it affects all of them.</summary>
         public int[] AffectedCells { get; private set; }
 
         /// <summary>
         ///     Constructor for derived types.</summary>
         /// <param name="affectedCells">
         ///     The set of cells affected by this constraint.</param>
-        protected Constraint(IEnumerable<int> affectedCells) { AffectedCells = affectedCells.ToArray(); }
+        /// <param name="color">
+        ///     See <see cref="CellColor"/>.</param>
+        /// <param name="backgroundColor">
+        ///     See <see cref="CellBackgroundColor"/>.</param>
+        protected Constraint(IEnumerable<int> affectedCells, ConsoleColor? color = null, ConsoleColor? backgroundColor = null)
+        {
+            AffectedCells = affectedCells?.ToArray();
+            CellColor = color;
+            CellBackgroundColor = backgroundColor;
+        }
 
         /// <summary>
         ///     Constraint implementations must modify <paramref name="takens"/> to mark values as taken that are known to be
@@ -57,22 +66,14 @@ namespace PuzzleSolvers
         public abstract IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue);
 
         /// <summary>
-        ///     Constraint implementations may override this to have <see cref="Puzzle.SudokuSolutionToConsoleString(int[],
-        ///     int)"/> color a cell a certain text color.</summary>
-        /// <param name="ix">
-        ///     The cell to be colored.</param>
-        /// <returns>
-        ///     <c>null</c> for no special coloring, otherwise a <see cref="ConsoleColor"/> value.</returns>
-        public virtual ConsoleColor? CellColor(int ix) => null;
+        ///     Specifies an optional text color for <see cref="Puzzle.SudokuSolutionToConsoleString(int[], int)"/> to color a
+        ///     cell a certain text color.</summary>
+        public ConsoleColor? CellColor { get; private set; }
 
         /// <summary>
-        ///     Constraint implementations may override this to have <see cref="Puzzle.SudokuSolutionToConsoleString(int[],
-        ///     int)"/> color a cell a certain background color.</summary>
-        /// <param name="ix">
-        ///     The cell to be colored.</param>
-        /// <returns>
-        ///     <c>null</c> for no special coloring, otherwise a <see cref="ConsoleColor"/> value.</returns>
-        public virtual ConsoleColor? CellBackgroundColor(int ix) => null;
+        ///     Specifies an optional background color for <see cref="Puzzle.SudokuSolutionToConsoleString(int[], int)"/> to
+        ///     color a cell a certain text color.</summary>
+        public ConsoleColor? CellBackgroundColor { get; private set; }
 
         /// <summary>
         ///     Converts a convenient coordinate notation into puzzle-grid indices.</summary>
@@ -88,13 +89,13 @@ namespace PuzzleSolvers
         {
             foreach (var part in str.Split(','))
             {
-                var m = Regex.Match(part, @"^\s*(?<col>[A-I](\s*-\s*(?<colr>[A-I]))?)\s*(?<row>[1-9](\s*-\s*(?<rowr>[1-9]))?)\s*$");
+                var m = Regex.Match(part, @"^\s*(?<col>[A-Z](\s*-\s*(?<colr>[A-Z]))?)\s*(?:(?<row>\d+)(\s*-\s*(?<rowr>\d+))?)\s*$");
                 if (!m.Success)
                     throw new ArgumentException(string.Format(@"The region “{0}” is not in a valid format. Expected a column letter (or a range of columns, e.g. A-D) followed by a row digit (or a range of rows, e.g. 1-4).", part), nameof(str));
                 var col = m.Groups["col"].Value[0] - 'A';
                 var colr = m.Groups["colr"].Success ? m.Groups["colr"].Value[0] - 'A' : col;
-                var row = m.Groups["row"].Value[0] - '1';
-                var rowr = m.Groups["rowr"].Success ? m.Groups["rowr"].Value[0] - '1' : row;
+                var row = int.Parse(m.Groups["row"].Value) - 1;
+                var rowr = m.Groups["rowr"].Success ? int.Parse(m.Groups["rowr"].Value) - 1 : row;
                 for (var c = col; c <= colr; c++)
                     for (var r = row; r <= rowr; r++)
                         yield return c + gridWidth * r;
@@ -251,25 +252,87 @@ namespace PuzzleSolvers
         /// <returns>
         ///     Constraints for all of the specified Killer cages. The regions are also associated with 6 different background
         ///     colors in the same order as the letters.</returns>
-        public static IEnumerable<Constraint> KillerCages(string field, params int[] sums)
+        public static IEnumerable<Constraint> KillerCages(string field, int[] sums)
         {
             if (field == null)
                 throw new ArgumentNullException(nameof(field));
-            if (field.Any(ch => ch < 'A' || ch > 'Z'))
-                throw new ArgumentException("The ‘field’ must contain only letter A-Z.", nameof(field));
+            if (sums == null)
+                throw new ArgumentNullException(nameof(sums));
+            return KillerCages(field, sums.Select(i => (int?) i).ToArray());
+        }
+
+        /// <summary>
+        ///     Generates the constraints for several sum cages (as used in, for example, a Killer Sudoku).</summary>
+        /// <param name="field">
+        ///     A string containing letters A, B, etc. identifying the cages, or periods (.) to indicate squares that do not
+        ///     belong to any cage.</param>
+        /// <param name="sums">
+        ///     The sums associated with each cage in the same order as the letters, or <c>null</c> for cages that don’t have
+        ///     a sum (these will still get a unique constraint).</param>
+        /// <returns>
+        ///     Constraints for all of the specified Killer cages. The regions are also associated with 6 different background
+        ///     colors in the same order as the letters.</returns>
+        public static IEnumerable<Constraint> KillerCages(string field, params int?[] sums)
+        {
+            if (field == null)
+                throw new ArgumentNullException(nameof(field));
+            if (field.Any(ch => (ch < 'A' || ch > 'Z') && ch != '.'))
+                throw new ArgumentException("The ‘field’ must contain only letters A-Z or periods (.).", nameof(field));
             if (sums == null)
                 throw new ArgumentNullException(nameof(sums));
 
             var cages = new Dictionary<char, List<int>>();
             for (var cell = 0; cell < field.Length; cell++)
-                cages.AddSafe(field[cell], cell);
+                if (field[cell] != '.')
+                    cages.AddSafe(field[cell], cell);
 
             if (Enumerable.Range(0, sums.Length).Any(i => !cages.ContainsKey((char) ('A' + i))))
                 throw new ArgumentException("The ‘field’ must contain every letter from A up to however many elements are in ‘sums’.", nameof(field));
 
             foreach (var kvp in cages)
-                foreach (var c in KillerCage(sums[kvp.Key - 'A'], kvp.Value.ToArray(), (ConsoleColor) ((kvp.Key - 'A') % 6 + 1)))
-                    yield return c;
+            {
+                yield return new UniquenessConstraint(kvp.Value, backgroundColor: (ConsoleColor) ((kvp.Key - 'A') % 6 + 1));
+                if (sums[kvp.Key - 'A'] != null)
+                    yield return new SumConstraint(sums[kvp.Key - 'A'].Value, kvp.Value);
+            }
+        }
+
+        /// <summary>
+        ///     Generates the constraints for the rows of a 1-to-9 Sandwich Sudoku.</summary>
+        /// <param name="gridWidth">
+        ///     The width of the Sudoku grid. (Usually 9.)</param>
+        /// <param name="gridHeight">
+        ///     The height of the Sudoku grid. (Usually 9.)</param>
+        /// <param name="sums">
+        ///     The sums for each row. Use <c>null</c> to skip a constraint for a row.</param>
+        public static IEnumerable<Constraint> SandwichRows(int gridWidth, int gridHeight, params int?[] sums)
+        {
+            if (sums == null)
+                throw new ArgumentNullException(nameof(sums));
+            if (sums.Length > gridHeight)
+                throw new ArgumentException("The number of row constraints cannot be greater than the number of rows in the Sudoku grid.", nameof(sums));
+            for (var row = 0; row < sums.Length; row++)
+                if (sums[row] != null)
+                    yield return new SandwichUniquenessConstraint(1, 9, sums[row].Value, Enumerable.Range(0, gridWidth).Select(col => col + 9 * row));
+        }
+
+        /// <summary>
+        ///     Generates the constraints for the columns of a 1-to-9 Sandwich Sudoku.</summary>
+        /// <param name="gridWidth">
+        ///     The width of the Sudoku grid. (Usually 9.)</param>
+        /// <param name="gridHeight">
+        ///     The height of the Sudoku grid. (Usually 9.)</param>
+        /// <param name="sums">
+        ///     The sums for each column. Use <c>null</c> to skip a constraint for a column.</param>
+        public static IEnumerable<Constraint> SandwichColumns(int gridWidth, int gridHeight, params int?[] sums)
+        {
+            if (sums == null)
+                throw new ArgumentNullException(nameof(sums));
+            if (sums.Length > gridWidth)
+                throw new ArgumentException("The number of column constraints cannot be greater than the number of columns in the Sudoku grid.", nameof(sums));
+            for (var col = 0; col < sums.Length; col++)
+                if (sums[col] != null)
+                    yield return new SandwichUniquenessConstraint(1, 9, sums[col].Value, Enumerable.Range(0, gridHeight).Select(row => col + 9 * row));
         }
     }
 }

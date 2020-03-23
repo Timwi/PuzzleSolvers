@@ -11,15 +11,9 @@ namespace PuzzleSolvers
         /// <summary>The cells that must have different values.</summary>
         public new int[] AffectedCells => base.AffectedCells;
 
-        /// <summary>
-        ///     An optional background color to be used when outputting a solution through <see
-        ///     cref="Puzzle.SudokuSolutionToConsoleString(int[], int)"/>.</summary>
-        public ConsoleColor? BackgroundColor { get; private set; }
-
         /// <summary>Constructor.</summary>
-        public UniquenessConstraint(IEnumerable<int> affectedCells, ConsoleColor? backgroundColor = null) : base(affectedCells)
+        public UniquenessConstraint(IEnumerable<int> affectedCells, ConsoleColor? color = null, ConsoleColor? backgroundColor = null) : base(affectedCells, color, backgroundColor)
         {
-            BackgroundColor = backgroundColor;
         }
 
         /// <summary>Override; see base.</summary>
@@ -45,8 +39,5 @@ namespace PuzzleSolvers
             }
             return null;
         }
-
-        /// <summary>Override; see base.</summary>
-        public override ConsoleColor? CellBackgroundColor(int ix) => AffectedCells.Contains(ix) ? BackgroundColor : null;
     }
 }

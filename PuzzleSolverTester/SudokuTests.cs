@@ -168,6 +168,45 @@ namespace PuzzleSolverTester
             )), 8, 9, 3, 7, 2, 5, 4, 6, 1, 6, 4, 7, 1, 3, 9, 5, 2, 8, 2, 5, 1, 8, 6, 4, 7, 9, 3, 5, 3, 9, 6, 7, 1, 8, 4, 2, 1, 6, 8, 9, 4, 2, 3, 5, 7, 7, 2, 4, 3, 5, 8, 9, 1, 6, 3, 7, 2, 4, 9, 6, 1, 8, 5, 4, 1, 5, 2, 8, 7, 6, 3, 9, 9, 8, 6, 5, 1, 3, 2, 7, 4);
         }
 
+        [Test]
+        public void TestSandwichSudoku()
+        {
+            // Tests SandwichUniquenessConstraint with sums sandwiched between 1 and 9 (the typical variant).
+            // Taken from Cracking the Cryptic: https://www.youtube.com/watch?v=qUZnq5nP0zI
+            assertUniqueSolution(new Puzzle(81, 1, 9,
+                Constraint.Sudoku(),
+                new[] { 15, 9, 26, 8, 8, 12, 0, 12, 6 }.Select((val, col) => new SandwichUniquenessConstraint(1, 9, val, $"{(char) ('A' + col)}1-9".TranslateCoordinates())),
+                new[] { 7, 14, 20, 2, 8, 26, 10, 31, 16 }.Select((val, row) => new SandwichUniquenessConstraint(1, 9, val, $"A-I{row + 1}".TranslateCoordinates())),
+                Constraint.Givens(@"............9......1............9...............8............5......5............")),
+                3, 8, 9, 2, 5, 1, 4, 7, 6, 4, 5, 7, 9, 6, 8, 1, 2, 3, 2, 1, 6, 3, 7, 4, 9, 8, 5, 6, 4, 8, 5, 3, 9, 2, 1, 7, 9, 3, 5, 1, 2, 7, 6, 4, 8, 7, 2, 1, 8, 4, 6, 5, 3, 9, 8, 9, 4, 6, 1, 3, 7, 5, 2, 1, 6, 2, 7, 8, 5, 3, 9, 4, 5, 7, 3, 4, 9, 2, 8, 6, 1);
+        }
+
+        [Test]
+        public void TestSandwich46Sudoku()
+        {
+            // Tests SandwichUniquenessConstraint with sums sandwiched between 4 and 6.
+            // Taken from Cracking the Cryptic: https://www.youtube.com/watch?v=ZzH2_tjQAHE
+            assertUniqueSolution(new Puzzle(81, 1, 9,
+                Constraint.Sudoku(),
+                new[] { 26, 22, 11, 3, 2, 8, 18, 6, 12 }.Select((val, col) => new SandwichUniquenessConstraint(4, 6, val, $"{(char) ('A' + col)}1-9".TranslateCoordinates())),
+                new[] { 35, 16, 10, 14, 6, 2, 1, 25, 7 }.Select((val, row) => new SandwichUniquenessConstraint(4, 6, val, $"A-I{row + 1}".TranslateCoordinates())),
+                new[] { new GivenConstraint(66, 1), new GivenConstraint(77, 4) }),
+                4, 1, 3, 5, 8, 2, 9, 7, 6, 2, 5, 8, 6, 9, 7, 4, 3, 1, 9, 6, 7, 3, 4, 1, 5, 8, 2, 8, 3, 1, 4, 2, 5, 7, 6, 9, 7, 9, 5, 8, 6, 3, 2, 1, 4, 6, 2, 4, 7, 1, 9, 3, 5, 8, 5, 8, 2, 9, 3, 6, 1, 4, 7, 3, 4, 9, 1, 7, 8, 6, 2, 5, 1, 7, 6, 2, 5, 4, 8, 9, 3);
+        }
+
+        [Test]
+        public void TestSandwichWraparoundSudoku()
+        {
+            // Tests SandwichWraparoundUniquenessConstraint — the one where the Sudoku grid behaves like a torus.
+            // Taken from Cracking the Cryptic: https://www.youtube.com/watch?v=L7KTfeKsxS4
+            assertUniqueSolution(new Puzzle(81, 1, 9,
+                Constraint.Sudoku(),
+                new[] { 21, 26, 25, 21, 9, 17, 4, 3, 9 }.Select((val, col) => new SandwichWraparoundUniquenessConstraint(1, 9, val, $"{(char) ('A' + col)}1-9".TranslateCoordinates())),
+                new[] { 13, 0, 29, 22, 18, 18, 35, 9, 35 }.Select((val, row) => new SandwichWraparoundUniquenessConstraint(1, 9, val, $"A-I{row + 1}".TranslateCoordinates())),
+                new[] { new GivenConstraint(11, 9), new GivenConstraint(34, 3) }),
+                6, 3, 2, 1, 8, 5, 9, 4, 7, 7, 1, 9, 6, 4, 2, 3, 8, 5, 8, 5, 4, 7, 3, 9, 6, 1, 2, 9, 2, 6, 5, 1, 8, 7, 3, 4, 5, 4, 1, 3, 7, 6, 2, 9, 8, 3, 8, 7, 9, 2, 4, 5, 6, 1, 2, 7, 3, 4, 9, 1, 8, 5, 6, 4, 9, 5, 8, 6, 7, 1, 2, 3, 1, 6, 8, 2, 5, 3, 4, 7, 9);
+        }
+
         private void assertUniqueSolution(Puzzle puzzle, params int[] expectedSolution)
         {
             var solutions = puzzle.Solve().Take(2).ToArray();

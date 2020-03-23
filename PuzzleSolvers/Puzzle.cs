@@ -87,7 +87,7 @@ namespace PuzzleSolvers
             Size = size;
             MinValue = minValue;
             MaxValue = maxValue;
-            Constraints = constraints.Where(c => c != null).SelectMany(x => x).ToList();
+            Constraints = constraints.Where(cs => cs != null).SelectMany(x => x.Where(c => c != null)).ToList();
         }
 
         /// <summary>
@@ -99,8 +99,8 @@ namespace PuzzleSolvers
         ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
         public ConsoleColoredString SudokuSolutionToConsoleString(int?[] solution, int width = 9)
         {
-            ConsoleColor? findColor(int ix) => Constraints.Aggregate((ConsoleColor?) null, (prev, c) => prev ?? c.CellColor(ix));
-            ConsoleColor? findBackgroundColor(int ix) => Constraints.Aggregate((ConsoleColor?) null, (prev, c) => prev ?? c.CellBackgroundColor(ix));
+            ConsoleColor? findColor(int ix) => Constraints.Where(c => c.AffectedCells.Contains(ix)).Aggregate((ConsoleColor?) null, (prev, c) => prev ?? c.CellColor);
+            ConsoleColor? findBackgroundColor(int ix) => Constraints.Where(c => c.AffectedCells.Contains(ix)).Aggregate((ConsoleColor?) null, (prev, c) => prev ?? c.CellBackgroundColor);
             return solution.Split(width).Select((chunk, row) => chunk.Select((val, col) => ((val == null ? "?" : val.Value.ToString()) + " ").Color(val == null ? ConsoleColor.DarkGray : findColor(col + width * row), findBackgroundColor(col + width * row))).JoinColoredString()).JoinColoredString("\n");
         }
 
@@ -120,7 +120,7 @@ namespace PuzzleSolvers
         private int _numVals;
 
         /// <summary>Returns a lazy sequence containing the solutions for this puzzle.</summary>
-        public IEnumerable<int[]> Solve(bool showDebugOutput = false)
+        public IEnumerable<int[]> Solve(int? showDebugOutput = null, Random randomizer = null)
         {
             _numVals = MaxValue - MinValue + 1;
             var cells = new int?[Size];
@@ -128,20 +128,25 @@ namespace PuzzleSolvers
             for (var i = 0; i < Size; i++)
                 takens[i] = new bool[_numVals];
 
+            var newConstraints = new List<Constraint>();
             foreach (var constraint in Constraints)
-                constraint.MarkTakens(takens, cells, null, MinValue, MaxValue);
+            {
+                var cs = constraint.MarkTakens(takens, cells, null, MinValue, MaxValue);
+                if (cs == null)
+                    newConstraints.Add(constraint);
+                else
+                    newConstraints.AddRange(cs);
+            }
 
             var numConstraintsPerCell = new int[Size];
-            foreach (var constraint in Constraints)
-                foreach (var cell in constraint.AffectedCells)
+            foreach (var constraint in newConstraints)
+                foreach (var cell in constraint.AffectedCells ?? Enumerable.Range(0, Size))
                     numConstraintsPerCell[cell]++;
 
-            return solve(cells, takens, Constraints, numConstraintsPerCell, showDebugOutput).Select(solution => solution.Select(val => val + MinValue).ToArray());
+            return solve(cells, takens, newConstraints, numConstraintsPerCell, showDebugOutput, randomizer).Select(solution => solution.Select(val => val + MinValue).ToArray());
         }
 
-        private const int debugOutputMaxRecursionDepth = 10;
-
-        private IEnumerable<int[]> solve(int?[] filledInValues, bool[][] takens, List<Constraint> constraints, int[] numConstraintsPerCell, bool showDebugOutput, int recursionDepth = 0)
+        private IEnumerable<int[]> solve(int?[] filledInValues, bool[][] takens, List<Constraint> constraints, int[] numConstraintsPerCell, int? showDebugOutput, Random randomizer, int recursionDepth = 0)
         {
             var fewestPossibleValues = int.MaxValue;
             var ix = -1;
@@ -169,12 +174,15 @@ namespace PuzzleSolvers
                 yield break;
             }
 
-            for (var val = 0; val < takens[ix].Length; val++)
+            var startAt = randomizer != null ? randomizer.Next(0, takens[ix].Length) : 0;
+
+            for (var tVal = 0; tVal < takens[ix].Length; tVal++)
             {
+                var val = (tVal + startAt) % takens[ix].Length;
                 if (takens[ix][val])
                     continue;
 
-                if (showDebugOutput && recursionDepth < debugOutputMaxRecursionDepth)
+                if (showDebugOutput != null && recursionDepth < showDebugOutput.Value)
                 {
                     Console.CursorLeft = 0;
                     Console.CursorTop = recursionDepth;
@@ -220,12 +228,12 @@ namespace PuzzleSolvers
                         constraintsCopy.Add(constraint);
                 }
 
-                foreach (var solution in solve(filledInValues, takensCopy, constraintsCopy ?? constraints, numConstraintsPerCell, showDebugOutput, recursionDepth + 1))
+                foreach (var solution in solve(filledInValues, takensCopy, constraintsCopy ?? constraints, numConstraintsPerCell, showDebugOutput, randomizer, recursionDepth + 1))
                     yield return solution;
             }
             filledInValues[ix] = null;
 
-            if (showDebugOutput && recursionDepth < debugOutputMaxRecursionDepth)
+            if (showDebugOutput != null && recursionDepth < showDebugOutput.Value)
             {
                 Console.CursorLeft = 0;
                 Console.CursorTop = recursionDepth;

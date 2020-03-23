@@ -17,7 +17,7 @@ namespace PuzzleSolvers
         /// <summary>Constructor.</summary>
         public SumConstraint(int sum, IEnumerable<int> affectedCells) : base(affectedCells) { Sum = sum; }
 
-        /// <summary>Override; see base;</summary>
+        /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
         {
             if (ix != null && !AffectedCells.Contains(ix.Value))

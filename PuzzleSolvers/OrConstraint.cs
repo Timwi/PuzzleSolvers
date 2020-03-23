@@ -16,7 +16,7 @@ namespace PuzzleSolvers
         /// <summary>Constructor.</summary>
         public OrConstraint(params Constraint[] subconstraints) : base(subconstraints.SelectMany(c => c.AffectedCells).Distinct()) { Subconstraints = subconstraints.ToArray(); }
 
-        /// <summary>Override; see base;</summary>
+        /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
         {
             if (ix != null && !AffectedCells.Contains(ix.Value))

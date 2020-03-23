@@ -12,16 +12,10 @@ namespace PuzzleSolvers
         /// <summary>Specifies the specific flavor of this constraint.</summary>
         public OddEvenType Type { get; private set; }
 
-        /// <summary>
-        ///     An optional background color to be used when outputting a solution through <see
-        ///     cref="Puzzle.SudokuSolutionToConsoleString(int[], int)"/>.</summary>
-        public ConsoleColor? BackgroundColor { get; private set; }
-
         /// <summary>Constructor.</summary>
-        public OddEvenConstraint(OddEvenType type, IEnumerable<int> affectedCells, ConsoleColor? backgroundColor = null) : base(affectedCells)
+        public OddEvenConstraint(OddEvenType type, IEnumerable<int> affectedCells, ConsoleColor? color = null, ConsoleColor? backgroundColor = null) : base(affectedCells, color, backgroundColor)
         {
             Type = type;
-            BackgroundColor = backgroundColor;
         }
 
         /// <summary>Override; see base.</summary>
@@ -69,9 +63,6 @@ namespace PuzzleSolvers
                         takens[cell][v] = true;
             return Enumerable.Empty<Constraint>();
         }
-
-        /// <summary>Override; see base.</summary>
-        public override ConsoleColor? CellBackgroundColor(int ix) => AffectedCells.Contains(ix) ? BackgroundColor : null;
     }
 
     /// <summary>Describes the specific flavor of an <see cref="OddEvenConstraint"/>.</summary>

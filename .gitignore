@@ -3,3 +3,4 @@ Builds/
 */bin/
 */obj/
 packages/
+*.csproj.user
