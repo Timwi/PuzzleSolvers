@@ -107,13 +107,18 @@ namespace PuzzleSolvers
         /// <param name="givens">
         ///     An array containing given (pre-filled) values for a puzzle. Use <c>null</c> to indicate that a cell doesn’t
         ///     have a given.</param>
-        public static IEnumerable<Constraint> Givens(int?[] givens)
+        /// <param name="color">
+        ///     Color to use when outputting a solution with <see cref="Puzzle.SudokuSolutionToConsoleString(int?[], int)"/>.</param>
+        /// <param name="backgroundColor">
+        ///     Background color to use when outputting a solution with <see
+        ///     cref="Puzzle.SudokuSolutionToConsoleString(int?[], int)"/>.</param>
+        public static IEnumerable<Constraint> Givens(int?[] givens, ConsoleColor? color = null, ConsoleColor? backgroundColor = null)
         {
             if (givens == null)
                 throw new ArgumentNullException(nameof(givens));
             for (var i = 0; i < givens.Length; i++)
                 if (givens[i] != null)
-                    yield return new GivenConstraint(i, givens[i].Value);
+                    yield return new GivenConstraint(i, givens[i].Value, color, backgroundColor);
         }
 
         /// <summary>
@@ -121,15 +126,18 @@ namespace PuzzleSolvers
         /// <param name="givens">
         ///     A string such as <c>"3...5...8.9..7.5.....8.41...2.7.....5...28..47.....6...6....8....2...9.1.1.9.5..."</c>.
         ///     Each digit is a given value, while periods (<c>.</c>) indicate no given for that cell.</param>
-        /// <returns>
-        ///     An array of nullable integers containing the givens.</returns>
-        public static IEnumerable<Constraint> Givens(string givens)
+        /// <param name="color">
+        ///     Color to use when outputting a solution with <see cref="Puzzle.SudokuSolutionToConsoleString(int?[], int)"/>.</param>
+        /// <param name="backgroundColor">
+        ///     Background color to use when outputting a solution with <see
+        ///     cref="Puzzle.SudokuSolutionToConsoleString(int?[], int)"/>.</param>
+        public static IEnumerable<Constraint> Givens(string givens, ConsoleColor? color = null, ConsoleColor? backgroundColor = null)
         {
             if (givens == null)
                 throw new ArgumentNullException(nameof(givens));
             if (!givens.All(ch => ch == '.' || (ch >= '0' && ch <= '9')))
                 throw new ArgumentException("‘givens’ must contain only digits 0–9 and periods (.) for cells with no given.", "givens");
-            return Givens(givens.Select(ch => ch == '.' ? (int?) null : ch - '0').ToArray());
+            return Givens(givens.Select(ch => ch == '.' ? (int?) null : ch - '0').ToArray(), color, backgroundColor);
         }
 
         /// <summary>
