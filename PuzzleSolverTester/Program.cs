@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using PuzzleSolvers;
-using RT.Util;
 using RT.Util.Consoles;
 
 namespace PuzzleSolverTester
@@ -13,11 +12,12 @@ namespace PuzzleSolverTester
             var startTime = DateTime.UtcNow;
             var count = 0;
 
+            var area = "C-G5,D4,F4,D6,F6".TranslateCoordinates(9);
             var puzzle = new Puzzle(81, 1, 9,
-                Constraint.Sudoku(),
-                Constraint.KillerCages(@"ABBBBCDDEAFFFCCDDEAAFFCGGEEHHIIGGGEJHHIKLLLJJKKKKMLLNJOPPQMMRNNOOPQMSRRNOOQQSSSRN", 17, 21, null, 17, 28, null, 21, null, 21, null, 16, null, null, null, 32, null, null, 20, 26),
-                Constraint.SandwichColumns(9, 9, 7, 0, 6, null, 8, 23, 30, null, 9),
-                Constraint.SandwichRows(9, 9, 12, null, null, 0, null, 21, 8, 35, 13));
+                Constraint.LatinSquare(9, 9),
+                Constraint.Givens("..............................2.6.....13579.....4.8.............................."),
+                new[] { new AntiKnightConstraint(9, 9, toroidal: true) },
+                Enumerable.Range(0, 9).Select(i => new UniquenessConstraint(area.Select(cell => (cell % 9 + i) % 9 + 9 * ((cell / 9 + 2 * i) % 9)), backgroundColor: (ConsoleColor) (i + (i >= 6 ? 2 : 1)))));
 
             foreach (var solution in puzzle.Solve(showDebugOutput: null))
             {

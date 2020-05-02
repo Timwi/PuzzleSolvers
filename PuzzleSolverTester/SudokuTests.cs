@@ -31,14 +31,14 @@ namespace PuzzleSolverTester
         }
 
         [Test]
-        public void TestNoTouchSudoku()
+        public void TestAntiKingSudoku()
         {
             // No-touch Sudoku; taken from Cracking the Cryptic: https://www.youtube.com/watch?v=L4tWOtwLhP4
             assertUniqueSolution(
                 new Puzzle(81, 1, 9,
                     Constraint.Sudoku(),
                     Constraint.Givens("4...5...6.5.3.1.2...2...9...9.8.3.6.3.......9.6.9.5.7...4...8...2.1.9.4.9...3...2"),
-                    new[] { new NoTouchConstraint(9, 9) }),
+                    new[] { new AntiKingConstraint(9, 9) }),
                 4, 1, 9, 2, 5, 8, 7, 3, 6, 6, 5, 7, 3, 9, 1, 4, 2, 8, 8, 3, 2, 4, 7, 6, 9, 1, 5, 7, 9, 1, 8, 2, 3, 5, 6, 4, 3, 4, 5, 6, 1, 7, 2, 8, 9, 2, 6, 8, 9, 4, 5, 3, 7, 1, 1, 7, 4, 5, 6, 2, 8, 9, 3, 5, 2, 3, 1, 8, 9, 6, 4, 7, 9, 8, 6, 7, 3, 4, 1, 5, 2);
         }
 
@@ -205,6 +205,20 @@ namespace PuzzleSolverTester
                 new[] { 13, 0, 29, 22, 18, 18, 35, 9, 35 }.Select((val, row) => new SandwichWraparoundUniquenessConstraint(1, 9, val, $"A-I{row + 1}".TranslateCoordinates())),
                 new[] { new GivenConstraint(11, 9), new GivenConstraint(34, 3) }),
                 6, 3, 2, 1, 8, 5, 9, 4, 7, 7, 1, 9, 6, 4, 2, 3, 8, 5, 8, 5, 4, 7, 3, 9, 6, 1, 2, 9, 2, 6, 5, 1, 8, 7, 3, 4, 5, 4, 1, 3, 7, 6, 2, 9, 8, 3, 8, 7, 9, 2, 4, 5, 6, 1, 2, 7, 3, 4, 9, 1, 8, 5, 6, 4, 9, 5, 8, 6, 7, 1, 2, 3, 1, 6, 8, 2, 5, 3, 4, 7, 9);
+        }
+
+        [Test]
+        public void TestToroidalAntiKnightSudoku()
+        {
+            // Tests the toroidal version of the anti-knight constraint. 
+            // Puzzle taken from Logic Masters: https://logic-masters.de/Raetselportal/Raetsel/zeigen.php?id=0003F0
+            var area = "C-G5,D4,F4,D6,F6".TranslateCoordinates(9);
+            assertUniqueSolution(new Puzzle(81, 1, 9,
+                Constraint.LatinSquare(9, 9),
+                Constraint.Givens("..............................2.6.....13579.....4.8.............................."),
+                new[] { new AntiKnightConstraint(9, 9, toroidal: true) },
+                Enumerable.Range(0, 9).Select(i => new UniquenessConstraint(area.Select(cell => (cell % 9 + i) % 9 + 9 * ((cell / 9 + 2 * i) % 9)), backgroundColor: (ConsoleColor) (i + (i >= 6 ? 2 : 1))))),
+                8, 7, 2, 6, 4, 9, 3, 1, 5, 7, 3, 6, 5, 9, 2, 1, 4, 8, 3, 4, 5, 7, 2, 1, 6, 8, 9, 4, 5, 8, 2, 3, 6, 7, 9, 1, 6, 8, 1, 3, 5, 7, 9, 2, 4, 9, 1, 3, 4, 7, 8, 2, 5, 6, 1, 2, 4, 9, 8, 3, 5, 6, 7, 2, 6, 9, 8, 1, 5, 4, 7, 3, 5, 9, 7, 1, 6, 4, 8, 3, 2);
         }
 
         private void assertUniqueSolution(Puzzle puzzle, params int[] expectedSolution)

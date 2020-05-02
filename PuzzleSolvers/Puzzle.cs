@@ -44,6 +44,27 @@ namespace PuzzleSolvers
         ///     See <see cref="MinValue"/>.</param>
         /// <param name="maxValue">
         ///     See <see cref="MaxValue"/>.</param>
+        /// <remarks>
+        ///     When using this constructor, be sure to populate <see cref="Constraints"/> before running <see
+        ///     cref="Solve(int?, Random)"/>.</remarks>
+        /// <seealso cref="Puzzle(int, int, int, IEnumerable{Constraint}[])"/>
+        /// <seealso cref="Puzzle(int, int, int, IEnumerable{Constraint})"/>
+        public Puzzle(int size, int minValue, int maxValue)
+        {
+            Size = size;
+            MinValue = minValue;
+            MaxValue = maxValue;
+            Constraints = new List<Constraint>();
+        }
+
+        /// <summary>
+        ///     Constructor.</summary>
+        /// <param name="size">
+        ///     The number of cells in this puzzle. See <see cref="Size"/> for more information.</param>
+        /// <param name="minValue">
+        ///     See <see cref="MinValue"/>.</param>
+        /// <param name="maxValue">
+        ///     See <see cref="MaxValue"/>.</param>
         /// <param name="constraints">
         ///     A series of constraints for this puzzle.</param>
         /// <seealso cref="Puzzle(int, int, int, IEnumerable{Constraint}[])"/>

@@ -14,9 +14,9 @@ namespace PuzzleSolvers
     ///     puzzles.</remarks>
     public class SandwichUniquenessConstraint : CombinationsConstraint
     {
-        /// <summary>The first number that forms the edges of the sandwich.</summary>
+        /// <summary>One of the numbers that form the edges of the sandwich (the other is <see cref="Value2"/>).</summary>
         public int Value1 { get; private set; }
-        /// <summary>The second number that forms the edges of the sandwich.</summary>
+        /// <summary>One of the numbers that form the edges of the sandwich (the other is <see cref="Value1"/>).</summary>
         public int Value2 { get; private set; }
         /// <summary>The total that the sandwiched numbers must sum up to.</summary>
         public int Sum { get; private set; }
