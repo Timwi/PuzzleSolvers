@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace PuzzleSolvers
 {
@@ -22,11 +21,11 @@ namespace PuzzleSolvers
         {
             if (ix == AffectedCells[0])
                 for (var v = 0; v < takens[AffectedCells[1]].Length; v++)
-                    if (!IsValid(grid[ix.Value].Value, v + minValue))
+                    if (!IsValid(grid[ix.Value].Value + minValue, v + minValue))
                         takens[AffectedCells[1]][v] = true;
             if (ix == AffectedCells[1])
                 for (var v = 0; v < takens[AffectedCells[0]].Length; v++)
-                    if (!IsValid(v + minValue, grid[ix.Value].Value))
+                    if (!IsValid(v + minValue, grid[ix.Value].Value + minValue))
                         takens[AffectedCells[0]][v] = true;
             return null;
         }

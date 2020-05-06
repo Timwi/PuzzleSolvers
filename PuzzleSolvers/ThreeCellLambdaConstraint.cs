@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
@@ -40,9 +39,9 @@ namespace PuzzleSolvers
 
             for (var v = 0; v < takens[AffectedCells[unknown]].Length; v++)
                 if (!IsValid(
-                    grid[AffectedCells[0]] ?? (v + minValue),
-                    grid[AffectedCells[1]] ?? (v + minValue),
-                    grid[AffectedCells[2]] ?? (v + minValue)
+                    (grid[AffectedCells[0]] ?? v) + minValue,
+                    (grid[AffectedCells[1]] ?? v) + minValue,
+                    (grid[AffectedCells[2]] ?? v) + minValue
                 ))
                     takens[AffectedCells[unknown]][v] = true;
             return null;
