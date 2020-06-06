@@ -99,8 +99,8 @@ namespace PuzzleSolvers
 
         /// <summary>
         ///     Convenience constructor to allow the use of several helper methods such as <see cref="Constraint.Sudoku"/>,
-        ///     <see cref="Constraint.Givens(int?[])"/>, etc. The value <c>null</c> is also allowed and will simply be
-        ///     skipped.</summary>
+        ///     <see cref="Constraint.Givens(int?[], ConsoleColor?, ConsoleColor?)"/>, etc. The value <c>null</c> is also
+        ///     allowed and will simply be skipped.</summary>
         /// <seealso cref="Puzzle(int, int, int, IEnumerable{Constraint})"/>
         /// <seealso cref="Puzzle(int, int, int, Constraint[])"/>
         public Puzzle(int size, int minValue, int maxValue, params IEnumerable<Constraint>[] constraints)
