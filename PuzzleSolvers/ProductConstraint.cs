@@ -22,13 +22,13 @@ namespace PuzzleSolvers
                 return null;
 
             var productAlready = 1;
-            var done = true;
+            var cellsLeftToFill = 0;
             foreach (var cell in AffectedCells)
                 if (grid[cell] != null)
                     productAlready *= (grid[cell].Value + minValue);
                 else
-                    done = false;
-            if (done || (productAlready == 0 && Product == 0))
+                    cellsLeftToFill++;
+            if (cellsLeftToFill == 0 || (productAlready == 0 && Product == 0))
                 return null;
 
             var alreadyBroken = productAlready == 0 || (Product % productAlready != 0);
@@ -36,8 +36,16 @@ namespace PuzzleSolvers
             foreach (var cell in AffectedCells)
                 if (grid[cell] == null)
                     for (var v = 0; v < takens[cell].Length; v++)
-                        if (alreadyBroken || ((v + minValue) == 0 ? (Product != 0) : ((Product / productAlready) % (v + minValue) != 0)))
+                    {
+                        if (alreadyBroken)
                             takens[cell][v] = true;
+                        // The last remaining cell must have the exact required value
+                        else if (cellsLeftToFill == 1 && productAlready * (v + minValue) != Product)
+                            takens[cell][v] = true;
+                        // The remaining cells must be factors of whatever is left to multiply
+                        else if (cellsLeftToFill > 1 && (v + minValue) == 0 ? (Product != 0) : ((Product / productAlready) % (v + minValue) != 0))
+                            takens[cell][v] = true;
+                    }
             return null;
         }
     }
