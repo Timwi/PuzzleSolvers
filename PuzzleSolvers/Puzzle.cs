@@ -46,7 +46,7 @@ namespace PuzzleSolvers
         ///     See <see cref="MaxValue"/>.</param>
         /// <remarks>
         ///     When using this constructor, be sure to populate <see cref="Constraints"/> before running <see
-        ///     cref="Solve(int?, Random)"/>.</remarks>
+        ///     cref="Solve(SolverInstructions)"/>.</remarks>
         /// <seealso cref="Puzzle(int, int, int, IEnumerable{Constraint}[])"/>
         /// <seealso cref="Puzzle(int, int, int, IEnumerable{Constraint})"/>
         public Puzzle(int size, int minValue, int maxValue)
@@ -141,8 +141,17 @@ namespace PuzzleSolvers
         private int _numVals;
 
         /// <summary>Returns a lazy sequence containing the solutions for this puzzle.</summary>
-        public IEnumerable<int[]> Solve(int? showDebugOutput = null, Random randomizer = null)
+        public IEnumerable<int[]> Solve(SolverInstructions solverInstructions = null)
         {
+            if (solverInstructions != null && (solverInstructions.ExamineConstraints == null) != (solverInstructions.IntendedSolution == null))
+                throw new InvalidOperationException(@"solverInstructions.ExamineConstraints and solverInstructions.IntendedSolution must both be null or both be non-null.");
+            if (solverInstructions != null && solverInstructions.ExamineConstraints != null && solverInstructions.ExamineConstraints.Length == 0)
+                throw new InvalidOperationException(@"solverInstructions.ExamineConstraints cannot be an empty array.");
+            if (solverInstructions != null && solverInstructions.IntendedSolution != null && solverInstructions.IntendedSolution.Length != Size)
+                throw new InvalidOperationException(@"solverInstructions.IntendedSolution must have the same length as the size of the puzzle.");
+            if (solverInstructions != null && solverInstructions.UseLetters && Size > 26)
+                throw new InvalidOperationException(@"solverInstructions.UseLetters cannot be true when there are more than 26 cells in the puzzle.");
+
             _numVals = MaxValue - MinValue + 1;
             var cells = new int?[Size];
             var takens = new bool[Size][];
@@ -164,10 +173,10 @@ namespace PuzzleSolvers
                 foreach (var cell in constraint.AffectedCells ?? Enumerable.Range(0, Size))
                     numConstraintsPerCell[cell]++;
 
-            return solve(cells, takens, newConstraints, numConstraintsPerCell, showDebugOutput, randomizer).Select(solution => solution.Select(val => val + MinValue).ToArray());
+            return solve(cells, takens, newConstraints, numConstraintsPerCell, solverInstructions).Select(solution => solution.Select(val => val + MinValue).ToArray());
         }
 
-        private IEnumerable<int[]> solve(int?[] filledInValues, bool[][] takens, List<Constraint> constraints, int[] numConstraintsPerCell, int? showDebugOutput, Random randomizer, int recursionDepth = 0)
+        private IEnumerable<int[]> solve(int?[] filledInValues, bool[][] takens, List<Constraint> constraints, int[] numConstraintsPerCell, SolverInstructions instr, int recursionDepth = 0)
         {
             var fewestPossibleValues = int.MaxValue;
             var ix = -1;
@@ -195,7 +204,7 @@ namespace PuzzleSolvers
                 yield break;
             }
 
-            var startAt = randomizer != null ? randomizer.Next(0, takens[ix].Length) : 0;
+            var startAt = instr?.Randomizer?.Next(0, takens[ix].Length) ?? 0;
 
             for (var tVal = 0; tVal < takens[ix].Length; tVal++)
             {
@@ -203,7 +212,7 @@ namespace PuzzleSolvers
                 if (takens[ix][val])
                     continue;
 
-                if (showDebugOutput != null && recursionDepth < showDebugOutput.Value)
+                if (instr != null && instr.ShowContinuousProgress != null && recursionDepth < instr.ShowContinuousProgress.Value)
                 {
                     Console.CursorLeft = 0;
                     Console.CursorTop = recursionDepth;
@@ -223,7 +232,31 @@ namespace PuzzleSolvers
                 for (var i = 0; i < constraints.Count; i++)
                 {
                     var constraint = constraints[i];
+                    var doExamine = instr != null && instr.ExamineConstraints != null && instr.ExamineConstraints.Contains(constraints[i]);
+                    var intendedSolutionPossible = doExamine && instr.IntendedSolution.Select((v, cell) => filledInValues[cell] == v - MinValue || (filledInValues[cell] == null && !takensCopy[cell][v - MinValue])).All(b => b);
+                    var takensDebugCopy = intendedSolutionPossible ? takensCopy.Select(b => (bool[]) b.Clone()).ToArray() : null;
+
+                    // CALL THE CONSTRAINT
                     var newConstraints = constraint.MarkTakens(takensCopy, filledInValues, ix, MinValue, MaxValue);
+
+                    // If the intended solution was previously possible but not anymore, output the requested debug information
+                    if (intendedSolutionPossible && !instr.IntendedSolution.Select((v, cell) => filledInValues[cell] == v - MinValue || (filledInValues[cell] == null && !takensCopy[cell][v - MinValue])).All(b => b))
+                    {
+                        ConsoleUtil.WriteLine("Constraint {0/Magenta} {1/DarkMagenta} removed the intended solution:"
+                            .Color(ConsoleColor.White).Fmt(Array.IndexOf(instr.ExamineConstraints, constraints[i]), $@"({constraints[i].GetType().FullName})"));
+                        var numDigits = (Size - 1).ToString().Length;
+                        for (var cell = 0; cell < Size; cell++)
+                        {
+                            string valueId(int v) => instr.UseLetters ? ((char) ('A' + v)).ToString() : v.ToString();
+                            var cellLine = Enumerable.Range(0, MaxValue - MinValue + 1)
+                                .Select(v => valueId(v).Color(takensDebugCopy[cell][v] != takensCopy[cell][v] ? ConsoleColor.Red : takensCopy[cell][v] ? ConsoleColor.DarkGray : ConsoleColor.Yellow))
+                                .JoinColoredString(" ");
+                            var cellStr = cell.ToString().PadLeft(numDigits, ' ') + ". ";
+                            ConsoleUtil.WriteLine($"{cellStr.Color(cell == ix ? ConsoleColor.Cyan : ConsoleColor.DarkCyan)}{cellLine}   {(filledInValues[cell] == null ? "?".Color(ConsoleColor.DarkGreen) : valueId(filledInValues[cell].Value).Color(ConsoleColor.Green))}", null);
+                        }
+                        Console.WriteLine();
+                    }
+
                     if (newConstraints != null)
                     {
                         // A constraint changed. That means we definitely need a new array of constraints for the recursive call.
@@ -249,12 +282,12 @@ namespace PuzzleSolvers
                         constraintsCopy.Add(constraint);
                 }
 
-                foreach (var solution in solve(filledInValues, takensCopy, constraintsCopy ?? constraints, numConstraintsPerCell, showDebugOutput, randomizer, recursionDepth + 1))
+                foreach (var solution in solve(filledInValues, takensCopy, constraintsCopy ?? constraints, numConstraintsPerCell, instr, recursionDepth + 1))
                     yield return solution;
             }
             filledInValues[ix] = null;
 
-            if (showDebugOutput != null && recursionDepth < showDebugOutput.Value)
+            if (instr != null && instr.ShowContinuousProgress != null && recursionDepth < instr.ShowContinuousProgress.Value)
             {
                 Console.CursorLeft = 0;
                 Console.CursorTop = recursionDepth;

@@ -1,0 +1,30 @@
+﻿using System;
+
+namespace PuzzleSolvers
+{
+    /// <summary>
+    ///     Use this to instruct the puzzle solver (<see cref="Puzzle.Solve(SolverInstructions)"/>) to perform certain types
+    ///     of analysis for the debugging of constraint implementations.</summary>
+    public sealed class SolverInstructions
+    {
+        /// <summary>Shows the first n cells of the solver’s recursive process on the console.</summary>
+        public int? ShowContinuousProgress;
+        /// <summary>
+        ///     Uses a specific RNG to randomize the solver. When “solving” a puzzle with multiple solutions, this allows the
+        ///     solver to pick one at random.</summary>
+        public Random Randomizer;
+        /// <summary>
+        ///     When this and <see cref="IntendedSolution"/> are not <c>null</c>, the solver determines at which point during
+        ///     the solve process one of these constraints eliminates the intended solution. This is for debugging constraints
+        ///     that rule out solutions when they shouldn’t.</summary>
+        public Constraint[] ExamineConstraints;
+        /// <summary>
+        ///     See <see cref="ExamineConstraints"/>. This and <see cref="ExamineConstraints"/> must both be <c>null</c> or
+        ///     both be non-<c>null</c>.</summary>
+        public int[] IntendedSolution;
+        /// <summary>
+        ///     Only applies when <see cref="ExamineConstraints"/> is not <c>null</c>. Specifies that the debug output should
+        ///     use letters A–Z to identify the cells in a puzzle with 26 or fewer cells. Otherwise, numbers from 0 are used.</summary>
+        public bool UseLetters;
+    }
+}

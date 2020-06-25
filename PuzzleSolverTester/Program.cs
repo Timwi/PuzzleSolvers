@@ -19,7 +19,7 @@ namespace PuzzleSolverTester
                 new[] { new AntiKnightConstraint(9, 9, toroidal: true) },
                 Enumerable.Range(0, 9).Select(i => new UniquenessConstraint(area.Select(cell => (cell % 9 + i) % 9 + 9 * ((cell / 9 + 2 * i) % 9)), backgroundColor: (ConsoleColor) (i + (i >= 6 ? 2 : 1)))));
 
-            foreach (var solution in puzzle.Solve(showDebugOutput: null))
+            foreach (var solution in puzzle.Solve())
             {
                 ConsoleUtil.WriteLine(puzzle.SudokuSolutionToConsoleString(solution));
                 Console.WriteLine($"Took {(DateTime.UtcNow - startTime).TotalSeconds:0.0} sec");
