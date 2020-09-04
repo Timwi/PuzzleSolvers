@@ -37,12 +37,8 @@ namespace PuzzleSolvers
         ///     The minimum value of numbers in the grid for this puzzle.</param>
         /// <param name="maxValue">
         ///     The maximum value of numbers in the grid for this puzzle.</param>
-        /// <param name="color">
-        ///     See <see cref="Constraint.CellColor"/>.</param>
-        /// <param name="backgroundColor">
-        ///     See <see cref="Constraint.CellBackgroundColor"/>.</param>
-        public SandwichWraparoundUniquenessConstraint(int value1, int value2, int sum, IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9, ConsoleColor? color = null, ConsoleColor? backgroundColor = null)
-            : base(affectedCells, generateCombinations(minValue, maxValue, value1, value2, sum, affectedCells.ToArray()), color, backgroundColor)
+        public SandwichWraparoundUniquenessConstraint(int value1, int value2, int sum, IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9)
+            : base(affectedCells, generateCombinations(minValue, maxValue, value1, value2, sum, affectedCells.ToArray()))
         {
             Value1 = value1;
             Value2 = value2;

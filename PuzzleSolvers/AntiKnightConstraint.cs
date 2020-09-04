@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace PuzzleSolvers
@@ -31,12 +30,8 @@ namespace PuzzleSolvers
         ///     See <see cref="AffectedValues"/>.</param>
         /// <param name="toroidal">
         ///     See <see cref="Toroidal"/>.</param>
-        /// <param name="color">
-        ///     See <see cref="Constraint.CellColor"/>.</param>
-        /// <param name="backgroundColor">
-        ///     See <see cref="Constraint.CellBackgroundColor"/>.</param>
-        public AntiKnightConstraint(int gridWidth, int gridHeight, int[] affectedValues = null, bool toroidal = false, ConsoleColor? color = null, ConsoleColor? backgroundColor = null)
-            : base(Enumerable.Range(0, gridWidth * gridHeight), color, backgroundColor)
+        public AntiKnightConstraint(int gridWidth, int gridHeight, int[] affectedValues = null, bool toroidal = false)
+            : base(Enumerable.Range(0, gridWidth * gridHeight))
         {
             GridWidth = gridWidth;
             GridHeight = gridHeight;

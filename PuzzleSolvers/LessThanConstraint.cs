@@ -16,8 +16,14 @@ namespace PuzzleSolvers
         public new int[] AffectedCells => base.AffectedCells;
 
         /// <summary>Constructor.</summary>
-        public LessThanConstraint(IEnumerable<int> affectedCells, ConsoleColor? color = null, ConsoleColor? backgroundColor = null) : base(affectedCells, color, backgroundColor)
+        public LessThanConstraint(IEnumerable<int> affectedCells) : base(affectedCells) { }
+
+        public static IEnumerable<LessThanConstraint> FromString(string representation, int gridWidth = 9)
         {
+            if (representation == null)
+                throw new ArgumentNullException(nameof(representation));
+            foreach (var piece in representation.Split(';'))
+                yield return new LessThanConstraint(TranslateCoordinates(piece, gridWidth));
         }
 
         /// <summary>Override; see base.</summary>

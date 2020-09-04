@@ -11,8 +11,8 @@ namespace PuzzleSolvers
         public Func<int, int, int, bool> IsValid { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public ThreeCellLambdaConstraint(int affectedCell1, int affectedCell2, int affectedCell3, Func<int, int, int, bool> isValid, ConsoleColor? color = null, ConsoleColor? backgroundColor = null)
-            : base(new[] { affectedCell1, affectedCell2, affectedCell3 }, color, backgroundColor)
+        public ThreeCellLambdaConstraint(int affectedCell1, int affectedCell2, int affectedCell3, Func<int, int, int, bool> isValid)
+            : base(new[] { affectedCell1, affectedCell2, affectedCell3 })
         {
             IsValid = isValid;
         }

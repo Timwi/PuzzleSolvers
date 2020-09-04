@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace PuzzleSolvers
 {
@@ -9,6 +10,10 @@ namespace PuzzleSolvers
     {
         /// <summary>Shows the first n cells of the solver’s recursive process on the console.</summary>
         public int? ShowContinuousProgress;
+        /// <summary>
+        ///     Only show candidate values for each cell; useful when cells can have many possible values but the majority of
+        ///     them are not applicable most of the time.</summary>
+        public bool ShowContinuousProgressShortened;
         /// <summary>
         ///     Uses a specific RNG to randomize the solver. When “solving” a puzzle with multiple solutions, this allows the
         ///     solver to pick one at random.</summary>

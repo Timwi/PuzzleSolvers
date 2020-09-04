@@ -27,12 +27,8 @@ namespace PuzzleSolvers
         ///     The height of the grid.</param>
         /// <param name="affectedValues">
         ///     If not <c>null</c>, the constraint is limited to these values in the grid.</param>
-        /// <param name="color">
-        ///     See <see cref="Constraint.CellColor"/>.</param>
-        /// <param name="backgroundColor">
-        ///     See <see cref="Constraint.CellBackgroundColor"/>.</param>
-        public NoConsecutiveConstraint(int width, int height, int[] affectedValues = null, ConsoleColor? color = null, ConsoleColor? backgroundColor = null)
-            : base(Enumerable.Range(0, width * height), color, backgroundColor)
+        public NoConsecutiveConstraint(int width, int height, int[] affectedValues = null)
+            : base(Enumerable.Range(0, width * height))
         {
             AffectedValues = affectedValues;
             GridWidth = width;

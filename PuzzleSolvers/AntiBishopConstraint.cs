@@ -24,12 +24,8 @@ namespace PuzzleSolvers
         ///     See <see cref="GridHeight"/>.</param>
         /// <param name="affectedValues">
         ///     See <see cref="AffectedValues"/>.</param>
-        /// <param name="color">
-        ///     See <see cref="Constraint.CellColor"/>.</param>
-        /// <param name="backgroundColor">
-        ///     See <see cref="Constraint.CellBackgroundColor"/>.</param>
-        public AntiBishopConstraint(int gridWidth, int gridHeight, int[] affectedValues = null, ConsoleColor? color = null, ConsoleColor? backgroundColor = null)
-            : base(Enumerable.Range(0, gridWidth * gridHeight), color, backgroundColor)
+        public AntiBishopConstraint(int gridWidth, int gridHeight, int[] affectedValues = null)
+            : base(Enumerable.Range(0, gridWidth * gridHeight))
         {
             GridWidth = gridWidth;
             GridHeight = gridHeight;

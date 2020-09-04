@@ -10,8 +10,8 @@ namespace PuzzleSolvers
         public Func<int, int, bool> IsValid { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public TwoCellLambdaConstraint(int affectedCell1, int affectedCell2, Func<int, int, bool> isValid, ConsoleColor? color = null, ConsoleColor? backgroundColor = null)
-            : base(new[] { affectedCell1, affectedCell2 }, color, backgroundColor)
+        public TwoCellLambdaConstraint(int affectedCell1, int affectedCell2, Func<int, int, bool> isValid)
+            : base(new[] { affectedCell1, affectedCell2 })
         {
             IsValid = isValid;
         }

@@ -16,7 +16,7 @@ namespace PuzzleSolvers
         public CustomConstraint Lambda { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public LambdaConstraint(CustomConstraint lambda, IEnumerable<int> affectedCells = null, ConsoleColor? color = null, ConsoleColor? backgroundColor = null) : base(affectedCells, color, backgroundColor)
+        public LambdaConstraint(CustomConstraint lambda, IEnumerable<int> affectedCells = null) : base(affectedCells)
         {
             Lambda = lambda;
         }

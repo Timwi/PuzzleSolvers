@@ -13,7 +13,7 @@ namespace PuzzleSolvers
         public OddEvenType Type { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public OddEvenConstraint(OddEvenType type, IEnumerable<int> affectedCells, ConsoleColor? color = null, ConsoleColor? backgroundColor = null) : base(affectedCells, color, backgroundColor)
+        public OddEvenConstraint(OddEvenType type, IEnumerable<int> affectedCells) : base(affectedCells)
         {
             Type = type;
         }

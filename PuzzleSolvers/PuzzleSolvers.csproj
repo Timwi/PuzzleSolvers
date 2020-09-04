@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="SolveState.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\RT.Util\RT.Util.Core\RT.Util.Core.csproj" />
   </ItemGroup>
 

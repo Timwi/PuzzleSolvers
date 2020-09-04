@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
@@ -14,7 +12,7 @@ namespace PuzzleSolvers
         public int[][] Combinations { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public CombinationsConstraint(IEnumerable<int> affectedCells, IEnumerable<int[]> combinations, ConsoleColor? color = null, ConsoleColor? backgroundColor = null) : base(affectedCells, color, backgroundColor)
+        public CombinationsConstraint(IEnumerable<int> affectedCells, IEnumerable<int[]> combinations) : base(affectedCells)
         {
             Combinations = (combinations as int[][]) ?? combinations.ToArray();
         }
@@ -22,19 +20,22 @@ namespace PuzzleSolvers
         /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
         {
-            if (ix != null && !AffectedCells.Contains(ix.Value))
+            if (ix == null)
+            {
+                for (var i = 0; i < AffectedCells.Length; i++)
+                    if (grid[AffectedCells[i]] == null)
+                        for (var v = 0; v < takens[AffectedCells[i]].Length; v++)
+                            if (!Combinations.Any(cmb => cmb[i] == v + minValue))
+                                takens[AffectedCells[i]][v] = true;
                 return null;
-
-            var newCombinations = Combinations
-                .Where(cmb => Enumerable.Range(0, AffectedCells.Length).All(i => grid[AffectedCells[i]] == null ? !takens[AffectedCells[i]][cmb[i] - minValue] : (grid[AffectedCells[i]].Value == cmb[i] - minValue)))
-                .ToArray();
-            for (var i = 0; i < AffectedCells.Length; i++)
-                if (grid[AffectedCells[i]] == null)
-                    for (var v = 0; v < takens[AffectedCells[i]].Length; v++)
-                        if (!newCombinations.Any(cmb => cmb[i] == v + minValue))
-                            takens[AffectedCells[i]][v] = true;
-
-            return ix == null ? null : new[] { new CombinationsConstraint(AffectedCells, newCombinations, CellColor, CellBackgroundColor) };
+            }
+            else
+            {
+                var newCombinations = ix == null ? null : Combinations
+                    .Where(cmb => Enumerable.Range(0, AffectedCells.Length).All(i => grid[AffectedCells[i]] == null ? !takens[AffectedCells[i]][cmb[i] - minValue] : (grid[AffectedCells[i]].Value == cmb[i] - minValue)))
+                    .ToArray();
+                return new[] { new CombinationsConstraint(AffectedCells, newCombinations) };
+            }
         }
     }
 }

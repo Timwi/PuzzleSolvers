@@ -12,7 +12,7 @@ namespace PuzzleSolvers
         public new int[] AffectedCells => base.AffectedCells;
 
         /// <summary>Constructor.</summary>
-        public UniquenessConstraint(IEnumerable<int> affectedCells, ConsoleColor? color = null, ConsoleColor? backgroundColor = null) : base(affectedCells, color, backgroundColor)
+        public UniquenessConstraint(IEnumerable<int> affectedCells) : base(affectedCells)
         {
         }
 

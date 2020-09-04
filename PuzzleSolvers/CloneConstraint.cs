@@ -17,7 +17,7 @@ namespace PuzzleSolvers
         public int[] Area2 { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public CloneConstraint(IEnumerable<int> area1, IEnumerable<int> area2, ConsoleColor? color = null, ConsoleColor? backgroundColor = null) : base(area1.Concat(area2), color, backgroundColor)
+        public CloneConstraint(IEnumerable<int> area1, IEnumerable<int> area2) : base(area1.Concat(area2))
         {
             if (area1 == null)
                 throw new ArgumentNullException(nameof(area1));
