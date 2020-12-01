@@ -30,7 +30,7 @@ namespace PuzzleSolvers
             if (regions.Length != sideLength || regions.Any(r => r.Length != sideLength))
                 throw new ArgumentException("The number of regions in a Jigsaw Sudoku, and the size of each region, must equal the side length of the grid.", nameof(regions));
             for (var r = 0; r < regions.Length; r++)
-                AddConstraint(new UniquenessConstraint(regions[r]), null, (ConsoleColor) (r % 7 + 1));
+                AddConstraint(new UniquenessConstraint(regions[r]), null, (ConsoleColor) (r % 6 + 1));
         }
 
         /// <summary>
