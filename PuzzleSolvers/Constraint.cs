@@ -33,7 +33,8 @@ namespace PuzzleSolvers
         /// <param name="grid">
         ///     The incomplete grid at the current point during the algorithm. Implementations must not modify this array. In
         ///     order to communicate that a cell must have a specific value, mark all other possible values on that cell as
-        ///     taken in the <paramref name="takens"/> array.</param>
+        ///     taken in the <paramref name="takens"/> array. The values are 0-based; in a standard Sudoku, values 0 to 8 are
+        ///     used to indicate the numbers 1 to 9.</param>
         /// <param name="ix">
         ///     If <c>null</c>, this method was called either at the very start of the algorithm or because this constraint
         ///     was returned from another constraint. In such a case, the method must examine all filled-in values in the
@@ -41,8 +42,8 @@ namespace PuzzleSolvers
         ///     name="takens"/> based only on the value in that square.</param>
         /// <param name="minValue">
         ///     The minimum value that squares can have in this puzzle. For standard Sudoku, this is 1. This is also the
-        ///     difference between the real-life values in the grid and the indexes used in the <paramref name="takens"/>
-        ///     array.</param>
+        ///     difference between the real-life values in the grid and the values stored in <paramref name="grid"/> as well
+        ///     as the indexes used in the <paramref name="takens"/> array.</param>
         /// <param name="maxValue">
         ///     The maximum value that squares can have in this puzzle. For standard Sudoku, this is 9.</param>
         /// <returns>

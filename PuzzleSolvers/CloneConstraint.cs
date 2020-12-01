@@ -40,7 +40,7 @@ namespace PuzzleSolvers
                 {
                     var otherIx = p1 == -1 ? Area1[p2] : Area2[p1];
                     for (var v = 0; v < takens[otherIx].Length; v++)
-                        if (v + minValue != grid[ix.Value].Value)
+                        if (v != grid[ix.Value].Value)
                             takens[otherIx][v] = true;
                 }
             }
