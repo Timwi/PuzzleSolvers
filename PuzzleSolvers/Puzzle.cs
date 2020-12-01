@@ -65,13 +65,17 @@ namespace PuzzleSolvers
         ///     The solution to be colored.</param>
         /// <param name="width">
         ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
-        public ConsoleColoredString SolutionToConsole(int?[] solution, int width = 9) => solution.Split(width).Select((chunk, row) => chunk.Select((val, col) =>
+        public ConsoleColoredString SolutionToConsole(int?[] solution, int width = 9)
         {
-            var firstConstraint = Constraints.FirstOrDefault(c => c.AffectedCells.Contains(col + width * row) && ConstraintColors.ContainsKey(c));
-            var (foreground, background) = firstConstraint == null ? default : ConstraintColors.Get(firstConstraint, default);
-            return ((val == null ? "?" : val.Value.ToString()) + " ").Color(val == null ? ConsoleColor.DarkGray : foreground, background);
-        })
-            .JoinColoredString()).JoinColoredString("\n");
+            var digits = solution.Max().ToString().Length + 1;
+            return solution.Split(width).Select((chunk, row) => chunk.Select((val, col) =>
+            {
+                var firstConstraint = Constraints.FirstOrDefault(c => c.AffectedCells.Contains(col + width * row) && ConstraintColors.ContainsKey(c));
+                var (foreground, background) = firstConstraint == null ? default : ConstraintColors.Get(firstConstraint, default);
+                return ((val == null ? "?" : val.Value.ToString()).PadLeft(digits)).Color(val == null ? ConsoleColor.DarkGray : foreground, background);
+            })
+                .JoinColoredString()).JoinColoredString("\n");
+        }
 
         /// <summary>
         ///     Converts a Sudoku solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered by some
