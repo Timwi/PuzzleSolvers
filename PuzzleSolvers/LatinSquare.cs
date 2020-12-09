@@ -5,6 +5,12 @@ namespace PuzzleSolvers
     /// <summary>Describes a standard 9×9 Sudoku puzzle.</summary>
     public class LatinSquare : Puzzle
     {
+        /// <summary>
+        ///     Constructor.</summary>
+        /// <param name="sideLength">
+        ///     Width and height of the Latin square.</param>
+        /// <param name="minValue">
+        ///     Minimum value to use in the grid. The values will be consecutive integers starting from this one.</param>
         public LatinSquare(int sideLength, int minValue) : base(sideLength * sideLength, minValue, minValue + sideLength - 1)
         {
             for (var row = 0; row < sideLength; row++)

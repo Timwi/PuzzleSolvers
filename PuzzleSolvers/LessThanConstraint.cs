@@ -18,6 +18,13 @@ namespace PuzzleSolvers
         /// <summary>Constructor.</summary>
         public LessThanConstraint(IEnumerable<int> affectedCells) : base(affectedCells) { }
 
+        /// <summary>
+        ///     Generates multiple <see cref="LessThanConstraint"/> from a semicolon-separated list of coordinate regions
+        ///     represented in the format understood by <see cref="Constraint.TranslateCoordinates(string, int)"/>.</summary>
+        /// <param name="representation">
+        ///     The string representation of the set of regions.</param>
+        /// <param name="gridWidth">
+        ///     The width of the grid. If not specified, the default value is 9.</param>
         public static IEnumerable<LessThanConstraint> FromString(string representation, int gridWidth = 9)
         {
             if (representation == null)
