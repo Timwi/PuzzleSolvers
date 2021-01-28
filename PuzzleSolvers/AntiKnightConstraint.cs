@@ -40,7 +40,7 @@ namespace PuzzleSolvers
         /// <param name="toroidal">
         ///     See <see cref="Toroidal"/>.</param>
         public AntiKnightConstraint(int gridWidth, int gridHeight, int[] affectedValues = null, IEnumerable<int> affectedCells = null, bool toroidal = false)
-            : base(affectedCells?.SelectMany(cell => knightsMoves(cell, gridWidth, gridHeight, toroidal).Concat(cell)).Distinct())
+            : base(affectedCells?.SelectMany(cell => KnightsMoves(cell, gridWidth, gridHeight, toroidal).Concat(cell)).Distinct())
         {
             GridWidth = gridWidth;
             GridHeight = gridHeight;
@@ -53,7 +53,18 @@ namespace PuzzleSolvers
         private static readonly int[] _dys1 = new[] { -2, 2 };
         private static readonly int[] _dys2 = new[] { -1, 1 };
 
-        private static IEnumerable<int> knightsMoves(int cell, int gridWidth, int gridHeight, bool toroidal)
+        /// <summary>
+        ///     Returns the set of cells that are a knight’s move away from the specified cell.</summary>
+        /// <param name="cell">
+        ///     The cell from which to generate knight’s moves.</param>
+        /// <param name="gridWidth">
+        ///     Width of the grid.</param>
+        /// <param name="gridHeight">
+        ///     Height of the grid.</param>
+        /// <param name="toroidal">
+        ///     If <c>true</c>, the grid is considered to be toroidal, i.e., the knight’s move can leave the grid and reenter
+        ///     on the opposite edge.</param>
+        public static IEnumerable<int> KnightsMoves(int cell, int gridWidth, int gridHeight, bool toroidal)
         {
             var x = cell % gridWidth;
             var y = cell / gridWidth;
@@ -72,7 +83,7 @@ namespace PuzzleSolvers
                 var cell = ix ?? (base.AffectedCells != null ? base.AffectedCells[cellIx] : cellIx);
                 if (grid[cell] == null || (AffectedValues != null && !AffectedValues.Contains(grid[cell].Value + minValue)))
                     continue;
-                foreach (var knightsCell in knightsMoves(cell, GridWidth, GridHeight, Toroidal))
+                foreach (var knightsCell in KnightsMoves(cell, GridWidth, GridHeight, Toroidal))
                     if (AffectedCells == null || AffectedCells.Contains(knightsCell) || AffectedCells.Contains(cell))
                         takens[knightsCell][grid[cell].Value] = true;
             }
