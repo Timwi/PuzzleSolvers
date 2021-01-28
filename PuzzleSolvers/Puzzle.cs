@@ -70,7 +70,7 @@ namespace PuzzleSolvers
             var digits = solution.Max().ToString().Length + 1;
             return solution.Split(width).Select((chunk, row) => chunk.Select((val, col) =>
             {
-                var firstConstraint = Constraints.FirstOrDefault(c => c.AffectedCells.Contains(col + width * row) && ConstraintColors.ContainsKey(c));
+                var firstConstraint = Constraints.FirstOrDefault(c => c.AffectedCells != null && c.AffectedCells.Contains(col + width * row) && ConstraintColors.ContainsKey(c));
                 var (foreground, background) = firstConstraint == null ? default : ConstraintColors.Get(firstConstraint, default);
                 return ((val == null ? "?" : val.Value.ToString()).PadLeft(digits)).Color(val == null ? ConsoleColor.DarkGray : foreground, background);
             })

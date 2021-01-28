@@ -1,9 +1,7 @@
 ﻿using System;
-using RT.Util;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
@@ -16,7 +14,7 @@ namespace PuzzleSolvers
         /// <summary>
         ///     Constructor for derived types.</summary>
         /// <param name="affectedCells">
-        ///     The set of cells affected by this constraint.</param>
+        ///     The set of cells affected by this constraint, or <c>null</c> if it affects all of them.</param>
         protected Constraint(IEnumerable<int> affectedCells)
         {
             AffectedCells = affectedCells?.ToArray();
