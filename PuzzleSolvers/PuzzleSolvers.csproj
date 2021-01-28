@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\RT.Util\RT.Util.Core\RT.Util.Core.csproj" />
+    <PackageReference Include="RT.Util.Core" Version="2.0.1681" />
   </ItemGroup>
 
 </Project>
