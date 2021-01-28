@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using RT.Util;
 using RT.Util.Consoles;
 using RT.Util.ExtensionMethods;
 
@@ -16,12 +17,14 @@ namespace PuzzleSolvers
         ///     Width of the grid.</param>
         /// <param name="grid">
         ///     Givens. The height of the grid is calculated from the array’s length and <paramref name="w"/>.</param>
+        /// <param name="debugOutput">
+        ///     Outputs information to the console as the algorithm progresses.</param>
         /// <returns>
         ///     Each solution returned is represented as the filled grid. To get a list of the polyominoes instead, use <see
-        ///     cref="SolveP(int, int?[])"/>.</returns>
-        public static IEnumerable<int[]> Solve(int w, int?[] grid)
+        ///     cref="SolveP(int, int?[], bool)"/>.</returns>
+        public static IEnumerable<int[]> Solve(int w, int?[] grid, bool debugOutput = false)
         {
-            foreach (var polyominoes in SolveP(w, grid))
+            foreach (var polyominoes in SolveP(w, grid, debugOutput))
             {
                 var newGrid = new int[grid.Length];
                 foreach (var polyomino in polyominoes)
@@ -37,10 +40,12 @@ namespace PuzzleSolvers
         ///     Width of the grid.</param>
         /// <param name="grid">
         ///     Givens. The height of the grid is calculated from the array’s length and <paramref name="w"/>.</param>
+        /// <param name="debugOutput">
+        ///     Outputs information to the console as the algorithm progresses.</param>
         /// <returns>
         ///     Each solution returned is represented as a set of polyominoes. Each polyomino is an array of grid locations.
         ///     The size of the polyomino determines the number.</returns>
-        public static IEnumerable<int[][]> SolveP(int w, int?[] grid)
+        public static IEnumerable<int[][]> SolveP(int w, int?[] grid, bool debugOutput = false)
         {
             if (grid == null)
                 throw new ArgumentNullException(nameof(grid));
@@ -80,7 +85,7 @@ namespace PuzzleSolvers
                 }
             }
 
-            IEnumerable<int[][]> recurseFillomino(int?[] thisGrid, int[][] polysSoFar, List<(int[] cells, int desiredSize)> allPolys)
+            IEnumerable<int[][]> recurseFillomino(int?[] thisGrid, int[][] polysSoFar, List<(int[] cells, int desiredSize, int[][] allPossibilities)> allPolys, bool debugOut)
             {
                 shortcut:
                 if (polysSoFar.Length > 0)
@@ -123,16 +128,18 @@ namespace PuzzleSolvers
                         Console.WriteLine(w * h);
                         Console.WriteLine();
                     }
+
                     var maxLength = thisGrid.Count(ch => ch == null);
+
                     for (var size = 1; size <= maxLength; size++)
                     {
-                        if (getAdj(firstEmptyCell).All(cell => thisGrid[cell] == null || thisGrid[cell].Value != size))
-                        {
-                            var newGrid = thisGrid.ToArray();
-                            newGrid[firstEmptyCell] = size;
-                            foreach (var solution in recurseFillomino(newGrid, polysSoFar, new List<(int[] cells, int desiredSize)> { (new[] { firstEmptyCell }, size) }))
-                                yield return solution;
-                        }
+                        var possibilities = enumeratePolyominoes(thisGrid, new[] { firstEmptyCell }, size, new int[0]).ToArray();
+                        if (possibilities.Length == 0)
+                            continue;
+                        var newGrid = thisGrid.ToArray();
+                        newGrid[firstEmptyCell] = size;
+                        foreach (var solution in recurseFillomino(newGrid, polysSoFar, new List<(int[] cells, int desiredSize, int[][] allPossibilities)> { (new[] { firstEmptyCell }, size, possibilities) }, false))
+                            yield return solution;
                     }
                     yield break;
                 }
@@ -144,8 +151,7 @@ namespace PuzzleSolvers
 
                 for (var polyIx = 0; polyIx < allPolys.Count; polyIx++)
                 {
-                    var (polyomino, polySize) = allPolys[polyIx];
-                    var poss = enumeratePolyominoes(thisGrid, polyomino, polySize, new int[0]).ToArray();
+                    var (polyomino, polySize, poss) = allPolys[polyIx];
                     if (poss.Length == 0)
                         yield break;
                     if (poss.Length == 1)
@@ -155,6 +161,13 @@ namespace PuzzleSolvers
                             thisGrid[possCell] = polySize;
                         allPolys.RemoveAt(polyIx);
                         allPolys.RemoveAll(poly => poly.cells.Intersect(poss[0]).Any() || (poly.desiredSize == poss[0].Length && poly.cells.SelectMany(c => getAdj(c)).Intersect(poss[0]).Any()));
+                        for (var i = 0; i < allPolys.Count; i++)
+                        {
+                            var (cells, desiredSize, allPossibilities) = allPolys[i];
+                            allPolys[i] = (cells, desiredSize, allPossibilities.Where(poly => !poly.Intersect(poss[0]).Any() && (desiredSize != poss[0].Length || !poly.SelectMany(c => getAdj(c)).Intersect(poss[0]).Any())).ToArray());
+                            if (allPolys[i].allPossibilities.Length == 0)
+                                yield break;
+                        }
                         goto shortcut;
                     }
                     if (polyIx == 0 || poss.Length < bestPossibleCompletions.Length)
@@ -166,24 +179,33 @@ namespace PuzzleSolvers
                     }
                 }
 
-                foreach (var poss in bestPossibleCompletions)
+                for (var possIx = 0; possIx < bestPossibleCompletions.Length; possIx++)
                 {
+                    var poss = bestPossibleCompletions[possIx];
                     var newGrid = thisGrid.ToArray();
                     foreach (var possCell in poss)
                         newGrid[possCell] = bestPolySize;
+                    if (debugOut)
+                        Console.WriteLine($"{new string(' ', new StackTrace().FrameCount)}Trying ({possIx}/{bestPossibleCompletions.Length}): {bestPolySize} at {poss.JoinString("+")}  \r");
                     foreach (var result in recurseFillomino(newGrid,
                         polysSoFar: polysSoFar.Insert(polysSoFar.Length, poss),
-                        allPolys: allPolys.Where((poly, ix) => ix != bestIx && !poly.cells.Intersect(poss).Any() && (poly.desiredSize != bestPolySize || !poly.cells.SelectMany(c => getAdj(c)).Intersect(poss).Any())).ToList()))
+                        allPolys: allPolys
+                            .Where((poly, ix) => ix != bestIx && !poly.cells.Intersect(poss).Any() && (poly.desiredSize != bestPolySize || !poly.cells.SelectMany(c => getAdj(c)).Intersect(poss).Any()))
+                            .Select(tup => (tup.cells, tup.desiredSize, tup.allPossibilities.Where(poly => !poly.Intersect(poss).Any() && (tup.desiredSize != poss.Length || !poly.SelectMany(c => getAdj(c)).Intersect(poss).Any())).ToArray()))
+                            .ToList(),
+                        debugOut: debugOut))
                         yield return result;
+                    if (debugOut)
+                        Console.CursorTop -= 1;
                 }
+                Console.Write(new string(' ', Console.BufferWidth - 1) + "\r");
             }
 
-            // Create a list of all incomplete polyominoes hinted by the givens. Each contiguous set of equal givens creates a single entry here.
-            // Non-contiguous ones will generate separate entries, but that doesn’t mean that the algorithm will assume that they’re separate polyominoes in the final solution.
-            var allPolyominoes = new List<(int[] cells, int desiredSize)>();
+            // Find all contiguous areas of equal givens
+            var allAreas = new List<(int[] givenCells, int desiredSize)>();
             for (var cell = 0; cell < grid.Length; cell++)
             {
-                if (grid[cell] == null || allPolyominoes.Any(p => p.cells.Contains(cell)))
+                if (grid[cell] == null || allAreas.Any(p => p.givenCells.Contains(cell)))
                     continue;
 
                 var polyomino = new HashSet<int> { cell };
@@ -194,9 +216,22 @@ namespace PuzzleSolvers
                     if (polyomino.Count == prevCount)
                         break;
                 }
-                allPolyominoes.Add((polyomino.ToArray(), grid[cell].Value));
+                allAreas.Add((polyomino.ToArray(), grid[cell].Value));
             }
-            return recurseFillomino(grid.ToArray(), new int[0][], allPolyominoes);
+
+            // Find all possible polyominoes that could be placed
+            var allPolyominoes = allAreas
+                .ParallelSelect(Environment.ProcessorCount, tup =>
+                {
+                    var ret = (tup.givenCells, tup.desiredSize, allPossibilities: enumeratePolyominoes(grid, tup.givenCells, tup.desiredSize, new int[0]).ToArray());
+                    if (debugOutput)
+                        lock (allAreas)
+                            Console.WriteLine($"{tup.desiredSize} at {tup.givenCells.JoinString("+")} has {ret.allPossibilities.Length} possibilities");
+                    return ret;
+                })
+                .ToList();
+
+            return recurseFillomino(grid.ToArray(), new int[0][], allPolyominoes, debugOutput);
         }
     }
 }
