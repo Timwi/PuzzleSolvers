@@ -4,7 +4,7 @@ using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
-    /// <summary>Can be used to describe any constraint that applies to the whole puzzle using a lambda expression.</summary>
+    /// <summary>Constrains three cells to values that satisfy a lambda expression.</summary>
     public sealed class ThreeCellLambdaConstraint : Constraint
     {
         /// <summary>A function that determines whether a set of values is valid in the relevant cells.</summary>

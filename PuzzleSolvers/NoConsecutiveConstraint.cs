@@ -71,21 +71,13 @@ namespace PuzzleSolvers
                 if (grid[cell] == null || (AffectedValues != null && !AffectedValues.Contains(grid[cell].Value + minValue)))
                     continue;
 
-                //foreach (var adjacentCell in adjacentCells(cell, GridWidth, GridHeight, IncludeDiagonals))
-                //{
-                //    if (grid[cell].Value > 0 && (AffectedValues == null || AffectedValues.Contains(grid[cell].Value - 1 + minValue)))
-                //        takens[adjacentCell][grid[cell].Value - 1] = true;
-                //    if (grid[cell].Value < takens[adjacentCell].Length - 1 && (AffectedValues == null || AffectedValues.Contains(grid[cell].Value + 1 + minValue)))
-                //        takens[adjacentCell][grid[cell].Value + 1] = true;
-                //}
-
                 var x = cell % GridWidth;
                 var y = cell / GridWidth;
 
                 for (var dx = -1; dx <= 1; dx++)
                     if (x + dx >= 0 && x + dx < GridWidth)
-                        for (var dy = dx == 0 ? -1 : 0; dy <= (dx == 0 ? 1 : 0); dy++)
-                            if (y + dy >= 0 && y + dy < GridHeight)
+                        for (var dy = -1; dy <= 1; dy++)
+                            if ((dx == 0 || dy == 0 || IncludeDiagonals) && (dx != 0 || dy != 0) && y + dy >= 0 && y + dy < GridHeight)
                             {
                                 var tIx = (x + dx) + GridWidth * (y + dy);
                                 if (grid[cell].Value > 0 && (AffectedValues == null || AffectedValues.Contains(grid[cell].Value - 1 + minValue)))
