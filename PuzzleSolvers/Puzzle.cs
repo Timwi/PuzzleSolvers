@@ -195,6 +195,29 @@ namespace PuzzleSolvers
         }
 
         /// <summary>
+        ///     Adds a range of <see cref="GivenConstraint"/>s from the specified array representation.</summary>
+        /// <param name="givens">
+        ///     An array containing integers and <c>null</c> values. Each non-<c>null</c> value translates to a given for the
+        ///     cell in the same position.</param>
+        /// <param name="foreground">
+        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        /// <param name="background">
+        ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        public Puzzle AddGivens(int?[] givens, ConsoleColor? foreground = null, ConsoleColor? background = null)
+        {
+            if (givens == null)
+                throw new ArgumentNullException(nameof(givens));
+            if (givens.Length > GridSize)
+                throw new ArgumentException("The length of ‘givens’ cannot be greater than the size of the puzzle.", nameof(givens));
+            if (!givens.All(val => val == null || (val >= MinValue && val <= MaxValue)))
+                throw new ArgumentException("‘givens’ must contain only values within the range given by MinValue and MaxValue.", "givens");
+            for (var i = 0; i < givens.Length; i++)
+                if (givens[i] != null)
+                    AddConstraint(new GivenConstraint(i, givens[i].Value), foreground, background);
+            return this;
+        }
+
+        /// <summary>
         ///     Adds a cage (region) for a Killer Sudoku. This is just a <see cref="SumConstraint"/> and a <see
         ///     cref="UniquenessConstraint"/> for the same region.</summary>
         /// <param name="sum">
