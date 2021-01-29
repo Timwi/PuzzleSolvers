@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace PuzzleSolvers
@@ -15,11 +14,11 @@ namespace PuzzleSolvers
         ///     contains a single digit, the constraint is entirely ineffectual.</summary>
         public int[] AffectedValues { get; private set; }
         /// <summary>
-        ///     Optionally specifies a limited set of cells that are affected by the no-consecutive constraint.</summary>
+        ///     Optionally specifies a limited set of cells on which the no-consecutive constraint is enforced.</summary>
         /// <remarks>
         ///     Note this differs from <see cref="Constraint.AffectedCells"/> as that will contain all affected cells plus
         ///     those that are adjacent to them.</remarks>
-        public new int[] AffectedCells { get; private set; }
+        public int[] EnforcedCells { get; private set; }
         /// <summary>The width of the grid this constraint applies to.</summary>
         public int GridWidth { get; private set; }
         /// <summary>The height of the grid this constraint applies to.</summary>
@@ -39,19 +38,30 @@ namespace PuzzleSolvers
         ///     See <see cref="IncludeDiagonals"/>.</param>
         /// <param name="affectedValues">
         ///     See <see cref="AffectedValues"/>.</param>
-        /// <param name="affectedCells">
-        ///     See <see cref="AffectedCells"/>. If <c>null</c>, the default is to affect the entire grid.</param>
-        public NoConsecutiveConstraint(int gridWidth, int gridHeight, bool includeDiagonals, int[] affectedValues = null, int[] affectedCells = null)
-            : base(affectedCells?.SelectMany(cell => adjacentCells(cell, gridWidth, gridHeight, includeDiagonals)).Distinct())
+        /// <param name="enforcedCells">
+        ///     See <see cref="EnforcedCells"/>. If <c>null</c>, the default is to enforce the entire grid.</param>
+        public NoConsecutiveConstraint(int gridWidth, int gridHeight, bool includeDiagonals, int[] affectedValues = null, IEnumerable<int> enforcedCells = null)
+            : base(null)
         {
             GridWidth = gridWidth;
             GridHeight = gridHeight;
             IncludeDiagonals = includeDiagonals;
             AffectedValues = affectedValues;
-            AffectedCells = affectedCells?.ToArray();
+            EnforcedCells = enforcedCells?.ToArray();
+            AffectedCells = EnforcedCells?.SelectMany(cell => AdjacentCells(cell, gridWidth, gridHeight, includeDiagonals)).Distinct().ToArray();
         }
 
-        private static IEnumerable<int> adjacentCells(int cell, int gridWidth, int gridHeight, bool includeDiagonals)
+        /// <summary>
+        ///     Returns the set of cells adjacent to the specified cell.</summary>
+        /// <param name="cell">
+        ///     The cell whose neighbors to examine.</param>
+        /// <param name="gridWidth">
+        ///     The width of the grid.</param>
+        /// <param name="gridHeight">
+        ///     The height of the grid.</param>
+        /// <param name="includeDiagonals">
+        ///     <c>true</c> to include cells that are diagonally adjacent as well.</param>
+        public static IEnumerable<int> AdjacentCells(int cell, int gridWidth, int gridHeight, bool includeDiagonals)
         {
             var x = cell % gridWidth;
             var y = cell / gridWidth;
@@ -65,26 +75,20 @@ namespace PuzzleSolvers
         /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
         {
-            for (var cellIx = 0; cellIx < (ix != null ? 1 : base.AffectedCells != null ? base.AffectedCells.Length : grid.Length); cellIx++)
+            for (var cellIx = 0; cellIx < (ix != null ? 1 : AffectedCells != null ? AffectedCells.Length : grid.Length); cellIx++)
             {
-                var cell = ix ?? (base.AffectedCells != null ? base.AffectedCells[cellIx] : cellIx);
+                var cell = ix ?? (AffectedCells != null ? AffectedCells[cellIx] : cellIx);
                 if (grid[cell] == null || (AffectedValues != null && !AffectedValues.Contains(grid[cell].Value + minValue)))
                     continue;
 
-                var x = cell % GridWidth;
-                var y = cell / GridWidth;
-
-                for (var dx = -1; dx <= 1; dx++)
-                    if (x + dx >= 0 && x + dx < GridWidth)
-                        for (var dy = -1; dy <= 1; dy++)
-                            if ((dx == 0 || dy == 0 || IncludeDiagonals) && (dx != 0 || dy != 0) && y + dy >= 0 && y + dy < GridHeight)
-                            {
-                                var tIx = (x + dx) + GridWidth * (y + dy);
-                                if (grid[cell].Value > 0 && (AffectedValues == null || AffectedValues.Contains(grid[cell].Value - 1 + minValue)))
-                                    takens[tIx][grid[cell].Value - 1] = true;
-                                if (grid[cell].Value < takens[tIx].Length - 1 && (AffectedValues == null || AffectedValues.Contains(grid[cell].Value + 1 + minValue)))
-                                    takens[tIx][grid[cell].Value + 1] = true;
-                            }
+                foreach (var relatedCell in AdjacentCells(cell, GridWidth, GridHeight, IncludeDiagonals))
+                    if (EnforcedCells == null || EnforcedCells.Contains(relatedCell) || EnforcedCells.Contains(cell))
+                    {
+                        if (grid[cell].Value > 0 && (AffectedValues == null || AffectedValues.Contains(grid[cell].Value - 1 + minValue)))
+                            takens[relatedCell][grid[cell].Value - 1] = true;
+                        if (grid[cell].Value < takens[relatedCell].Length - 1 && (AffectedValues == null || AffectedValues.Contains(grid[cell].Value + 1 + minValue)))
+                            takens[relatedCell][grid[cell].Value + 1] = true;
+                    }
             }
             return null;
         }

@@ -7,20 +7,8 @@ namespace PuzzleSolvers
     /// <summary>
     ///     Describes a constraint in a number placement puzzle in which cells that are a knight’s move away from each other
     ///     cannot contain the same value.</summary>
-    public sealed class AntiKnightConstraint : Constraint
+    public sealed class AntiKnightConstraint : AntiChessConstraint
     {
-        /// <summary>Optionally specifies a limited set of values that are affected by the anti-knight constraint.</summary>
-        public int[] AffectedValues { get; private set; }
-        /// <summary>
-        ///     Optionally specifies a limited set of cells that are affected by the anti-knight constraint.</summary>
-        /// <remarks>
-        ///     Note this differs from <see cref="Constraint.AffectedCells"/> as that will contain all affected cells plus
-        ///     those that are a knight’s move away.</remarks>
-        public new int[] AffectedCells { get; private set; }
-        /// <summary>The width of the grid.</summary>
-        public int GridWidth { get; private set; }
-        /// <summary>The height of the grid.</summary>
-        public int GridHeight { get; private set; }
         /// <summary>
         ///     If <c>true</c>, the constraint considers the grid to be toroidal, meaning that it wraps around the left/right
         ///     and top/bottom edges. Thus, in a Sudoku-sized grid, A1 would be a knight’s move away from B8 and H2. If
@@ -30,22 +18,19 @@ namespace PuzzleSolvers
         /// <summary>
         ///     Constructor.</summary>
         /// <param name="gridWidth">
-        ///     See <see cref="GridWidth"/>.</param>
+        ///     See <see cref="AntiChessConstraint.GridWidth"/>.</param>
         /// <param name="gridHeight">
-        ///     See <see cref="GridHeight"/>.</param>
+        ///     See <see cref="AntiChessConstraint.GridHeight"/>.</param>
         /// <param name="affectedValues">
-        ///     See <see cref="AffectedValues"/>.</param>
-        /// <param name="affectedCells">
-        ///     See <see cref="AffectedCells"/>. If <c>null</c>, the default is to affect the entire grid.</param>
+        ///     See <see cref="AntiChessConstraint.AffectedValues"/>.</param>
+        /// <param name="enforcedCells">
+        ///     See <see cref="AntiChessConstraint.EnforcedCells"/>. If <c>null</c>, the default is to enforce the entire
+        ///     grid.</param>
         /// <param name="toroidal">
         ///     See <see cref="Toroidal"/>.</param>
-        public AntiKnightConstraint(int gridWidth, int gridHeight, int[] affectedValues = null, IEnumerable<int> affectedCells = null, bool toroidal = false)
-            : base(affectedCells?.SelectMany(cell => KnightsMoves(cell, gridWidth, gridHeight, toroidal).Concat(cell)).Distinct())
+        public AntiKnightConstraint(int gridWidth, int gridHeight, int[] affectedValues = null, IEnumerable<int> enforcedCells = null, bool toroidal = false)
+            : base(gridWidth, gridHeight, affectedValues, enforcedCells)
         {
-            GridWidth = gridWidth;
-            GridHeight = gridHeight;
-            AffectedValues = affectedValues;
-            AffectedCells = affectedCells?.ToArray();
             Toroidal = toroidal;
         }
 
@@ -76,18 +61,6 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
-        {
-            for (var cellIx = 0; cellIx < (ix != null ? 1 : base.AffectedCells != null ? base.AffectedCells.Length : grid.Length); cellIx++)
-            {
-                var cell = ix ?? (base.AffectedCells != null ? base.AffectedCells[cellIx] : cellIx);
-                if (grid[cell] == null || (AffectedValues != null && !AffectedValues.Contains(grid[cell].Value + minValue)))
-                    continue;
-                foreach (var knightsCell in KnightsMoves(cell, GridWidth, GridHeight, Toroidal))
-                    if (AffectedCells == null || AffectedCells.Contains(knightsCell) || AffectedCells.Contains(cell))
-                        takens[knightsCell][grid[cell].Value] = true;
-            }
-            return null;
-        }
+        protected override IEnumerable<int> getRelatedCells(int cell) => KnightsMoves(cell, GridWidth, GridHeight, Toroidal);
     }
 }

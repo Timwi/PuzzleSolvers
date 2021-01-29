@@ -9,7 +9,7 @@ namespace PuzzleSolvers
     public abstract class Constraint
     {
         /// <summary>The group of cells affected by this constraint, or <c>null</c> if it affects all of them.</summary>
-        public int[] AffectedCells { get; private set; }
+        public int[] AffectedCells { get; protected set; }
 
         /// <summary>
         ///     Constructor for derived types.</summary>

@@ -1,54 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace PuzzleSolvers
 {
     /// <summary>
-    ///     Describes a constraint in a number-placement grid puzzle where no adjacent cells (including diagonals) can have
-    ///     the same value.</summary>
-    public class AntiKingConstraint : Constraint
+    ///     Describes a constraint in a number placement puzzle where no adjacent cells (including diagonals) can have the
+    ///     same value.</summary>
+    public class AntiKingConstraint : AntiChessConstraint
     {
-        /// <summary>If not <c>null</c>, the constraint is limited to these values in the grid.</summary>
-        public int[] AffectedValues { get; private set; }
-        /// <summary>The width of the grid this constraint applies to.</summary>
-        public int GridWidth { get; private set; }
-        /// <summary>The height of the grid this constraint applies to.</summary>
-        public int GridHeight { get; private set; }
-
         /// <summary>
         ///     Constructor.</summary>
-        /// <param name="width">
-        ///     The width of the grid.</param>
-        /// <param name="height">
-        ///     The height of the grid.</param>
+        /// <param name="gridWidth">
+        ///     See <see cref="AntiChessConstraint.GridWidth"/>.</param>
+        /// <param name="gridHeight">
+        ///     See <see cref="AntiChessConstraint.GridHeight"/>.</param>
         /// <param name="affectedValues">
-        ///     If not <c>null</c>, the constraint is limited to these values in the grid.</param>
-        public AntiKingConstraint(int width, int height, int[] affectedValues = null)
-            : base(Enumerable.Range(0, width * height))
+        ///     See <see cref="AntiChessConstraint.AffectedValues"/>.</param>
+        /// <param name="enforcedCells">
+        ///     See <see cref="AntiChessConstraint.EnforcedCells"/>. If <c>null</c>, the default is to enforce the entire
+        ///     grid.</param>
+        public AntiKingConstraint(int gridWidth, int gridHeight, int[] affectedValues = null, IEnumerable<int> enforcedCells = null)
+            : base(gridWidth, gridHeight, affectedValues, enforcedCells) { }
+
+        /// <summary>Returns all cells reachable from the specified cell by a king’s move in chess.</summary>
+        public static IEnumerable<int> KingsMoves(int cell, int gridWidth, int gridHeight)
         {
-            AffectedValues = affectedValues;
-            GridWidth = width;
-            GridHeight = height;
+            for (var dx = -1; dx <= 1; dx++)
+                if (cell % gridWidth + dx >= 0 && cell % gridWidth + dx < gridWidth)
+                    for (var dy = -1; dy <= 1; dy++)
+                        if ((dx != 0 || dy != 0) && cell / gridWidth + dy >= 0 && cell / gridWidth + dy < gridHeight)
+                            yield return cell + dx + gridWidth * dy;
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
-        {
-            for (var cell = ix ?? 0; cell <= (ix ?? (grid.Length - 1)); cell++)
-            {
-                if (grid[cell] == null || (AffectedValues != null && !AffectedValues.Contains(grid[cell].Value + minValue)))
-                    continue;
-                var x = cell % GridWidth;
-                var y = cell / GridWidth;
-
-                for (var dx = -1; dx <= 1; dx++)
-                    if (x + dx >= 0 && x + dx < GridWidth)
-                        for (var dy = -1; dy <= 1; dy++)
-                            if (y + dy >= 0 && y + dy < GridHeight)
-                                takens[(x + dx) + GridWidth * (y + dy)][grid[cell].Value] = true;
-            }
-            return null;
-        }
+        protected override IEnumerable<int> getRelatedCells(int cell) => KingsMoves(cell, GridWidth, GridHeight);
     }
 }
