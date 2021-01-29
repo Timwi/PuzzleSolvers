@@ -389,7 +389,7 @@ namespace PuzzleSolvers
                         var numDigits = (GridSize - 1).ToString().Length;
                         for (var cell = 0; cell < GridSize; cell++)
                         {
-                            string valueId(int v) => instr.UseLetters ? ((char) ('A' + v)).ToString() : v.ToString();
+                            string valueId(int v) => instr.UseLetters ? ((char) ('A' + v)).ToString() : (v + MinValue).ToString();
                             var cellLine = Enumerable.Range(0, MaxValue - MinValue + 1)
                                 .Select(v => valueId(v).Color(takensDebugCopy[cell][v] != takensCopy[cell][v] ? ConsoleColor.Red : takensCopy[cell][v] ? ConsoleColor.DarkGray : ConsoleColor.Yellow))
                                 .JoinColoredString(" ");
