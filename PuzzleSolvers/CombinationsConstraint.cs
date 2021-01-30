@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PuzzleSolvers
@@ -15,6 +16,8 @@ namespace PuzzleSolvers
         public CombinationsConstraint(IEnumerable<int> affectedCells, IEnumerable<int[]> combinations) : base(affectedCells)
         {
             Combinations = (combinations as int[][]) ?? combinations.ToArray();
+            if (Combinations.Any(comb => comb.Length != AffectedCells.Length))
+                throw new ArgumentException($"The combinations passed to a CombinationsConstraint must match the size of the region ({AffectedCells.Length}).");
         }
 
         /// <summary>Override; see base.</summary>
