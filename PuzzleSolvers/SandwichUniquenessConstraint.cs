@@ -37,14 +37,14 @@ namespace PuzzleSolvers
         /// <param name="maxValue">
         ///     The maximum value of numbers in the grid for this puzzle.</param>
         public SandwichUniquenessConstraint(int value1, int value2, int sum, IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9)
-            : base(affectedCells, generateCombinations(minValue, maxValue, value1, value2, sum, affectedCells.ToArray()))
+            : base(affectedCells, generateCombinations(minValue, maxValue, value1, value2, sum, affectedCells.Count()))
         {
             Value1 = value1;
             Value2 = value2;
             Sum = sum;
         }
 
-        private static int[][] generateCombinations(int minValue, int maxValue, int value1, int value2, int sum, int[] affectedCells)
+        private static int[][] generateCombinations(int minValue, int maxValue, int value1, int value2, int sum, int numAffectedCells)
         {
             // Function to find all possible sandwiches
             IEnumerable<int[]> findSandwiches(int[] sofar, int remainingSum)
@@ -54,7 +54,7 @@ namespace PuzzleSolvers
                     yield return sofar;
                     yield break;
                 }
-                if (sofar.Length >= affectedCells.Length)
+                if (sofar.Length >= numAffectedCells)
                     yield break;
                 for (var v = minValue; v <= maxValue; v++)
                     if (v != value1 && v != value2 && remainingSum - v >= 0 && !sofar.Contains(v))
@@ -72,7 +72,7 @@ namespace PuzzleSolvers
                         foreach (var v1first in new[] { false, true })
                             for (var chunk = 0; chunk <= sofar.Length; chunk++)
                             {
-                                var fullResult = new int[affectedCells.Length];
+                                var fullResult = new int[numAffectedCells];
                                 Array.Copy(sofar, 0, fullResult, 0, chunk);
                                 fullResult[chunk] = v1first ? value1 : value2;
                                 Array.Copy(sandwich, 0, fullResult, chunk + 1, sandwich.Length);
@@ -87,7 +87,7 @@ namespace PuzzleSolvers
                             foreach (var s in findOuties(sofar.Insert(sofar.Length, v), remainingCells - 1))
                                 yield return s;
                 }
-                return findOuties(new int[0], affectedCells.Length - sandwich.Length - 2);
+                return findOuties(new int[0], numAffectedCells - sandwich.Length - 2);
             }).ToArray();
         }
     }

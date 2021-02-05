@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using System.Linq;
 using RT.Util.ExtensionMethods;
 

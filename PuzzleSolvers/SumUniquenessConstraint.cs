@@ -27,37 +27,40 @@ namespace PuzzleSolvers
         /// <param name="maxValue">
         ///     The maximum value of numbers in the grid for this puzzle.</param>
         public SumUniquenessConstraint(int sum, IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9)
-            : base(affectedCells, generateCombinations(minValue, maxValue, sum, affectedCells.Count()))
+            : base(affectedCells, GenerateCombinations(minValue, maxValue, sum, affectedCells.Count()))
         {
             Sum = sum;
         }
 
         private static readonly Dictionary<(int minValue, int maxValue, int sum, int numAffectedCells), int[][]> _cache = new Dictionary<(int minValue, int maxValue, int sum, int numAffectedCells), int[][]>();
 
-        private static int[][] generateCombinations(int minValue, int maxValue, int sum, int numAffectedCells)
+        /// <summary>
+        ///     Generates all combinations of <paramref name="num"/> unique values between <paramref name="minValue"/> and
+        ///     <paramref name="maxValue"/> that sum up to <paramref name="sum"/>.</summary>
+        public static int[][] GenerateCombinations(int minValue, int maxValue, int sum, int num, int[] forbiddenValues = null)
         {
             lock (_cache)
             {
-                if (_cache.TryGetValue((minValue, maxValue, sum, numAffectedCells), out var result))
+                if (_cache.TryGetValue((minValue, maxValue, sum, num), out var result))
                     return result;
 
                 IEnumerable<int[]> findCombinations(int[] sofar, int remainingSum)
                 {
-                    if (remainingSum == 0 && sofar.Length == numAffectedCells)
+                    if (remainingSum == 0 && sofar.Length == num)
                     {
                         yield return sofar;
                         yield break;
                     }
-                    if (sofar.Length >= numAffectedCells)
+                    if (sofar.Length >= num)
                         yield break;
                     for (var v = minValue; v <= maxValue; v++)
-                        if (remainingSum - v >= 0 && !sofar.Contains(v))
+                        if (remainingSum - v >= 0 && !sofar.Contains(v) && (forbiddenValues == null || !forbiddenValues.Contains(v)))
                             foreach (var s in findCombinations(sofar.Insert(sofar.Length, v), remainingSum - v))
                                 yield return s;
                 }
 
                 result = findCombinations(new int[0], sum).ToArray();
-                _cache[(minValue, maxValue, sum, numAffectedCells)] = result;
+                _cache[(minValue, maxValue, sum, num)] = result;
                 return result;
             }
         }
