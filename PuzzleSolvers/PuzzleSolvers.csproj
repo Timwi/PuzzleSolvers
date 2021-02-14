@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RT.Util.Core" Version="2.0.1681" />
+    <PackageReference Include="RT.Util.Core" Version="2.0.1683" />
   </ItemGroup>
 
 </Project>

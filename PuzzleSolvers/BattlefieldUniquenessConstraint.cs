@@ -36,7 +36,7 @@ namespace PuzzleSolvers
 
         private static readonly Dictionary<(int minValue, int maxValue, int clue, int numAffectedCells), int[][]> _cache = new Dictionary<(int minValue, int maxValue, int clue, int numAffectedCells), int[][]>();
 
-        public static int[][] generateCombinations(int minValue, int maxValue, int clue, int numAffectedCells)
+        private static int[][] generateCombinations(int minValue, int maxValue, int clue, int numAffectedCells)
         {
             lock (_cache)
             {

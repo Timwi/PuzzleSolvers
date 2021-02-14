@@ -43,6 +43,9 @@
     <Reference Include="RT.NUnitDirect, Version=1.0.0.13, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RT.NUnitDirect.1.0.0.13\lib\net471\RT.NUnitDirect.dll</HintPath>
     </Reference>
+    <Reference Include="RT.Util.Core, Version=2.0.1683.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Util.Core.2.0.1683\lib\netstandard2.0\RT.Util.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -59,10 +62,6 @@
     <Compile Include="SudokuTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\RT.Util\RT.Util.Core\RT.Util.Core.csproj">
-      <Project>{f0c5341f-6f83-46db-8328-d26a96c8c15a}</Project>
-      <Name>RT.Util.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PuzzleSolvers\PuzzleSolvers.csproj">
       <Project>{FCC3622F-14E7-4BAA-9A15-B72EC86E5B44}</Project>
       <Name>PuzzleSolvers</Name>
