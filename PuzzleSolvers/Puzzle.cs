@@ -287,28 +287,51 @@ namespace PuzzleSolvers
             for (var i = 0; i < GridSize; i++)
                 takens[i] = new bool[_numVals];
 
-            var newConstraints = new List<Constraint>();
-            foreach (var constraint in Constraints)
+            var constraintsUse = Constraints;
+            reevaluate:
+            List<Constraint> newConstraints = null;
+            for (var cIx = 0; cIx < constraintsUse.Count; cIx++)
             {
+                var constraint = constraintsUse[cIx];
                 var cs = constraint.MarkTakens(takens, cells, null, MinValue, MaxValue);
-                if (cs == null)
-                    newConstraints.Add(constraint);
-                else
+                if (cs != null)
+                {
+                    if (newConstraints == null)
+                        newConstraints = new List<Constraint>(constraintsUse.Take(cIx));
                     newConstraints.AddRange(cs);
+                }
+                else if (newConstraints != null)
+                    newConstraints.Add(constraint);
+            }
+            if (newConstraints != null)
+            {
+                constraintsUse = newConstraints;
+                goto reevaluate;
             }
 
-            //var numConstraintsPerCell = new int[GridSize];
-            //foreach (var constraint in newConstraints)
-            //    foreach (var cell in constraint.AffectedCells ?? Enumerable.Range(0, GridSize))
-            //        numConstraintsPerCell[cell]++;
-
-            var cellPriority = Enumerable.Range(0, GridSize).OrderBy(cell =>
+            var cellPriorities = Enumerable.Range(0, GridSize).Select(cell =>
             {
-                var applicableConstraints = Constraints.Where(c => c.AffectedCells == null || c.AffectedCells.Contains(cell)).ToArray();
-                return applicableConstraints.OfType<CombinationsConstraint>().MinOrDefault(c => c.Combinations.Length, 0) - applicableConstraints.Length;
+                var applicableConstraints = constraintsUse.Where(c => c.AffectedCells == null || c.AffectedCells.Contains(cell)).ToArray();
+                return (cell, priority: applicableConstraints.OfType<CombinationsConstraint>().MinOrDefault(c => c.Combinations.Length, 0) - applicableConstraints.Length);
             }).ToArray();
+            Array.Sort(cellPriorities, (a, b) =>
+            {
+                if (solverInstructions != null && solverInstructions.CellPriority != null)
+                {
+                    var p1 = Array.IndexOf(solverInstructions.CellPriority, a.cell);
+                    var p2 = Array.IndexOf(solverInstructions.CellPriority, b.cell);
+                    if (p1 != -1 && p2 != -1)
+                        return p1 < p2 ? -1 : 1;
+                    if (p1 != -1)
+                        return -1;
+                    if (p2 != -1)
+                        return 1;
+                }
+                return a.priority < b.priority ? -1 : a.priority > b.priority ? 1 : 0;
+            });
+            var cellPriority = cellPriorities.Select(tup => tup.cell).ToArray();
 
-            return solve(cells, takens, newConstraints, cellPriority, solverInstructions).Select(solution => solution.Select(val => val + MinValue).ToArray());
+            return solve(cells, takens, constraintsUse, cellPriority, solverInstructions).Select(solution => solution.Select(val => val + MinValue).ToArray());
         }
 
         private IEnumerable<int[]> solve(int?[] filledInValues, bool[][] takens, List<Constraint> constraints, int[] cellPriority, SolverInstructions instr, int recursionDepth = 0)
@@ -365,26 +388,29 @@ namespace PuzzleSolvers
                 // Attempt to put the value into this cell
                 filledInValues[ix] = val;
                 var takensCopy = takens.Select(arr => arr.ToArray()).ToArray();
+                var specificCell = true;
+                var constraintsUse = constraints;
+                reevaluate:
 
                 // If placing this value modifies any of the constraints, we need to take a copy of the list of constraints,
                 // but for performance reasons we want to keep the original list if none of the constraints changed
                 List<Constraint> constraintsCopy = null;
 
-                for (var i = 0; i < constraints.Count; i++)
+                for (var i = 0; i < constraintsUse.Count; i++)
                 {
-                    var constraint = constraints[i];
-                    var doExamine = instr != null && instr.ExamineConstraints != null && instr.ExamineConstraints.Contains(constraints[i]);
+                    var constraint = constraintsUse[i];
+                    var doExamine = instr != null && instr.ExamineConstraints != null && instr.ExamineConstraints.Contains(constraint);
                     var intendedSolutionPossible = doExamine && instr.IntendedSolution.Select((v, cell) => filledInValues[cell] == v - MinValue || (filledInValues[cell] == null && !takensCopy[cell][v - MinValue])).All(b => b);
                     var takensDebugCopy = intendedSolutionPossible ? takensCopy.Select(b => (bool[]) b.Clone()).ToArray() : null;
 
                     // CALL THE CONSTRAINT
-                    var newConstraints = constraint.AffectedCells != null && !constraint.AffectedCells.Contains(ix) ? null : constraint.MarkTakens(takensCopy, filledInValues, ix, MinValue, MaxValue);
+                    var newConstraints = specificCell && constraint.AffectedCells != null && !constraint.AffectedCells.Contains(ix) ? null : constraint.MarkTakens(takensCopy, filledInValues, specificCell ? null : ix, MinValue, MaxValue);
 
                     // If the intended solution was previously possible but not anymore, output the requested debug information
                     if (intendedSolutionPossible && !instr.IntendedSolution.Select((v, cell) => filledInValues[cell] == v - MinValue || (filledInValues[cell] == null && !takensCopy[cell][v - MinValue])).All(b => b))
                     {
                         ConsoleUtil.WriteLine("Constraint {0/Magenta} {1/DarkMagenta} removed the intended solution:"
-                            .Color(ConsoleColor.White).Fmt(Array.IndexOf(instr.ExamineConstraints, constraints[i]), $@"({constraints[i].GetType().FullName})"));
+                            .Color(ConsoleColor.White).Fmt(Array.IndexOf(instr.ExamineConstraints, constraint), $@"({constraint.GetType().FullName})"));
                         var numDigits = (GridSize - 1).ToString().Length;
                         for (var cell = 0; cell < GridSize; cell++)
                         {
@@ -402,31 +428,21 @@ namespace PuzzleSolvers
                     {
                         // A constraint changed. That means we definitely need a new array of constraints for the recursive call.
                         if (constraintsCopy == null)
-                            constraintsCopy = new List<Constraint>(constraints.Take(i));
-                        var constraintIx = constraintsCopy.Count;
+                            constraintsCopy = new List<Constraint>(constraintsUse.Take(i));
                         constraintsCopy.AddRange(newConstraints);
-
-                        // Tell the new constraints to update on the basis of all of the values that are already placed.
-                        // Note that if these constraints now return even more constraints, these will not be correctly processed.
-                        // At present, this is considered part of the contract, so violations will throw an exception.
-                        // It may be debatable whether this needs to be supported.
-                        for (var cIx = constraintIx; cIx < constraintsCopy.Count; cIx++)
-                        {
-                            var yetMoreConstraints = constraintsCopy[cIx].MarkTakens(takensCopy, filledInValues, null, MinValue, MaxValue);
-                            if (yetMoreConstraints != null)
-                                throw new NotImplementedException(string.Format(
-                                    @"While entering a {0} in cell {1}, a {2} returned a {3}. When calling MarkTakens on this new constraint, it returned yet further constraints. This scenario is not currently supported by the algorithm. The constraints returned from MarkTaken() must not themselves return further constraints when MarkTaken() is called on them for values already placed in the grid.",
-                                    val + MinValue, ix, constraint.GetType().Name, constraintsCopy[cIx].GetType().Name));
-                        }
                     }
                     else if (constraintsCopy != null)
                         constraintsCopy.Add(constraint);
                 }
 
-                if (constraintsCopy != null && constraints.Any(c => c is LambdaConstraint) && !constraintsCopy.Any(c => c is LambdaConstraint))
-                    System.Diagnostics.Debugger.Break();
+                if (constraintsCopy != null)
+                {
+                    constraintsUse = constraintsCopy;
+                    specificCell = false;
+                    goto reevaluate;
+                }
 
-                foreach (var solution in solve(filledInValues, takensCopy, constraintsCopy ?? constraints, cellPriority, instr, recursionDepth + 1))
+                foreach (var solution in solve(filledInValues, takensCopy, constraintsUse, cellPriority, instr, recursionDepth + 1))
                     yield return solution;
             }
             filledInValues[ix] = null;

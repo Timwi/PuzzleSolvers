@@ -10,7 +10,7 @@ namespace PuzzleSolvers
     ///     Warning: This constraint is very memory-intensive. It is implemented as a <see cref="CombinationsConstraint"/>
     ///     with all of the possible number combinations for the specified set of cells. Avoid using this on oversized
     ///     puzzles.</remarks>
-    public class XSumUniquenessConstraint : PermutationUniquenessConstraintBase
+    public class XSumUniquenessConstraint : PermutationUniquenessConstraint
     {
         /// <summary>The total that the sandwiched numbers must sum up to.</summary>
         public int Sum { get; private set; }

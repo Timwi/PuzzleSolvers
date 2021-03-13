@@ -13,7 +13,7 @@ namespace PuzzleSolvers
     ///     with all of the possible number combinations for the specified set of cells. Avoid using this on oversized
     ///     puzzles. (At time of writing, this is only feasible for up to 11 cells, which uses about 2 GB of RAM for each
     ///     constraint.)</remarks>
-    public class SkyscraperUniquenessConstraint : PermutationUniquenessConstraintBase
+    public class SkyscraperUniquenessConstraint : PermutationUniquenessConstraint
     {
         /// <summary>The number of skyscrapers visible.</summary>
         public int Clue { get; private set; }

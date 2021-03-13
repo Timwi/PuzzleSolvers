@@ -12,7 +12,7 @@ namespace PuzzleSolvers
     ///     with all of the possible number combinations for the specified set of cells. Avoid using this on oversized
     ///     puzzles. (At time of writing, this is only feasible for up to 11 cells, which uses about 2 GB of RAM for each
     ///     constraint.)</remarks>
-    public class BattlefieldUniquenessConstraint : PermutationUniquenessConstraintBase
+    public class BattlefieldUniquenessConstraint : PermutationUniquenessConstraint
     {
         /// <summary>The sum of the digits sandwiched or overlapped.</summary>
         public int Clue { get; private set; }
@@ -29,14 +29,24 @@ namespace PuzzleSolvers
         /// <param name="maxValue">
         ///     The maximum value of numbers in the grid for this puzzle.</param>
         public BattlefieldUniquenessConstraint(int clue, IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9)
-            : base(affectedCells, generateCombinations(minValue, maxValue, clue, affectedCells.Count()))
+            : base(affectedCells, GenerateCombinations(minValue, maxValue, clue, affectedCells.Count()))
         {
             Clue = clue;
         }
 
         private static readonly Dictionary<(int minValue, int maxValue, int clue, int numAffectedCells), int[][]> _cache = new Dictionary<(int minValue, int maxValue, int clue, int numAffectedCells), int[][]>();
 
-        private static int[][] generateCombinations(int minValue, int maxValue, int clue, int numAffectedCells)
+        /// <summary>
+        ///     Generates (and caches) all possible combinations of digits that satisfy a given Battlefield clue.</summary>
+        /// <param name="minValue">
+        ///     Minimum value a cell can have.</param>
+        /// <param name="maxValue">
+        ///     Maximum value a cell can have.</param>
+        /// <param name="clue">
+        ///     Battlefield clue to satisfy.</param>
+        /// <param name="numAffectedCells">
+        ///     Number of cells involved in the region.</param>
+        public static int[][] GenerateCombinations(int minValue, int maxValue, int clue, int numAffectedCells)
         {
             lock (_cache)
             {

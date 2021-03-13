@@ -1,13 +1,31 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PuzzleSolvers
 {
     /// <summary>Describes a <see cref="CombinationsConstraint"/> that also implies a <see cref="UniquenessConstraint"/>.</summary>
-    public abstract class PermutationUniquenessConstraintBase : CombinationsConstraint
+    public class PermutationUniquenessConstraint : CombinationsConstraint
     {
         /// <summary>Constructor.</summary>
-        protected PermutationUniquenessConstraintBase(IEnumerable<int> affectedCells, IEnumerable<int[]> combinations) : base(affectedCells, combinations) { }
+        protected PermutationUniquenessConstraint(IEnumerable<int> affectedCells, IEnumerable<int[]> combinations) : base(affectedCells, combinations) { }
+
+        /// <summary>
+        ///     Constructs a <see cref="PermutationUniquenessConstraint"/> by generating all permutations of numbers between
+        ///     <paramref name="minValue"/> and <paramref name="maxValue"/> that satisfy the given <paramref
+        ///     name="predicate"/>.</summary>
+        /// <param name="affectedCells">
+        ///     The cells affected by this constraint.</param>
+        /// <param name="minValue">
+        ///     The minimum value a cell can have.</param>
+        /// <param name="maxValue">
+        ///     The maximum value a cell can have.</param>
+        /// <param name="predicate">
+        ///     A function defining what permutations are acceptable.</param>
+        public PermutationUniquenessConstraint(IEnumerable<int> affectedCells, int minValue, int maxValue, Func<int[], bool> predicate)
+            : base(affectedCells, GetCachedPermutations(minValue, maxValue, affectedCells.Count()).Where(predicate))
+        {
+        }
 
         private static readonly Dictionary<(int minValue, int maxValue, int numAffectedCells), int[][]> _cachePermutations = new Dictionary<(int minValue, int maxValue, int numAffectedCells), int[][]>();
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace PuzzleSolvers
 {
@@ -31,5 +30,9 @@ namespace PuzzleSolvers
         ///     Only applies when <see cref="ExamineConstraints"/> is not <c>null</c>. Specifies that the debug output should
         ///     use letters A–Z to identify the cells in a puzzle with 26 or fewer cells. Otherwise, numbers from 0 are used.</summary>
         public bool UseLetters;
+        /// <summary>
+        ///     Specifies a tentative priority list of cells to consider first during solve. This is not strictly adhered to
+        ///     and only provides a small guidance for some puzzles.</summary>
+        public int[] CellPriority;
     }
 }

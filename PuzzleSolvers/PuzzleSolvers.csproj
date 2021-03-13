@@ -7,6 +7,7 @@
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <Configurations>Debug;Release</Configurations>
     <Version>1.0.0.9999</Version>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
