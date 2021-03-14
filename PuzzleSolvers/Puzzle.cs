@@ -404,7 +404,7 @@ namespace PuzzleSolvers
                     var takensDebugCopy = intendedSolutionPossible ? takensCopy.Select(b => (bool[]) b.Clone()).ToArray() : null;
 
                     // CALL THE CONSTRAINT
-                    var newConstraints = specificCell && constraint.AffectedCells != null && !constraint.AffectedCells.Contains(ix) ? null : constraint.MarkTakens(takensCopy, filledInValues, specificCell ? null : ix, MinValue, MaxValue);
+                    var newConstraints = specificCell && constraint.AffectedCells != null && !constraint.AffectedCells.Contains(ix) ? null : constraint.MarkTakens(takensCopy, filledInValues, specificCell ? ix : null, MinValue, MaxValue);
 
                     // If the intended solution was previously possible but not anymore, output the requested debug information
                     if (intendedSolutionPossible && !instr.IntendedSolution.Select((v, cell) => filledInValues[cell] == v - MinValue || (filledInValues[cell] == null && !takensCopy[cell][v - MinValue])).All(b => b))
