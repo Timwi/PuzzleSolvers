@@ -27,6 +27,29 @@ namespace PuzzleSolvers
                 foreach (var cell in AffectedCells)
                     if (cell != ix.Value)
                         takens[cell][grid[ix.Value].Value] = true;
+
+                // Special case: if the number of values equals the number of cells, we can detect when there’s only one place to put a certain number
+                if (maxValue - minValue + 1 == AffectedCells.Length)
+                {
+                    for (var v = 0; v <= minValue - maxValue; v++)
+                    {
+                        int? c = null;
+                        foreach (var cell in AffectedCells)
+                            if (!takens[cell][v])
+                            {
+                                if (c == null)
+                                    c = cell;
+                                else
+                                    goto busted;
+                            }
+                        if (c != null)
+                            for (var v2 = 0; v2 <= minValue - maxValue; v2++)
+                                if (v2 != v)
+                                    takens[c.Value][v2] = true;
+
+                        busted:;
+                    }
+                }
             }
             else
             {
