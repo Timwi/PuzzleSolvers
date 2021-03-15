@@ -45,16 +45,16 @@ namespace PuzzleSolvers
         protected abstract IEnumerable<int> getRelatedCells(int cell);
 
         /// <summary>Override; see base.</summary>
-        public override sealed IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override sealed IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            for (var cellIx = 0; cellIx < (ix != null ? 1 : AffectedCells != null ? AffectedCells.Length : grid.Length); cellIx++)
+            for (var cellIx = 0; cellIx < (state.LastPlaced != null ? 1 : AffectedCells != null ? AffectedCells.Length : state.GridSize); cellIx++)
             {
-                var cell = ix ?? (AffectedCells != null ? AffectedCells[cellIx] : cellIx);
-                if (grid[cell] == null || (AffectedValues != null && !AffectedValues.Contains(grid[cell].Value + minValue)))
+                var cell = state.LastPlaced ?? (AffectedCells != null ? AffectedCells[cellIx] : cellIx);
+                if (state[cell] == null || (AffectedValues != null && !AffectedValues.Contains(state[cell].Value)))
                     continue;
                 foreach (var relatedCell in getRelatedCells(cell))
                     if (EnforcedCells == null || EnforcedCells.Contains(relatedCell) || EnforcedCells.Contains(cell))
-                        takens[relatedCell][grid[cell].Value] = true;
+                        state.MarkImpossible(relatedCell, state[cell].Value);
             }
             return null;
         }

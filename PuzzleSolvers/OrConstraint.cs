@@ -1,39 +1,87 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using RT.Util;
 
 namespace PuzzleSolvers
 {
-    /// <summary>
-    ///     Describes a composite constraint in which one of a set of constraints must be met.</summary>
+    /// <summary>Describes a composite constraint in which one of a set of constraints must be met.</summary>
     public class OrConstraint : Constraint
     {
         /// <summary>The set of constraints, of which at least one must be satisfied.</summary>
         public Constraint[] Subconstraints { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public OrConstraint(IEnumerable<Constraint> subconstraints) : base(subconstraints.SelectMany(c => c.AffectedCells).Distinct()) { Subconstraints = subconstraints.ToArray(); }
+        public OrConstraint(IEnumerable<Constraint> subconstraints) : base(subconstraints.SelectMany(c => c.AffectedCells).Distinct())
+        {
+            Subconstraints = subconstraints.ToArray();
+            _canReevaluate = Subconstraints.Any(c => c.CanReevaluate);
+        }
 
         /// <summary>Constructor.</summary>
-        public OrConstraint(params Constraint[] subconstraints) : base(subconstraints.SelectMany(c => c.AffectedCells).Distinct()) { Subconstraints = subconstraints.ToArray(); }
+        public OrConstraint(params Constraint[] subconstraints) : this((IEnumerable<Constraint>) subconstraints) { }
+
+        private sealed class SolverStateImpl : SolverState
+        {
+            public SolverState Parent;
+            public bool[][] Takens;
+
+            public override void MarkImpossible(int cell, Func<int, bool> isImpossible)
+            {
+                for (var value = Parent.MinValue; value <= Parent.MaxValue; value++)
+                    if (isImpossible(value))
+                        Takens[cell][value - Parent.MinValue] = true;
+            }
+
+            public override void MustBe(int cell, int value)
+            {
+                for (var otherValue = Parent.MinValue; otherValue <= Parent.MaxValue; otherValue++)
+                    if (otherValue != value)
+                        Takens[cell][otherValue - Parent.MinValue] = true;
+            }
+
+            public override int? this[int cell] => Parent[cell];
+            public override void MarkImpossible(int cell, int value) { Takens[cell][value - Parent.MinValue] = true; }
+            public override bool IsImpossible(int cell, int value) => Takens[cell][value - Parent.MinValue] || Parent.IsImpossible(cell, value);
+            public override int? LastPlaced => Parent.LastPlaced;
+            public override int MinValue => Parent.MinValue;
+            public override int MaxValue => Parent.MaxValue;
+            public override int GridSize => Parent.GridSize;
+        }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override bool CanReevaluate => _canReevaluate;
+        private readonly bool _canReevaluate;
+
+        /// <summary>Override; see base.</summary>
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (ix != null && !AffectedCells.Contains(ix.Value))
+            if (state.LastPlaced != null && !AffectedCells.Contains(state.LastPlaced.Value))
                 return null;
 
-            var takensCopies = new bool[Subconstraints.Length][][];
+            var innerTakens = new bool[Subconstraints.Length][][];
+            List<Constraint> newSubconstraints = null;
             for (var sc = 0; sc < Subconstraints.Length; sc++)
             {
-                takensCopies[sc] = takens.Select(arr => arr.ToArray()).ToArray();
-                Subconstraints[sc].MarkTakens(takensCopies[sc], grid, ix, minValue, maxValue);
+                var substate = new SolverStateImpl { Parent = state, Takens = Ut.NewArray<bool>(state.GridSize, state.MaxValue - state.MinValue + 1) };
+                try
+                {
+                    Subconstraints[sc].MarkTakens(substate);
+                    innerTakens[sc] = substate.Takens;
+                    if (newSubconstraints != null)
+                        newSubconstraints.Add(Subconstraints[sc]);
+                }
+                catch (ConstraintViolatedException)
+                {
+                    if (newSubconstraints == null)
+                        newSubconstraints = new List<Constraint>(Subconstraints.Take(sc));
+                }
             }
 
             foreach (var cell in AffectedCells)
-                for (var v = 0; v < takens[cell].Length; v++)
-                    takens[cell][v] = takens[cell][v] || takensCopies.All(tc => tc[cell][v]);
+                state.MarkImpossible(cell, value => innerTakens.All(taken => taken == null || taken[cell][value - state.MinValue]));
 
-            return null;
+            return newSubconstraints != null ? new[] { new OrConstraint(newSubconstraints) } : null;
         }
     }
 }

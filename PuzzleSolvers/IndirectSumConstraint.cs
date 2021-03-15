@@ -23,44 +23,29 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
-        {
-            if (ix == null)
-            {
-                for (var v = 0; v < takens[SumCell].Length; v++)
-                    if (v + minValue < minValue * Region.Length || v + minValue > maxValue * Region.Length)
-                        takens[SumCell][v] = true;
-            }
-            else
-            {
-                if (grid[SumCell] == null)
-                {
-                    var minValuePerCell = Region.Sum(c => grid[c] == null ? minValue : grid[c].Value + minValue);
-                    var maxValuePerCell = Region.Sum(c => grid[c] == null ? maxValue : grid[c].Value + minValue);
-                    for (var v = 0; v < takens[SumCell].Length; v++)
-                        if (v + minValue < minValuePerCell || v + minValue > maxValuePerCell)
-                            takens[SumCell][v] = true;
-                }
-                else
-                {
-                    var sumAlready = 0;
-                    var stillNeed = Region.Length;
-                    foreach (var cell in Region)
-                        if (grid[cell] != null)
-                        {
-                            sumAlready += grid[cell].Value + minValue;
-                            stillNeed--;
-                        }
+        public override bool CanReevaluate => true;
 
-                    var minValuePerCell = grid[SumCell].Value + minValue - sumAlready - maxValue * (stillNeed - 1);
-                    var maxValuePerCell = grid[SumCell].Value + minValue - sumAlready - minValue * (stillNeed - 1);
-                    foreach (var cell in Region)
-                        if (grid[cell] == null)
-                            for (var v = 0; v < takens[cell].Length; v++)
-                                if (v + minValue < minValuePerCell || v + minValue > maxValuePerCell)
-                                    takens[cell][v] = true;
-                }
+        /// <summary>Override; see base.</summary>
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        {
+            var minPossibleTarget = state.MinPossible(SumCell);
+            var maxPossibleTarget = state.MaxPossible(SumCell);
+            var minPossibleSum = Region.Sum(state.MinPossible);
+            var maxPossibleSum = Region.Sum(state.MaxPossible);
+
+            // Constrain the sum cell
+            if (state[SumCell] == null)
+                state.MarkImpossible(SumCell, value => value < minPossibleSum || value > maxPossibleSum);
+
+            // Constrain the operand cells
+            for (var ix = 0; ix < Region.Length; ix++)
+            {
+                var cell = Region[ix];
+                var minOther = minPossibleSum - state.MinPossible(cell);
+                var maxOther = maxPossibleSum - state.MaxPossible(cell);
+                state.MarkImpossible(cell, value => minOther + value > maxPossibleTarget || maxOther + value < minPossibleTarget);
             }
+
             return null;
         }
     }

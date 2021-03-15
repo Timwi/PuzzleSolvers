@@ -21,29 +21,8 @@ namespace PuzzleSolvers
         }
 
         /// <summary>
-        ///     Constraint implementations must modify <paramref name="takens"/> to mark values as taken that are known to be
-        ///     impossible given the specified incomplete grid.</summary>
-        /// <param name="takens">
-        ///     The array to be modified. The first dimension equates to the cells in the puzzle. The second dimension equates
-        ///     to the possible values for the cell, indexed from 0. In a standard Sudoku, indexes 0 to 8 are used for the
-        ///     numbers 1 to 9. Only set values to <c>true</c> that are now impossible to satisfy; implementations must not
-        ///     change other values back to <c>false</c>.</param>
-        /// <param name="grid">
-        ///     The incomplete grid at the current point during the algorithm. Implementations must not modify this array. In
-        ///     order to communicate that a cell must have a specific value, mark all other possible values on that cell as
-        ///     taken in the <paramref name="takens"/> array. The values are 0-based; in a standard Sudoku, values 0 to 8 are
-        ///     used to indicate the numbers 1 to 9.</param>
-        /// <param name="ix">
-        ///     If <c>null</c>, this method was called either at the very start of the algorithm or because this constraint
-        ///     was returned from another constraint. In such a case, the method must examine all filled-in values in the
-        ///     provided grid. Otherwise, specifies which value has just been placed and allows the method to update <paramref
-        ///     name="takens"/> based only on the value in that square.</param>
-        /// <param name="minValue">
-        ///     The minimum value that squares can have in this puzzle. For standard Sudoku, this is 1. This is also the
-        ///     difference between the real-life values in the grid and the values stored in <paramref name="grid"/> as well
-        ///     as the indexes used in the <paramref name="takens"/> array.</param>
-        /// <param name="maxValue">
-        ///     The maximum value that squares can have in this puzzle. For standard Sudoku, this is 9.</param>
+        ///     Constraint implementations must use <see cref="SolverState.MarkImpossible(int, int)"/> to mark values that are
+        ///     known to be impossible given the incomplete grid exposed by <see cref="SolverState.this[int]"/>.</summary>
         /// <returns>
         ///     <para>
         ///         Implementations must return <c>null</c> if the constraint remains valid for the remainder of filling this
@@ -56,7 +35,14 @@ namespace PuzzleSolvers
         ///         The algorithm will automatically call this method again on all the new constraints for all cells already
         ///         placed in the grid. The constraints returned MUST NOT themselves return yet more constraints at that
         ///         point.</para></returns>
-        public abstract IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue);
+        public abstract IEnumerable<Constraint> MarkTakens(SolverState state);
+
+        /// <summary>
+        ///     By default, a constraint is only evaluated once for every digit placed in the grid, but not when another
+        ///     constraint merely rules out a possibility. Derived types can override this and return <c>true</c> to indicate
+        ///     to the solver that the constraint should be reevaluated (meaning: have <see cref="MarkTakens"/> called on it
+        ///     again) when another constraint rules out a value in one of the affected cells of this constraint.</summary>
+        public virtual bool CanReevaluate => false;
 
         /// <summary>
         ///     Converts a convenient coordinate notation into puzzle-grid indices.</summary>

@@ -21,25 +21,23 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (ix == null)
+            if (state.LastPlaced == null)
                 return null;
 
-            var unknowns = AffectedCells.Count(af => grid[af] == null);
+            var unknowns = AffectedCells.Count(af => state[af] == null);
             if (unknowns != 1)
                 return null;
-            var unknown = AffectedCells.First(af => grid[af] == null);
+            var unknown = AffectedCells.First(af => state[af] == null);
 
-            for (var v = 0; v < takens[unknown].Length; v++)
-                if (!IsValid(
-                    (grid[AffectedCells[0]] ?? v) + minValue,
-                    (grid[AffectedCells[1]] ?? v) + minValue,
-                    (grid[AffectedCells[2]] ?? v) + minValue,
-                    (grid[AffectedCells[3]] ?? v) + minValue,
-                    (grid[AffectedCells[4]] ?? v) + minValue
-                ))
-                    takens[unknown][v] = true;
+            state.MarkImpossible(unknown, value => !IsValid(
+                state[AffectedCells[0]] ?? value,
+                state[AffectedCells[1]] ?? value,
+                state[AffectedCells[2]] ?? value,
+                state[AffectedCells[3]] ?? value,
+                state[AffectedCells[4]] ?? value
+            ));
             return null;
         }
     }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace PuzzleSolvers
@@ -20,11 +19,9 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            for (var i = 0; i < takens[Cell].Length; i++)
-                if (i + minValue != Value)
-                    takens[Cell][i] = true;
+            state.MustBe(Cell, Value);
             return Enumerable.Empty<Constraint>();
         }
     }

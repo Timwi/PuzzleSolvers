@@ -26,24 +26,20 @@ namespace PuzzleSolvers
         public NoTouchModuloConstraint(int width, int height, int modulo) : base(Enumerable.Range(0, width * height)) { GridWidth = width; GridHeight = height; Modulo = modulo; }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (ix == null)
+            if (state.LastPlaced == null)
                 return null;
-            var cell = ix.Value;
+            var cell = state.LastPlaced.Value;
             var x = cell % GridWidth;
             var y = cell / GridWidth;
+            var refMod = (state[cell].Value % Modulo + Modulo) % Modulo;
 
             for (var dx = -1; dx <= 1; dx++)
                 if (x + dx >= 0 && x + dx < GridWidth)
                     for (var dy = (dx == 0 ? -1 : 0); dy <= (dx == 0 ? 1 : 0); dy++)
                         if (y + dy >= 0 && y + dy < GridHeight)
-                        {
-                            var i = (x + dx) + GridWidth * (y + dy);
-                            for (var v = 0; v < takens[i].Length; v++)
-                                if (((v + minValue) % Modulo + Modulo) % Modulo == ((grid[cell].Value + minValue) % Modulo + Modulo) % Modulo)
-                                    takens[i][v] = true;
-                        }
+                            state.MarkImpossible((x + dx) + GridWidth * (y + dy), v => (v % Modulo + Modulo) % Modulo == refMod);
             return null;
         }
     }

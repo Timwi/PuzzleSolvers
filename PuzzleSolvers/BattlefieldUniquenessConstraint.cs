@@ -66,11 +66,11 @@ namespace PuzzleSolvers
             var right = values[values.Length - 1];
             var sum = 0;
             if (values.Length - left - right >= 0)
-                for (var ix = left; ix < values.Length - right; ix++)
-                    sum += values[ix];
+                for (var cIx = left; cIx < values.Length - right; cIx++)
+                    sum += values[cIx];
             else
-                for (var ix = values.Length - right; ix < left; ix++)
-                    sum += values[ix];
+                for (var cIx = values.Length - right; cIx < left; cIx++)
+                    sum += values[cIx];
             return sum;
         }
     }

@@ -73,21 +73,21 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            for (var cellIx = 0; cellIx < (ix != null ? 1 : AffectedCells != null ? AffectedCells.Length : grid.Length); cellIx++)
+            for (var cellIx = 0; cellIx < (state.LastPlaced != null ? 1 : AffectedCells != null ? AffectedCells.Length : state.GridSize); cellIx++)
             {
-                var cell = ix ?? (AffectedCells != null ? AffectedCells[cellIx] : cellIx);
-                if (grid[cell] == null || (AffectedValues != null && !AffectedValues.Contains(grid[cell].Value + minValue)))
+                var cell = state.LastPlaced ?? (AffectedCells != null ? AffectedCells[cellIx] : cellIx);
+                if (state[cell] == null || (AffectedValues != null && !AffectedValues.Contains(state[cell].Value)))
                     continue;
 
                 foreach (var relatedCell in AdjacentCells(cell, GridWidth, GridHeight, IncludeDiagonals))
                     if (EnforcedCells == null || EnforcedCells.Contains(relatedCell) || EnforcedCells.Contains(cell))
                     {
-                        if (grid[cell].Value > 0 && (AffectedValues == null || AffectedValues.Contains(grid[cell].Value - 1 + minValue)))
-                            takens[relatedCell][grid[cell].Value - 1] = true;
-                        if (grid[cell].Value < takens[relatedCell].Length - 1 && (AffectedValues == null || AffectedValues.Contains(grid[cell].Value + 1 + minValue)))
-                            takens[relatedCell][grid[cell].Value + 1] = true;
+                        if (state[cell].Value > state.MinValue && (AffectedValues == null || AffectedValues.Contains(state[cell].Value - 1)))
+                            state.MarkImpossible(relatedCell, state[cell].Value - 1);
+                        if (state[cell].Value < state.MaxValue && (AffectedValues == null || AffectedValues.Contains(state[cell].Value + 1)))
+                            state.MarkImpossible(relatedCell, state[cell].Value + 1);
                     }
             }
             return null;

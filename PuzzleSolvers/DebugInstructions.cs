@@ -18,16 +18,15 @@ namespace PuzzleSolvers
         ///     solver to pick one at random.</summary>
         public Random Randomizer;
         /// <summary>
-        ///     When this and <see cref="IntendedSolution"/> are not <c>null</c>, the solver determines at which point during
-        ///     the solve process one of these constraints eliminates the intended solution. This is for debugging constraints
-        ///     that rule out solutions when they shouldn’t.</summary>
-        public Constraint[] ExamineConstraints;
-        /// <summary>
-        ///     See <see cref="ExamineConstraints"/>. This and <see cref="ExamineConstraints"/> must both be <c>null</c> or
-        ///     both be non-<c>null</c>.</summary>
+        ///     When this is not <c>null</c>, the solver determines at which point during the solve process one of these
+        ///     constraints eliminates the intended solution. This is for debugging constraints that rule out solutions when
+        ///     they shouldn’t.</summary>
         public int[] IntendedSolution;
         /// <summary>
-        ///     Only applies when <see cref="ExamineConstraints"/> is not <c>null</c>. Specifies that the debug output should
+        ///     When this and <see cref="IntendedSolution"/> are not <c>null</c>, limits the set of constraints to examine. This may be necessary for speed reasons.</summary>
+        public Func<Constraint, bool> ExamineConstraint;
+        /// <summary>
+        ///     Only applies when <see cref="ExamineConstraint"/> is not <c>null</c>. Specifies that the debug output should
         ///     use letters A–Z to identify the cells in a puzzle with 26 or fewer cells. Otherwise, numbers from 0 are used.</summary>
         public bool UseLetters;
         /// <summary>

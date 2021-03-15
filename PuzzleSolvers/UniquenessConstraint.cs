@@ -16,49 +16,49 @@ namespace PuzzleSolvers
         {
         }
 
+        /// <summary>Override.</summary>
+        public override string ToString() => $"Uniqueness: {AffectedCells.JoinString(", ")}";
+
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (ix != null)
+            if (state.LastPlaced != null)
             {
-                if (!AffectedCells.Contains(ix.Value))
-                    return null;
-
                 foreach (var cell in AffectedCells)
-                    if (cell != ix.Value)
-                        takens[cell][grid[ix.Value].Value] = true;
+                    if (cell != state.LastPlaced.Value)
+                        state.MarkImpossible(cell, state.LastPlacedValue);
 
-                // Special case: if the number of values equals the number of cells, we can detect when there’s only one place to put a certain number
-                if (maxValue - minValue + 1 == AffectedCells.Length)
-                {
-                    for (var v = 0; v <= minValue - maxValue; v++)
-                    {
-                        int? c = null;
-                        foreach (var cell in AffectedCells)
-                            if (!takens[cell][v])
-                            {
-                                if (c == null)
-                                    c = cell;
-                                else
-                                    goto busted;
-                            }
-                        if (c != null)
-                            for (var v2 = 0; v2 <= minValue - maxValue; v2++)
-                                if (v2 != v)
-                                    takens[c.Value][v2] = true;
+                //// Special case: if the number of values equals the number of cells, we can detect when there’s only one place to put a certain number
+                //if (maxValue - minValue + 1 == AffectedCells.Length)
+                //{
+                //    for (var v = 0; v <= minValue - maxValue; v++)
+                //    {
+                //        int? c = null;
+                //        foreach (var cell in AffectedCells)
+                //            if (!takens[cell][v])
+                //            {
+                //                if (c == null)
+                //                    c = cell;
+                //                else
+                //                    goto busted;
+                //            }
+                //        if (c != null)
+                //            for (var v2 = 0; v2 <= minValue - maxValue; v2++)
+                //                if (v2 != v)
+                //                    takens[c.Value][v2] = true;
 
-                        busted:;
-                    }
-                }
+                //        busted:;
+                //    }
+                //}
             }
             else
             {
-                var values = ix == null ? AffectedCells.Where(cell => grid[cell] != null).Select(cell => grid[cell].Value).ToHashSet() : null;
-                if (values.Count > 0)
-                    foreach (var cell in AffectedCells)
-                        for (var v = 0; v < takens[cell].Length; v++)
-                            if (values.Contains(v))
-                                takens[cell][v] = true;
+                // In case this constraint was returned from another constraint when some of the grid is already filled in, make sure to enforce uniqueness correctly.
+                foreach (var cell1 in AffectedCells)
+                    if (state[cell1] != null)
+                        foreach (var cell2 in AffectedCells)
+                            if (cell2 != cell1)
+                                state.MarkImpossible(cell2, state[cell1].Value);
             }
             return null;
         }

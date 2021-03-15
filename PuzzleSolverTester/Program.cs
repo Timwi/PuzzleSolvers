@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using NUnit.Direct;
 using NUnit.Framework;
 using RT.Util;
 
@@ -12,7 +13,10 @@ namespace PuzzleSolverTester
             var tests = new SudokuTests();
             foreach (var method in typeof(SudokuTests).GetMethods())
                 if (method.GetCustomAttribute<TestAttribute>() != null)
-                    method.Invoke(tests, null);
+                {
+                    Console.WriteLine(method);
+                    NUnitDirect.InvokeDirect(method, tests);
+                }
 
             Console.WriteLine("Done. Press Enter to exit.");
             Console.ReadLine();

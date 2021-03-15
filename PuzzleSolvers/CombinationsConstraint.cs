@@ -23,11 +23,10 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            // This will determine which values are still possible in which cells.
-            // (It’s the inverse of ‘takens’, and limited to only the affected cells.)
-            var poss = Ut.NewArray(AffectedCells.Length, i => new bool[takens[i].Length]);
+            // This will determine which values are still possible in which of the affected cells.
+            var poss = Ut.NewArray(AffectedCells.Length, i => new bool[state.MaxValue - state.MinValue + 1]);
 
             // If any combination can be ruled out, this will contain the remaining combinations still available.
             List<int[]> newComb = null;
@@ -35,7 +34,7 @@ namespace PuzzleSolvers
             for (var i = 0; i < Combinations.Length; i++)
             {
                 // Can this combination be ruled out?
-                if (AffectedCells.Any((cellIx, lstIx) => grid[cellIx] == null ? (takens[cellIx][Combinations[i][lstIx] - minValue]) : (grid[cellIx].Value + minValue != Combinations[i][lstIx])))
+                if (AffectedCells.Any((cellIx, lstIx) => state[cellIx] == null ? state.IsImpossible(cellIx, Combinations[i][lstIx]) : (state[cellIx].Value != Combinations[i][lstIx])))
                 {
                     if (newComb == null)
                         newComb = new List<int[]>(Combinations.Take(i));
@@ -47,18 +46,18 @@ namespace PuzzleSolvers
 
                     // Remember the possibilities for each cell
                     for (var lstIx = 0; lstIx < Combinations[i].Length; lstIx++)
-                        poss[lstIx][Combinations[i][lstIx] - minValue] = true;
+                        poss[lstIx][Combinations[i][lstIx] - state.MinValue] = true;
                 }
             }
 
             // Mark any cell values that are no longer possible as taken
             var anyChanges = false;
             for (var lstIx = 0; lstIx < poss.Length; lstIx++)
-                if (grid[AffectedCells[lstIx]] == null)
+                if (state[AffectedCells[lstIx]] == null)
                     for (var v = 0; v < poss[lstIx].Length; v++)
-                        if (!poss[lstIx][v] && !takens[AffectedCells[lstIx]][v])
+                        if (!poss[lstIx][v] && !state.IsImpossible(AffectedCells[lstIx], v + state.MinValue))
                         {
-                            takens[AffectedCells[lstIx]][v] = true;
+                            state.MarkImpossible(AffectedCells[lstIx], v + state.MinValue);
                             anyChanges = true;
                         }
 

@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {

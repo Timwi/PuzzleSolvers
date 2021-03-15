@@ -34,35 +34,22 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override bool CanReevaluate => true;
+
+        /// <summary>Override; see base.</summary>
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            // At the start, mark cells along the sequence. For example, the second cell can’t be 1, the third can’t be 1 or 2, etc.
-            if (ix == null)
+            var min = state.MinPossible(AffectedCells[0]) + 1;
+            for (var i = 1; i < AffectedCells.Length; i++)
             {
-                var min = minValue;
-                var max = maxValue - AffectedCells.Length + 1;
-                for (var q = 0; q < AffectedCells.Length; q++)
-                {
-                    for (var v = 0; v < takens[AffectedCells[q]].Length; v++)
-                        if (v + minValue < min || v + minValue > max)
-                            takens[AffectedCells[q]][v] = true;
-                    min++;
-                    max++;
-                }
+                state.MarkImpossible(AffectedCells[i], value => value < min);
+                min = state.MinPossible(AffectedCells[i]) + 1;
             }
-
-            // Also make sure that all the values in the grid are considered.
-            for (var p = 0; p < AffectedCells.Length; p++)
+            var max = state.MaxPossible(AffectedCells[AffectedCells.Length - 1]) - 1;
+            for (var i = AffectedCells.Length - 2; i >= 0; i--)
             {
-                // Consider all placed values only if ix == null (performance optimization).
-                if ((ix != null && AffectedCells[p] != ix.Value) || grid[AffectedCells[p]] == null)
-                    continue;
-
-                var val = grid[AffectedCells[p]].Value;
-                for (var q = 0; q < AffectedCells.Length; q++)
-                    for (var v = 0; v < takens[AffectedCells[q]].Length; v++)
-                        if ((q < p && v > val - p + q) || (q > p && v < val - p + q))
-                            takens[AffectedCells[q]][v] = true;
+                state.MarkImpossible(AffectedCells[i], value => value > max);
+                max = state.MaxPossible(AffectedCells[i]) - 1;
             }
             return null;
         }

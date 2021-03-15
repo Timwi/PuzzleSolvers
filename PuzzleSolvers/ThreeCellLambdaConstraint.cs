@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using RT.Util.ExtensionMethods;
+using System.Linq;
 
 namespace PuzzleSolvers
 {
@@ -18,32 +18,21 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (ix == null)
+            if (state.LastPlaced == null)
                 return null;
 
-            // “slot” is the value we just placed (index into AffectedCells, 0–2)
-            var slot = Array.IndexOf(AffectedCells, ix.Value);
-            if (slot == -1)
+            var unknowns = AffectedCells.Count(af => state[af] == null);
+            if (unknowns != 1)
                 return null;
+            var unknown = AffectedCells.First(af => state[af] == null);
 
-            // “unknown” is the value that is yet to be placed (index into AffectedCells, 0–2)
-            var unknown = AffectedCells.IndexOf(af => grid[af] == null);
-            if (unknown == -1)
-                return null;
-
-            // Make sure that there is a second already-placed value
-            if (grid[AffectedCells[3 - slot - unknown]] == null)
-                return null;
-
-            for (var v = 0; v < takens[AffectedCells[unknown]].Length; v++)
-                if (!IsValid(
-                    (grid[AffectedCells[0]] ?? v) + minValue,
-                    (grid[AffectedCells[1]] ?? v) + minValue,
-                    (grid[AffectedCells[2]] ?? v) + minValue
-                ))
-                    takens[AffectedCells[unknown]][v] = true;
+            state.MarkImpossible(unknown, value => !IsValid(
+                state[AffectedCells[0]] ?? value,
+                state[AffectedCells[1]] ?? value,
+                state[AffectedCells[2]] ?? value
+            ));
             return null;
         }
     }

@@ -16,16 +16,16 @@ namespace PuzzleSolvers
         public ProductConstraint(int product, IEnumerable<int> affectedCells) : base(affectedCells) { Product = product; }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (ix != null && !AffectedCells.Contains(ix.Value))
+            if (state.LastPlaced != null && !AffectedCells.Contains(state.LastPlaced.Value))
                 return null;
 
             var productAlready = 1;
             var cellsLeftToFill = 0;
             foreach (var cell in AffectedCells)
-                if (grid[cell] != null)
-                    productAlready *= (grid[cell].Value + minValue);
+                if (state[cell] is int value)
+                    productAlready *= value;
                 else
                     cellsLeftToFill++;
             if (cellsLeftToFill == 0 || (productAlready == 0 && Product == 0))
@@ -34,18 +34,12 @@ namespace PuzzleSolvers
             var alreadyBroken = productAlready == 0 || (Product % productAlready != 0);
 
             foreach (var cell in AffectedCells)
-                if (grid[cell] == null)
-                    for (var v = 0; v < takens[cell].Length; v++)
-                    {
-                        if (alreadyBroken)
-                            takens[cell][v] = true;
-                        // The last remaining cell must have the exact required value
-                        else if (cellsLeftToFill == 1 && productAlready * (v + minValue) != Product)
-                            takens[cell][v] = true;
-                        // The remaining cells must be factors of whatever is left to multiply
-                        else if (cellsLeftToFill > 1 && (v + minValue) == 0 ? (Product != 0) : ((Product / productAlready) % (v + minValue) != 0))
-                            takens[cell][v] = true;
-                    }
+                state.MarkImpossible(cell, value =>
+                    alreadyBroken ||
+                    // The last remaining cell must have the exact required value
+                    (cellsLeftToFill == 1 && productAlready * value != Product) ||
+                    // The remaining cells must be factors of whatever is left to multiply
+                    (cellsLeftToFill > 1 && value == 0 ? (Product != 0) : ((Product / productAlready) % value != 0)));
             return null;
         }
     }

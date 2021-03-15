@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using RT.Util.Consoles;
+using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
@@ -22,45 +25,51 @@ namespace PuzzleSolvers
             Regions = regions.Select(r => r.ToArray()).ToArray();
         }
 
-        /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        private SumAlternativeConstraint(int sum, IEnumerable<int[]> regions) : base(regions.SelectMany(r => r).Distinct())
         {
-            if (ix != null && !Regions.Any(region => region.Contains(ix.Value)))
-                return null;
+            Sum = sum;
+            Regions = regions.ToArray();
+        }
 
-            var sumsAlready = new int[Regions.Length];
-            var stillNeed = Regions.Select(gr => gr.Length).ToArray();
-            foreach (var cell in AffectedCells)
-                if (grid[cell] != null)
-                    for (var grIx = 0; grIx < Regions.Length; grIx++)
-                        if (Regions[grIx].Contains(cell))
-                        {
-                            sumsAlready[grIx] += grid[cell].Value + minValue;
-                            stillNeed[grIx]--;
+        /// <summary>Override; see base.</summary>
+        public override bool CanReevaluate => true;
 
-                            // If any of the sums is already correct, this constraint is already satisfied.
-                            if (stillNeed[grIx] == 0 && sumsAlready[grIx] == Sum)
-                                return null;
-                        }
+        /// <summary>Override; see base.</summary>
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        {
+            // This can only happen if the user has specified a single region at the start.
+            if (Regions.Length == 1)
+                return new[] { new SumConstraint(Sum, Regions[0]) };
 
-            // We need to mark values as taken that are impossible for ALL of the affected groups of cells,
-            // EXCEPT for groups in which all the cells have already been filled because their sum is wrong
-            // (if it were correct, the check further up would have already returned).
-
-            foreach (var cell in AffectedCells)
-                if (grid[cell] == null)
-                    for (var v = 0; v < takens[cell].Length; v++)
-                        if (!takens[cell][v] && Enumerable.Range(0, Regions.Length).All(grIx =>
-                            // Groups in which all cells have already been filled no longer contribute to this constraint
-                            stillNeed[grIx] == 0 ||
-                            // If ANY of the groups don’t affect this cell, we cannot assume that any value is impossible
-                            Regions[grIx].Contains(cell) && (
-                                // Mark values that are too small (e.g. if you need a sum of 17 with two cells, and maxValue is 9, you need at least an 8)
-                                v + minValue < (Sum - sumsAlready[grIx] - maxValue * (stillNeed[grIx] - 1)) ||
-                                // Mark values that are too large (e.g. if you need a sum of 3 with two cells, and minValue is 1, you can’t have more than 2)
-                                v + minValue > (Sum - sumsAlready[grIx] - minValue * (stillNeed[grIx] - 1)))))
-                            takens[cell][v] = true;
-
+            // Find out which regions can now be ruled out
+            List<int[]> newRegions = null;
+            for (var i = 0; i < Regions.Length; i++)
+            {
+                var region = Regions[i];
+                int min, max;
+                if ((min = region.Sum(state.MinPossible)) > Sum || (max = region.Sum(state.MaxPossible)) < Sum)
+                {
+                    if (newRegions == null)
+                        newRegions = new List<int[]>(Regions.Take(i));
+                }
+                else
+                {
+                    if (min == Sum && max == Sum)   // The constraint is already satisfied
+                        return Enumerable.Empty<Constraint>();
+                    if (newRegions != null)
+                        newRegions.Add(region);
+                }
+            }
+            if (newRegions != null)
+            {
+                if (newRegions.Count == 0)
+                    // This can only happen if some regions overlap and the algorithm filled in one of the shared cells.
+                    throw new ConstraintViolatedException();
+                else if (newRegions.Count == 1)
+                    return new[] { new SumConstraint(Sum, newRegions[0]) };
+                else
+                    return new[] { new SumAlternativeConstraint(Sum, newRegions) };
+            }
             return null;
         }
     }

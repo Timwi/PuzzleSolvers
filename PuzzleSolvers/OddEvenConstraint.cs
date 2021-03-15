@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
@@ -19,7 +18,7 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
             int req;
 
@@ -35,32 +34,43 @@ namespace PuzzleSolvers
                     break;
 
                 case OddEvenType.AllSame:
-                    // If the algorithm placed a value outside of our affected group, we can’t do anything
-                    if (ix != null && !AffectedCells.Contains(ix.Value))
-                        return null;
-
-                    if (ix == null)
+                    // Check if any of the affected cells knows its parity
+                    for (var ix = 0; ix < AffectedCells.Length; ix++)
                     {
-                        // If no value within our affected group has yet been placed, we also can’t do anything
-                        var affIx = AffectedCells.IndexOf(cell => grid[cell] != null);
-                        if (affIx == -1)
-                            return null;
-                        ix = AffectedCells[affIx];
-                    }
+                        var cell = AffectedCells[ix];
+                        if (state[cell] != null)
+                        {
+                            req = state[cell].Value % 2;
+                            goto found;
+                        }
 
-                    // We have a value — use its parity
-                    req = (grid[ix.Value].Value + minValue) % 2;
-                    break;
+                        int? parity = null;
+                        for (var value = state.MinValue; value <= state.MaxValue; value++)
+                            if (!state.IsImpossible(cell, value))
+                            {
+                                if (parity == null)
+                                    parity = value % 2;
+                                else if (parity.Value != value % 2)
+                                    goto busted;
+                            }
+                        if (parity != null)
+                        {
+                            req = parity.Value;
+                            goto found;
+                        }
+
+                        busted:;
+                    }
+                    return null;
 
                 default:
                     throw new InvalidOperationException(string.Format(@"OddEvenConstraint.Type has unknown value: {0}", Type));
             }
 
+            found:
             // Mark all the cells of the wrong parity as taken. After this, we don’t need the constraint anymore.
             foreach (var cell in AffectedCells)
-                for (var v = 0; v < takens[cell].Length; v++)
-                    if ((v + minValue) % 2 != req)
-                        takens[cell][v] = true;
+                state.MarkImpossible(cell, value => value % 2 != req);
             return Enumerable.Empty<Constraint>();
         }
     }

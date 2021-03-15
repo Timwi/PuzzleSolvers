@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace PuzzleSolvers
 {
     /// <summary>
     ///     Describes the function signature required for a <see cref="LambdaConstraint"/>. See <see
-    ///     cref="Constraint.MarkTakens(bool[][], int?[], int?, int, int)"/> for parameter and return value documentation.</summary>
-    public delegate IEnumerable<Constraint> CustomConstraint(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue);
+    ///     cref="Constraint.MarkTakens(SolverState)"/> for parameter and return value documentation.</summary>
+    public delegate IEnumerable<Constraint> CustomConstraint(SolverState state);
 
     /// <summary>Can be used to describe any constraint that applies to the whole puzzle using a lambda expression.</summary>
     public sealed class LambdaConstraint : Constraint
@@ -22,7 +20,6 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue) =>
-            Lambda(takens, grid, ix, minValue, maxValue);
+        public override IEnumerable<Constraint> MarkTakens(SolverState state) => Lambda(state);
     }
 }

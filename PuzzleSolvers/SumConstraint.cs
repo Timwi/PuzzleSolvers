@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using RT.Util.Consoles;
+using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
@@ -18,27 +22,23 @@ namespace PuzzleSolvers
         public SumConstraint(int sum, IEnumerable<int> affectedCells) : base(affectedCells) { Sum = sum; }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(bool[][] takens, int?[] grid, int? ix, int minValue, int maxValue)
+        public override bool CanReevaluate => true;
+
+        /// <summary>Override; see base.</summary>
+        public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (ix != null && !AffectedCells.Contains(ix.Value))
-                return null;
+            var minPossibleSum = AffectedCells.Sum(state.MinPossible);
+            var maxPossibleSum = AffectedCells.Sum(state.MaxPossible);
 
-            var sumAlready = 0;
-            var stillNeed = AffectedCells.Length;
-            foreach (var cell in AffectedCells)
-                if (grid[cell] != null)
-                {
-                    sumAlready += grid[cell].Value + minValue;
-                    stillNeed--;
-                }
-
-            var minValuePerCell = Sum - sumAlready - maxValue * (stillNeed - 1);
-            var maxValuePerCell = Sum - sumAlready - minValue * (stillNeed - 1);
-            foreach (var cell in AffectedCells)
-                if (grid[cell] == null)
-                    for (var v = 0; v < takens[cell].Length; v++)
-                        if (v + minValue < minValuePerCell || v + minValue > maxValuePerCell)
-                            takens[cell][v] = true;
+            for (var ix = 0; ix < AffectedCells.Length; ix++)
+            {
+                var cell = AffectedCells[ix];
+                if (state[cell] != null)
+                    continue;
+                var minOther = minPossibleSum - state.MinPossible(cell);
+                var maxOther = maxPossibleSum - state.MaxPossible(cell);
+                state.MarkImpossible(cell, value => minOther + value > Sum || maxOther + value < Sum);
+            }
 
             return null;
         }
