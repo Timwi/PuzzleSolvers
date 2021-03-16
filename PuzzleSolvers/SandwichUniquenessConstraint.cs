@@ -44,51 +44,35 @@ namespace PuzzleSolvers
             Sum = sum;
         }
 
-        private static int[][] generateCombinations(int minValue, int maxValue, int value1, int value2, int sum, int numAffectedCells)
+        private static int?[][] generateCombinations(int minValue, int maxValue, int value1, int value2, int sum, int numAffectedCells)
         {
             // Function to find all possible sandwiches
-            IEnumerable<int[]> findSandwiches(int[] sofar, int remainingSum)
+            IEnumerable<int?[]> findSandwiches(int?[] sofar, int ix, int remainingSum)
             {
                 if (remainingSum == 0)
                 {
-                    yield return sofar;
+                    yield return sofar.Subarray(0, ix);
                     yield break;
                 }
-                if (sofar.Length >= numAffectedCells)
+                if (ix >= numAffectedCells)
                     yield break;
                 for (var v = minValue; v <= maxValue; v++)
-                    if (v != value1 && v != value2 && remainingSum - v >= 0 && !sofar.Contains(v))
-                        foreach (var s in findSandwiches(sofar.Insert(sofar.Length, v), remainingSum - v))
+                    if (v != value1 && v != value2 && remainingSum - v >= 0 && !sofar.Take(ix).Contains(v))
+                    {
+                        sofar[ix] = v;
+                        foreach (var s in findSandwiches(sofar, ix + 1, remainingSum - v))
                             yield return s;
+                    }
             }
 
-            return findSandwiches(new int[0], sum).SelectMany(sandwich =>
-            {
-                // Function to find all combinations of numbers outside of the sandwich (“outies”)
-                IEnumerable<int[]> findOuties(int[] sofar, int remainingCells)
-                {
-                    if (remainingCells == 0)
-                    {
-                        foreach (var v1first in new[] { false, true })
-                            for (var chunk = 0; chunk <= sofar.Length; chunk++)
-                            {
-                                var fullResult = new int[numAffectedCells];
-                                Array.Copy(sofar, 0, fullResult, 0, chunk);
-                                fullResult[chunk] = v1first ? value1 : value2;
-                                Array.Copy(sandwich, 0, fullResult, chunk + 1, sandwich.Length);
-                                fullResult[chunk + 1 + sandwich.Length] = v1first ? value2 : value1;
-                                Array.Copy(sofar, chunk, fullResult, chunk + sandwich.Length + 2, sofar.Length - chunk);
-                                yield return fullResult;
-                            }
-                        yield break;
-                    }
-                    for (var v = minValue; v <= maxValue; v++)
-                        if (v != value1 && v != value2 && !sandwich.Contains(v) && !sofar.Contains(v))
-                            foreach (var s in findOuties(sofar.Insert(sofar.Length, v), remainingCells - 1))
-                                yield return s;
-                }
-                return findOuties(new int[0], numAffectedCells - sandwich.Length - 2);
-            }).ToArray();
+            return findSandwiches(new int?[numAffectedCells], 0, sum).SelectMany(sandwich =>
+                Enumerable.Range(1, numAffectedCells - sandwich.Length - 1)
+                    // value1 first
+                    .Select(ix => { var arr = new int?[numAffectedCells]; Array.Copy(sandwich, 0, arr, ix, sandwich.Length); arr[ix - 1] = value1; arr[ix + sandwich.Length] = value2; return arr; })
+                    .Concat(Enumerable.Range(1, numAffectedCells - sandwich.Length - 1)
+                        // value2 first
+                        .Select(ix => { var arr = new int?[numAffectedCells]; Array.Copy(sandwich, 0, arr, ix, sandwich.Length); arr[ix - 1] = value2; arr[ix + sandwich.Length] = value1; return arr; })))
+                    .ToArray();
         }
     }
 }

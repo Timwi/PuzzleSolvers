@@ -38,61 +38,46 @@ namespace PuzzleSolvers
         /// <param name="maxValue">
         ///     The maximum value of numbers in the grid for this puzzle.</param>
         public SandwichWraparoundUniquenessConstraint(int value1, int value2, int sum, IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9)
-            : base(affectedCells, generateCombinations(minValue, maxValue, value1, value2, sum, affectedCells.ToArray()))
+            : base(affectedCells, generateCombinations(minValue, maxValue, value1, value2, sum, affectedCells.Count()))
         {
             Value1 = value1;
             Value2 = value2;
             Sum = sum;
         }
 
-        private static int[][] generateCombinations(int minValue, int maxValue, int value1, int value2, int sum, int[] affectedCells)
+        private static int?[][] generateCombinations(int minValue, int maxValue, int value1, int value2, int sum, int numAffectedCells)
         {
             // Function to find all possible sandwiches
-            IEnumerable<int[]> findSandwiches(int[] sofar, int remainingSum)
+            IEnumerable<int?[]> findSandwiches(int?[] sofar, int ix, int remainingSum)
             {
                 if (remainingSum == 0)
                 {
-                    yield return sofar;
+                    yield return sofar.Subarray(0, ix);
                     yield break;
                 }
-                if (sofar.Length >= affectedCells.Length)
+                if (ix >= numAffectedCells)
                     yield break;
                 for (var v = minValue; v <= maxValue; v++)
-                    if (v != value1 && v != value2 && remainingSum - v >= 0 && !sofar.Contains(v))
-                        foreach (var s in findSandwiches(sofar.Insert(sofar.Length, v), remainingSum - v))
+                    if (v != value1 && v != value2 && remainingSum - v >= 0 && !sofar.Take(ix).Contains(v))
+                    {
+                        sofar[ix] = v;
+                        foreach (var s in findSandwiches(sofar, ix + 1, remainingSum - v))
                             yield return s;
+                    }
             }
 
-            return findSandwiches(new int[0], sum).SelectMany(sandwich =>
-            {
-                // Function to find all combinations of numbers outside of the sandwich (“outies”)
-                IEnumerable<int[]> findOuties(int[] sofar, int remainingCells)
-                {
-                    if (remainingCells == 0)
+            return findSandwiches(new int?[numAffectedCells], 0, sum).SelectMany(sandwich =>
+                Enumerable.Range(0, numAffectedCells)
+                    .Select(ix =>
                     {
-                        var unrotatedResult = new int[affectedCells.Length];
-                        unrotatedResult[0] = value1;
-                        Array.Copy(sandwich, 0, unrotatedResult, 1, sandwich.Length);
-                        unrotatedResult[sandwich.Length + 1] = value2;
-                        Array.Copy(sofar, 0, unrotatedResult, sandwich.Length + 2, sofar.Length);
-                        yield return unrotatedResult;
-
-                        for (var r = 1; r < unrotatedResult.Length; r++)
-                        {
-                            var rotatedResult = new int[affectedCells.Length];
-                            Array.Copy(unrotatedResult, r, rotatedResult, 0, unrotatedResult.Length - r);
-                            Array.Copy(unrotatedResult, 0, rotatedResult, unrotatedResult.Length - r, r);
-                            yield return rotatedResult;
-                        }
-                        yield break;
-                    }
-                    for (var v = minValue; v <= maxValue; v++)
-                        if (v != value1 && v != value2 && !sandwich.Contains(v) && !sofar.Contains(v))
-                            foreach (var s in findOuties(sofar.Insert(sofar.Length, v), remainingCells - 1))
-                                yield return s;
-                }
-                return findOuties(new int[0], affectedCells.Length - sandwich.Length - 2);
-            }).ToArray();
+                        var arr = new int?[numAffectedCells];
+                        arr[ix] = value1;
+                        for (var i = 0; i < sandwich.Length; i++)
+                            arr[(ix + 1 + i) % arr.Length] = sandwich[i];
+                        arr[(ix + 1 + sandwich.Length) % arr.Length] = value2;
+                        return arr;
+                    }))
+                    .ToArray();
         }
     }
 }
