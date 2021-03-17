@@ -47,9 +47,9 @@ namespace PuzzleSolvers
         /// <summary>Override; see base.</summary>
         public override sealed IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            for (var cellIx = 0; cellIx < (state.LastPlaced != null ? 1 : AffectedCells != null ? AffectedCells.Length : state.GridSize); cellIx++)
+            for (var cellIx = 0; cellIx < (state.LastPlacedCell != null ? 1 : AffectedCells != null ? AffectedCells.Length : state.GridSize); cellIx++)
             {
-                var cell = state.LastPlaced ?? (AffectedCells != null ? AffectedCells[cellIx] : cellIx);
+                var cell = state.LastPlacedCell ?? (AffectedCells != null ? AffectedCells[cellIx] : cellIx);
                 if (state[cell] == null || (AffectedValues != null && !AffectedValues.Contains(state[cell].Value)))
                     continue;
                 foreach (var relatedCell in getRelatedCells(cell))

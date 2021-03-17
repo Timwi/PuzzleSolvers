@@ -64,7 +64,7 @@ namespace PuzzleSolvers
             {
                 if (newRegions.Count == 0)
                     // This can only happen if some regions overlap and the algorithm filled in one of the shared cells.
-                    throw new ConstraintViolatedException();
+                    throw new ConstraintViolationException();
                 else if (newRegions.Count == 1)
                     return new[] { new SumConstraint(Sum, newRegions[0]) };
                 else

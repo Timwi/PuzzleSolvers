@@ -18,7 +18,7 @@ namespace PuzzleSolvers
         /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (state.LastPlaced != null && !AffectedCells.Contains(state.LastPlaced.Value))
+            if (state.LastPlacedCell != null && !AffectedCells.Contains(state.LastPlacedCell.Value))
                 return null;
 
             var productAlready = 1;

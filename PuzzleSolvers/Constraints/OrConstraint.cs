@@ -43,7 +43,7 @@ namespace PuzzleSolvers
             public override int? this[int cell] => Parent[cell];
             public override void MarkImpossible(int cell, int value) { Takens[cell][value - Parent.MinValue] = true; }
             public override bool IsImpossible(int cell, int value) => Takens[cell][value - Parent.MinValue] || Parent.IsImpossible(cell, value);
-            public override int? LastPlaced => Parent.LastPlaced;
+            public override int? LastPlacedCell => Parent.LastPlacedCell;
             public override int MinValue => Parent.MinValue;
             public override int MaxValue => Parent.MaxValue;
             public override int GridSize => Parent.GridSize;
@@ -56,7 +56,7 @@ namespace PuzzleSolvers
         /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (state.LastPlaced != null && !AffectedCells.Contains(state.LastPlaced.Value))
+            if (state.LastPlacedCell != null && !AffectedCells.Contains(state.LastPlacedCell.Value))
                 return null;
 
             var innerTakens = new bool[Subconstraints.Length][][];
@@ -71,7 +71,7 @@ namespace PuzzleSolvers
                     if (newSubconstraints != null)
                         newSubconstraints.Add(Subconstraints[sc]);
                 }
-                catch (ConstraintViolatedException)
+                catch (ConstraintViolationException)
                 {
                     if (newSubconstraints == null)
                         newSubconstraints = new List<Constraint>(Subconstraints.Take(sc));

@@ -474,7 +474,7 @@ namespace PuzzleSolvers
                     // Allow this list to be garbage-collected
                     mustReevaluate = null;
                 }
-                catch (ConstraintViolatedException)
+                catch (ConstraintViolationException)
                 {
                     goto digitBusted;
                 }
@@ -562,7 +562,7 @@ namespace PuzzleSolvers
                 if (Grid[cell] != null)
                 {
                     if (Grid[cell].Value + MinVal != value)
-                        throw new ConstraintViolatedException();
+                        throw new ConstraintViolationException();
                     return;
                 }
                 for (var otherValue = MinVal; otherValue <= MaxVal; otherValue++)
@@ -572,7 +572,7 @@ namespace PuzzleSolvers
 
             public override int? this[int cell] => Grid[cell] == null ? null : Grid[cell].Value + MinVal;
             public override bool IsImpossible(int cell, int value) => value < MinVal || value > MaxVal || (Grid[cell] != null && Grid[cell].Value != value - MinVal) || Takens[cell][value - MinVal];
-            public override int? LastPlaced => LastPlacedIx;
+            public override int? LastPlacedCell => LastPlacedIx;
             public override int MinValue => MinVal;
             public override int MaxValue => MaxVal;
             public override int GridSize => GridSizeVal;

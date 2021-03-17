@@ -28,18 +28,18 @@ namespace PuzzleSolvers
         /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (state.LastPlaced == null)
-                return null;
-            var cell = state.LastPlaced.Value;
-            var x = cell % GridWidth;
-            var y = cell / GridWidth;
-            var refMod = (state[cell].Value % Modulo + Modulo) % Modulo;
+            if (state.LastPlacedCell is int cell)
+            {
+                var x = cell % GridWidth;
+                var y = cell / GridWidth;
+                var refMod = (state[cell].Value % Modulo + Modulo) % Modulo;
 
-            for (var dx = -1; dx <= 1; dx++)
-                if (x + dx >= 0 && x + dx < GridWidth)
-                    for (var dy = (dx == 0 ? -1 : 0); dy <= (dx == 0 ? 1 : 0); dy++)
-                        if (y + dy >= 0 && y + dy < GridHeight)
-                            state.MarkImpossible((x + dx) + GridWidth * (y + dy), v => (v % Modulo + Modulo) % Modulo == refMod);
+                for (var dx = -1; dx <= 1; dx++)
+                    if (x + dx >= 0 && x + dx < GridWidth)
+                        for (var dy = (dx == 0 ? -1 : 0); dy <= (dx == 0 ? 1 : 0); dy++)
+                            if (y + dy >= 0 && y + dy < GridHeight)
+                                state.MarkImpossible((x + dx) + GridWidth * (y + dy), v => (v % Modulo + Modulo) % Modulo == refMod);
+            }
             return null;
         }
     }

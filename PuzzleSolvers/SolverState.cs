@@ -77,12 +77,12 @@ namespace PuzzleSolvers
         ///     cref="Constraint.MarkTakens(SolverState)"/> call to replace it; or (c) if the constraint has <see
         ///     cref="Constraint.CanReevaluate"/> and one of its affected cells has changed. In these cases, implementations
         ///     should examine the whole set of affected cells for possible deductions.</summary>
-        public abstract int? LastPlaced { get; }
+        public abstract int? LastPlacedCell { get; }
 
         /// <summary>
-        ///     Returns the value stored in the cell given by <see cref="LastPlaced"/> (see there for details). Throws an
-        ///     exception if <see cref="LastPlaced"/> is <c>null</c>.</summary>
-        public int LastPlacedValue => this[LastPlaced.Value].Value;
+        ///     Returns the value stored in the cell given by <see cref="LastPlacedCell"/> (see there for details). Throws an
+        ///     exception if <see cref="LastPlacedCell"/> is <c>null</c>.</summary>
+        public int LastPlacedValue => this[LastPlacedCell.Value].Value;
 
         /// <summary>The minimum value that squares can have in this puzzle. For standard Sudoku, this is 1.</summary>
         public abstract int MinValue { get; }

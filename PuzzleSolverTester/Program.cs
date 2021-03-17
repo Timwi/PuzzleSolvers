@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
-using NUnit.Direct;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RT.Util;
 
 namespace PuzzleSolverTester
@@ -10,13 +10,16 @@ namespace PuzzleSolverTester
     {
         static void Main()
         {
-            var tests = new SudokuTests();
-            foreach (var method in typeof(SudokuTests).GetMethods())
-                if (method.GetCustomAttribute<TestAttribute>() != null)
-                {
-                    Console.WriteLine(method);
-                    NUnitDirect.InvokeDirect(method, tests);
-                }
+            foreach (var fixture in typeof(PuzzleTestFixture).Assembly.GetTypes().Where(t => typeof(PuzzleTestFixture).IsAssignableFrom(t) && !t.IsAbstract))
+            {
+                var tests = Activator.CreateInstance(fixture);
+                foreach (var method in fixture.GetMethods())
+                    if (method.GetCustomAttribute<TestMethodAttribute>() != null)
+                    {
+                        Console.WriteLine(method);
+                        method.Invoke(tests, null);
+                    }
+            }
 
             Console.WriteLine("Done. Press Enter to exit.");
             Console.ReadLine();

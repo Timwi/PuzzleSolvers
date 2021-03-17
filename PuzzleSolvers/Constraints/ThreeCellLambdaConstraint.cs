@@ -4,18 +4,15 @@ using System.Linq;
 
 namespace PuzzleSolvers
 {
-    /// <summary>
-    ///     Constrains five cells to values that satisfy a lambda expression.</summary>
-    /// <remarks>
-    ///     This constraint is not very efficient as it will only be evaluated once all but one of the cells is filled in.</remarks>
-    public sealed class FiveCellLambdaConstraint : Constraint
+    /// <summary>Constrains three cells to values that satisfy a lambda expression.</summary>
+    public sealed class ThreeCellLambdaConstraint : Constraint
     {
         /// <summary>A function that determines whether a set of values is valid in the relevant cells.</summary>
-        public Func<int, int, int, int, int, bool> IsValid { get; private set; }
+        public Func<int, int, int, bool> IsValid { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public FiveCellLambdaConstraint(int affectedCell1, int affectedCell2, int affectedCell3, int affectedCell4, int affectedCell5, Func<int, int, int, int, int, bool> isValid)
-            : base(new[] { affectedCell1, affectedCell2, affectedCell3, affectedCell4, affectedCell5 })
+        public ThreeCellLambdaConstraint(int affectedCell1, int affectedCell2, int affectedCell3, Func<int, int, int, bool> isValid)
+            : base(new[] { affectedCell1, affectedCell2, affectedCell3 })
         {
             IsValid = isValid;
         }
@@ -23,7 +20,7 @@ namespace PuzzleSolvers
         /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (state.LastPlaced == null)
+            if (state.LastPlacedCell == null)
                 return null;
 
             var unknowns = AffectedCells.Count(af => state[af] == null);
@@ -34,9 +31,7 @@ namespace PuzzleSolvers
             state.MarkImpossible(unknown, value => !IsValid(
                 state[AffectedCells[0]] ?? value,
                 state[AffectedCells[1]] ?? value,
-                state[AffectedCells[2]] ?? value,
-                state[AffectedCells[3]] ?? value,
-                state[AffectedCells[4]] ?? value
+                state[AffectedCells[2]] ?? value
             ));
             return null;
         }

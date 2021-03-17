@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Linq;
-using PuzzleSolvers;
 using RT.Util;
 
-namespace PuzzleSolverTester
+namespace PuzzleSolvers
 {
-    public sealed class SandwichSudoku : Sudoku
+    /// <summary>
+    ///     Describes a Sudoku variant in which numbers written outside the grid describe the sum of the digits in that
+    ///     row/column that are sandwiched between two specific values (usually 1 and 9).</summary>
+    public class SandwichSudoku : Sudoku
     {
         /// <summary>
         ///     Generates a Sandwich Sudoku in which all the sandwich constraints for every column and row are specified.</summary>

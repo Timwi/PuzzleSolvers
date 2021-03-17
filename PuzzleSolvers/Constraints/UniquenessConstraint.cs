@@ -22,10 +22,10 @@ namespace PuzzleSolvers
         /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (state.LastPlaced != null)
+            if (state.LastPlacedCell != null)
             {
                 foreach (var cell in AffectedCells)
-                    if (cell != state.LastPlaced.Value)
+                    if (cell != state.LastPlacedCell.Value)
                         state.MarkImpossible(cell, state.LastPlacedValue);
 
                 //// Special case: if the number of values equals the number of cells, we can detect when there’s only one place to put a certain number

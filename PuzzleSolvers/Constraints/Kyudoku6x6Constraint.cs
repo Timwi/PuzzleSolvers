@@ -41,23 +41,23 @@ namespace PuzzleSolvers
                     state.MarkImpossible(cnt[0], 1);
             }
 
-            if (state.LastPlaced != null && state.LastPlacedValue != 1)
+            if (state.LastPlacedCell != null && state.LastPlacedValue != 1)
             {
                 // Shade all other cells of the same value
                 for (var i = 0; i < 36; i++)
-                    if (i != state.LastPlaced.Value && NumberGrid[i] == NumberGrid[state.LastPlaced.Value])
+                    if (i != state.LastPlacedCell.Value && NumberGrid[i] == NumberGrid[state.LastPlacedCell.Value])
                         state.MarkImpossible(i, 0);
 
                 // Shade all cells in the same row/column that would take the total above 9
                 {
-                    var row = state.LastPlaced.Value / 6;
+                    var row = state.LastPlacedCell.Value / 6;
                     var rowTotal = Enumerable.Range(0, 6).Select(col => state[6 * row + col] == 0 ? NumberGrid[6 * row + col] : 0).Sum();
                     for (var col = 0; col < 6; col++)
                         if (state[6 * row + col] == null && rowTotal + NumberGrid[6 * row + col] > 9)
                             state.MarkImpossible(6 * row + col, 0);
                 }
                 {
-                    var col = state.LastPlaced.Value % 6;
+                    var col = state.LastPlacedCell.Value % 6;
                     var colTotal = Enumerable.Range(0, 6).Select(row => state[6 * row + col] == 0 ? NumberGrid[6 * row + col] : 0).Sum();
                     for (var row = 0; row < 6; row++)
                         if (state[6 * row + col] == null && colTotal + NumberGrid[6 * row + col] > 9)
