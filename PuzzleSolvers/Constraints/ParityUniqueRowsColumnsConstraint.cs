@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using RT.Util;
-using RT.Util.ExtensionMethods;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
@@ -16,8 +16,10 @@ namespace PuzzleSolvers
         public int SideLength { get; private set; }
 
         /// <summary>Constructor.</summary>
-        public ParityUniqueRowsColumnsConstraint(int sideLength) : base(Enumerable.Range(0, sideLength * sideLength))
+        public ParityUniqueRowsColumnsConstraint(int sideLength, IEnumerable<int> affectedCells = null) : base(affectedCells)
         {
+            if (AffectedCells != null && AffectedCells.Length != sideLength * sideLength)
+                throw new ArgumentException("ParityUniqueRowsColumnsConstraint: The number of affected cells must be equal to the square of the side length.");
             SideLength = sideLength;
         }
 
@@ -26,9 +28,10 @@ namespace PuzzleSolvers
         {
             if (state.LastPlacedCell is int cell)
             {
-                var x = cell % SideLength;
-                var y = cell / SideLength;
-                var numUnknownsInColumn = Enumerable.Range(0, SideLength).Count(row => state[x + SideLength * row] == null);
+                var innerCell = AffectedCells == null ? cell : AffectedCells.IndexOf(cell);
+                var x = innerCell % SideLength;
+                var y = innerCell / SideLength;
+                var numUnknownsInColumn = Enumerable.Range(0, SideLength).Count(row => state[coord(x, row)] == null);
                 if (numUnknownsInColumn < 2)
                 {
                     // We just placed the last or second-last value in this column. 
@@ -42,24 +45,24 @@ namespace PuzzleSolvers
                         var discrepantRow = -1;
                         for (var row = 0; row < SideLength; row++)
                         {
-                            if (state[(numUnknownsInColumn == 0 ? col : x) + SideLength * row] == null && state[(numUnknownsInColumn == 0 ? x : col) + SideLength * row] != null)
+                            if (state[coord(numUnknownsInColumn == 0 ? col : x, row)] == null && state[coord(numUnknownsInColumn == 0 ? x : col, row)] != null)
                             {
                                 if (discrepantRow == -1)
                                     discrepantRow = row;
                                 else
                                     goto nextColumn;
                             }
-                            else if (state[col + SideLength * row] == null || state[col + SideLength * row].Value % 2 != state[x + SideLength * row].Value % 2)
+                            else if (state[coord(col, row)] == null || state[coord(col, row)].Value % 2 != state[coord(x, row)].Value % 2)
                                 goto nextColumn;
                         }
                         for (var v = state.MinValue; v <= state.MaxValue; v++)
-                            if (v % 2 == state[(numUnknownsInColumn == 0 ? x : col) + SideLength * discrepantRow].Value % 2)
-                                state.MarkImpossible((numUnknownsInColumn == 0 ? col : x) + SideLength * discrepantRow, v);
+                            if (v % 2 == state[coord(numUnknownsInColumn == 0 ? x : col, discrepantRow)].Value % 2)
+                                state.MarkImpossible(coord(numUnknownsInColumn == 0 ? col : x, discrepantRow), v);
                         nextColumn:;
                     }
                 }
 
-                var numUnknownsInRow = Enumerable.Range(0, SideLength).Count(col => state[col + SideLength * y] == null);
+                var numUnknownsInRow = Enumerable.Range(0, SideLength).Count(col => state[coord(col, y)] == null);
                 if (numUnknownsInRow < 2)
                 {
                     // See comment above for columns
@@ -71,24 +74,26 @@ namespace PuzzleSolvers
                         var discrepantCol = -1;
                         for (var col = 0; col < SideLength; col++)
                         {
-                            if (state[col + SideLength * (numUnknownsInRow == 0 ? row : y)] == null && state[col + SideLength * (numUnknownsInRow == 0 ? y : row)] != null)
+                            if (state[coord(col, numUnknownsInRow == 0 ? row : y)] == null && state[coord(col, numUnknownsInRow == 0 ? y : row)] != null)
                             {
                                 if (discrepantCol == -1)
                                     discrepantCol = col;
                                 else
                                     goto nextRow;
                             }
-                            else if (state[col + SideLength * row] == null || state[col + SideLength * row].Value % 2 != state[col + SideLength * y].Value % 2)
+                            else if (state[coord(col, row)] == null || state[coord(col, row)].Value % 2 != state[coord(col, y)].Value % 2)
                                 goto nextRow;
                         }
                         for (var v = state.MinValue; v <= state.MaxValue; v++)
-                            if (v % 2 == state[discrepantCol + SideLength * (numUnknownsInRow == 0 ? y : row)].Value % 2)
-                                state.MarkImpossible(discrepantCol + SideLength * (numUnknownsInRow == 0 ? row : y), v);
+                            if (v % 2 == state[coord(discrepantCol, numUnknownsInRow == 0 ? y : row)].Value % 2)
+                                state.MarkImpossible(coord(discrepantCol, numUnknownsInRow == 0 ? row : y), v);
                         nextRow:;
                     }
                 }
             }
             return null;
         }
+
+        private int coord(int col, int row) => AffectedCells == null ? col + SideLength * row : AffectedCells[col + SideLength * row];
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
@@ -18,22 +17,25 @@ namespace PuzzleSolvers
         private static readonly (int offset, int toEnforce)[] _combinations = new (int offset, int toEnforce)[] { (-2, -1), (-1, -2), (-1, 1), (1, -1), (1, 2), (2, 1) };
 
         /// <summary>Override; see base.</summary>
+        public override bool CanReevaluate => true;
+
+        /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
-            if (state.LastPlacedCell is int lastPlacedCell)
+            for (var ix = 0; ix < AffectedCells.Length; ix++)
             {
-                var ix = AffectedCells.IndexOf(lastPlacedCell);
                 foreach (var (offset, toEnforce) in _combinations)
                 {
                     if (ix + offset < 0 || ix + offset >= AffectedCells.Length)
                         continue;
                     if (ix + toEnforce < 0 || ix + toEnforce >= AffectedCells.Length)
                         continue;
-                    if (state[AffectedCells[ix + offset]] == null || state[AffectedCells[ix + offset]].Value % 2 != state[lastPlacedCell].Value % 2 || state[AffectedCells[ix + toEnforce]] != null)
-                        continue;
-                    for (var v = state.MinValue; v <= state.MaxValue; v++)
-                        if (v % 2 == state[lastPlacedCell].Value % 2)
-                            state.MarkImpossible(AffectedCells[ix + toEnforce], v);
+
+                    if (state[AffectedCells[ix + toEnforce]] == null &&
+                        state.AllSame(AffectedCells[ix + offset], value => value % 2, out var parity1) &&
+                        state.AllSame(AffectedCells[ix], value => value % 2, out var parity2) &&
+                        parity1 == parity2)
+                        state.MarkImpossible(AffectedCells[ix + toEnforce], value => value % 2 == parity1);
                 }
             }
             return null;
