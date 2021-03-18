@@ -570,6 +570,34 @@ namespace PuzzleSolvers
                         MarkImpossible(cell, otherValue);
             }
 
+            public override bool AllSame<T>(int cell, Func<int, T> selector, out T result)
+            {
+                if (Grid[cell] != null)
+                {
+                    result = selector(Grid[cell].Value + MinVal);
+                    return true;
+                }
+                T tmpResult = default;
+                var found = false;
+                for (var value = MinVal; value <= MaxVal; value++)
+                    if (!Takens[cell][value - MinVal])
+                    {
+                        var mapped = selector(value);
+                        if (!found)
+                        {
+                            tmpResult = mapped;
+                            found = true;
+                        }
+                        else if (!mapped.Equals(tmpResult))
+                        {
+                            result = default;
+                            return false;
+                        }
+                    }
+                result = tmpResult;
+                return found;
+            }
+
             public override int? this[int cell] => Grid[cell] == null ? null : Grid[cell].Value + MinVal;
             public override bool IsImpossible(int cell, int value) => value < MinVal || value > MaxVal || (Grid[cell] != null && Grid[cell].Value != value - MinVal) || Takens[cell][value - MinVal];
             public override int? LastPlacedCell => LastPlacedIx;

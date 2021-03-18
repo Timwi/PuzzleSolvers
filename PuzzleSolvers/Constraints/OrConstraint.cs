@@ -47,6 +47,7 @@ namespace PuzzleSolvers
             public override int MinValue => Parent.MinValue;
             public override int MaxValue => Parent.MaxValue;
             public override int GridSize => Parent.GridSize;
+            public override bool AllSame<T>(int cell, Func<int, T> predicate, out T result) => throw new NotImplementedException();
         }
 
         /// <summary>Override; see base.</summary>

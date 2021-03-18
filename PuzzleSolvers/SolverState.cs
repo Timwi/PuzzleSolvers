@@ -46,6 +46,18 @@ namespace PuzzleSolvers
         ///     marked impossible or is out of range.</summary>
         public abstract bool IsImpossible(int cell, int value);
 
+        /// <summary>
+        ///     Determines if all values that are still possible in the specified <paramref name="cell"/> have the same value
+        ///     when projected through the specified <paramref name="predicate"/>. For example, this can be used to determine
+        ///     if all the values still possible are the same parity, or all primes/non-primes, etc.</summary>
+        /// <param name="cell">
+        ///     The cell to examine</param>
+        /// <param name="predicate">
+        ///     The projection function to run each value through.</param>
+        /// <param name="result">
+        ///     Receives the projected value that all still possible values satisfy.</param>
+        public abstract bool AllSame<T>(int cell, Func<int, T> predicate, out T result) where T : IEquatable<T>;
+
         /// <summary>Returns the smallest value that is still possible within the specified <paramref name="cell"/>.</summary>
         public int MinPossible(int cell)
         {
