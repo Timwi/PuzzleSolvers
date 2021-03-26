@@ -380,7 +380,7 @@ namespace PuzzleSolvers
                 if (instr != null && instr.ShowContinuousProgress != null && recursionDepth < instr.ShowContinuousProgress.Value)
                 {
                     Console.CursorLeft = 0;
-                    Console.CursorTop = recursionDepth;
+                    Console.CursorTop = recursionDepth + (instr.ShowContinuousProgressConsoleTop ?? 0);
                     ConsoleUtil.Write($"Cell {ix}: " + Enumerable.Range(0, takens[ix].Length).Where(v => !instr.ShowContinuousProgressShortened || !takens[ix][v]).Select(v => (v + MinValue).ToString().Color(
                         takens[ix][v] ? ConsoleColor.DarkBlue : v == val ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
                         v == val ? ConsoleColor.DarkGreen : ConsoleColor.Black)).JoinColoredString(" "));
@@ -488,7 +488,7 @@ namespace PuzzleSolvers
             if (instr != null && instr.ShowContinuousProgress != null && recursionDepth < instr.ShowContinuousProgress.Value)
             {
                 Console.CursorLeft = 0;
-                Console.CursorTop = recursionDepth;
+                Console.CursorTop = recursionDepth + (instr.ShowContinuousProgressConsoleTop ?? 0);
                 Console.Write(new string(' ', Console.BufferWidth - 1));
             }
         }
@@ -497,12 +497,12 @@ namespace PuzzleSolvers
             instr != null && instr.IntendedSolution != null &&
             instr.IntendedSolution.All((v, cell) => state.Grid[cell] == v - MinValue || (state.Grid[cell] == null && !state.Takens[cell][v - MinValue]));
 
-        void __debug_generateSvg(SolverStateImpl state, int[] intendedSolution = null, int? highlightIx = null)
+        void __debug_generateSvg(SolverStateImpl state, int[] intendedSolution = null, IEnumerable<int> highlightIxs = null)
         {
             File.WriteAllText(@"D:\temp\temp.svg", $@"
                 <svg viewBox='-.1 -.1 9.2 9.2' xmlns='http://www.w3.org/2000/svg' text-anchor='middle' font-family='Work Sans'>
                     {Enumerable.Range(0, 81).Select(cell => $@"
-                        <rect x='{cell % 9}' y='{cell / 9}' width='1' height='1' stroke='black' stroke-width='{(highlightIx == cell ? .05 : .01)}' fill='{(intendedSolution != null && (state.Grid[cell] != null ? (state.Grid[cell].Value != intendedSolution[cell] - state.MinVal) : (state.Takens[cell][intendedSolution[cell] - state.MinVal])) ? "rgba(255, 0, 0, .1)" : "none")}' />
+                        <rect x='{cell % 9}' y='{cell / 9}' width='1' height='1' stroke='black' stroke-width='{(highlightIxs != null && highlightIxs.Contains(cell) ? .05 : .01)}' fill='{(intendedSolution != null && (state.Grid[cell] != null ? (state.Grid[cell].Value != intendedSolution[cell] - state.MinVal) : (state.Takens[cell][intendedSolution[cell] - state.MinVal])) ? "rgba(255, 0, 0, .1)" : "none")}' />
                         {(state.Grid[cell] != null
                             ? $"<text x='{cell % 9 + .5}' y='{cell / 9 + .8}' font-size='.8'>{state.Grid[cell] + state.MinVal}</text>"
                             : Enumerable.Range(0, 9).Where(v => !state.Takens[cell][v]).Select(v => $"<text x='{cell % 9 + .25 * (1 + v % 3)}' y='{cell / 9 + .25 * (1 + v / 3) + .1}' font-size='.3'>{v + state.MinVal}</text>").JoinString()

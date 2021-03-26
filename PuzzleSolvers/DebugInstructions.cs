@@ -9,6 +9,8 @@ namespace PuzzleSolvers
     {
         /// <summary>Shows the first n cells of the solver’s recursive process on the console.</summary>
         public int? ShowContinuousProgress;
+        /// <summary>Leaves a number of rows at the top of the console window above the debug display.</summary>
+        public int? ShowContinuousProgressConsoleTop;
         /// <summary>
         ///     Only show candidate values for each cell; useful when cells can have many possible values but the majority of
         ///     them are not applicable most of the time.</summary>
