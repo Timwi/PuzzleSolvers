@@ -20,6 +20,9 @@ namespace PuzzleSolvers
         public override string ToString() => $"Uniqueness: {AffectedCells.JoinString(", ")}";
 
         /// <summary>Override; see base.</summary>
+        public override bool CanReevaluate => true;
+
+        /// <summary>Override; see base.</summary>
         public override IEnumerable<Constraint> MarkTakens(SolverState state)
         {
             if (state.LastPlacedCell != null)
@@ -27,29 +30,6 @@ namespace PuzzleSolvers
                 foreach (var cell in AffectedCells)
                     if (cell != state.LastPlacedCell.Value)
                         state.MarkImpossible(cell, state.LastPlacedValue);
-
-                //// Special case: if the number of values equals the number of cells, we can detect when there’s only one place to put a certain number
-                //if (maxValue - minValue + 1 == AffectedCells.Length)
-                //{
-                //    for (var v = 0; v <= minValue - maxValue; v++)
-                //    {
-                //        int? c = null;
-                //        foreach (var cell in AffectedCells)
-                //            if (!takens[cell][v])
-                //            {
-                //                if (c == null)
-                //                    c = cell;
-                //                else
-                //                    goto busted;
-                //            }
-                //        if (c != null)
-                //            for (var v2 = 0; v2 <= minValue - maxValue; v2++)
-                //                if (v2 != v)
-                //                    takens[c.Value][v2] = true;
-
-                //        busted:;
-                //    }
-                //}
             }
             else
             {
@@ -59,6 +39,33 @@ namespace PuzzleSolvers
                         foreach (var cell2 in AffectedCells)
                             if (cell2 != cell1)
                                 state.MarkImpossible(cell2, state[cell1].Value);
+            }
+
+            // Special case: if the number of values equals the number of cells, we can detect when there’s only one place to put a certain number
+            if (state.MaxValue - state.MinValue + 1 == AffectedCells.Length)
+            {
+                for (var v = state.MinValue; v <= state.MaxValue; v++)
+                {
+                    int? cell = null;
+                    for (var ix = 0; ix < AffectedCells.Length; ix++)
+                    {
+                        if (!state.IsImpossible(AffectedCells[ix], v))
+                        {
+                            if (cell == null)
+                                cell = AffectedCells[ix];
+                            else
+                                goto busted;
+                        }
+                    }
+
+                    if (cell == null)
+                        throw new ConstraintViolationException();
+
+                    // We found a value that can have only one place
+                    state.MustBe(cell.Value, v);
+
+                    busted:;
+                }
             }
             return null;
         }
