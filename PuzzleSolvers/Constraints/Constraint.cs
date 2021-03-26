@@ -70,5 +70,22 @@ namespace PuzzleSolvers
                         yield return c + gridWidth * r;
             }
         }
+
+        /// <summary>
+        ///     Converts a convenient coordinate notation into a puzzle-grid index.</summary>
+        /// <param name="str">
+        ///     A string such as <c>"E2"</c>. The letter is assumed to be a column (starting from A) while the digit is a row
+        ///     (starting from 1).</param>
+        /// <param name="gridWidth">
+        ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
+        /// <returns>
+        ///     A cell index.</returns>
+        public static int TranslateCoordinate(string str, int gridWidth = 9)
+        {
+            var m = Regex.Match(str, @"^\s*(?<col>[A-Z])\s*(?<row>\d+)\s*$");
+            if (!m.Success)
+                throw new ArgumentException(string.Format(@"The coordinate “{0}” is not in a valid format. Expected a column letter followed by a row digit.", str), nameof(str));
+            return m.Groups["col"].Value[0] - 'A' + gridWidth * (int.Parse(m.Groups["row"].Value) - 1);
+        }
     }
 }
