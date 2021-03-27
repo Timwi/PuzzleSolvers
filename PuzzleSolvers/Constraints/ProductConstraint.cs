@@ -16,7 +16,7 @@ namespace PuzzleSolvers
         public ProductConstraint(int product, IEnumerable<int> affectedCells) : base(affectedCells) { Product = product; }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell != null && !AffectedCells.Contains(state.LastPlacedCell.Value))
                 return null;

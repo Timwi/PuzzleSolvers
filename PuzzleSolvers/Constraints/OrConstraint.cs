@@ -55,7 +55,7 @@ namespace PuzzleSolvers
         private readonly bool _canReevaluate;
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell != null && !AffectedCells.Contains(state.LastPlacedCell.Value))
                 return null;
@@ -65,24 +65,26 @@ namespace PuzzleSolvers
             for (var sc = 0; sc < Subconstraints.Length; sc++)
             {
                 var substate = new SolverStateImpl { Parent = state, Takens = Ut.NewArray<bool>(state.GridSize, state.MaxValue - state.MinValue + 1) };
-                try
-                {
-                    Subconstraints[sc].MarkTakens(substate);
-                    innerTakens[sc] = substate.Takens;
-                    if (newSubconstraints != null)
-                        newSubconstraints.Add(Subconstraints[sc]);
-                }
-                catch (ConstraintViolationException)
+                var result = Subconstraints[sc].Process(substate);
+                innerTakens[sc] = substate.Takens;
+
+                if (result is ConstraintReplace)
+                    throw new NotImplementedException("The OrConstraint does not support subconstraints that replace themselves with new constraints.");
+                else if (result is ConstraintViolation)
                 {
                     if (newSubconstraints == null)
                         newSubconstraints = new List<Constraint>(Subconstraints.Take(sc));
                 }
+                else if (newSubconstraints != null)
+                    newSubconstraints.Add(Subconstraints[sc]);
             }
 
             foreach (var cell in AffectedCells)
                 state.MarkImpossible(cell, value => innerTakens.All(taken => taken == null || taken[cell][value - state.MinValue]));
 
-            return newSubconstraints != null ? new[] { new OrConstraint(newSubconstraints) } : null;
+            if (newSubconstraints != null)
+                return new[] { new OrConstraint(newSubconstraints) };
+            return null;
         }
     }
 }

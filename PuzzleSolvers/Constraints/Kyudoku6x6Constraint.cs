@@ -25,8 +25,8 @@ namespace PuzzleSolvers
             NumberGrid = numberGrid;
         }
 
-        /// <summary>See <see cref="Constraint.MarkTakens(SolverState)"/>.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        /// <summary>See <see cref="Constraint.Process(SolverState)"/>.</summary>
+        public override ConstraintResult Process(SolverState state)
         {
             if (state.GridSize != 36)
                 throw new NotImplementedException("Kyudoku6x6Constraint only works on 6×6 grids.");

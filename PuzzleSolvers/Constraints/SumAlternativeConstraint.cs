@@ -35,7 +35,7 @@ namespace PuzzleSolvers
         public override bool CanReevaluate => true;
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             // This can only happen if the user has specified a single region at the start.
             if (Regions.Length == 1)
@@ -55,7 +55,7 @@ namespace PuzzleSolvers
                 else
                 {
                     if (min == Sum && max == Sum)   // The constraint is already satisfied
-                        return Enumerable.Empty<Constraint>();
+                        return ConstraintResult.Remove;
                     if (newRegions != null)
                         newRegions.Add(region);
                 }
@@ -64,7 +64,7 @@ namespace PuzzleSolvers
             {
                 if (newRegions.Count == 0)
                     // This can only happen if some regions overlap and the algorithm filled in one of the shared cells.
-                    throw new ConstraintViolationException();
+                    return ConstraintResult.Violation;
                 else if (newRegions.Count == 1)
                     return new[] { new SumConstraint(Sum, newRegions[0]) };
                 else

@@ -17,11 +17,11 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell == null)
                 state.MarkImpossible(AffectedCells[0], value => !IsValid(value));
-            return Enumerable.Empty<Constraint>();
+            return ConstraintResult.Remove;
         }
     }
 }

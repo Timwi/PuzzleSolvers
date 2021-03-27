@@ -19,10 +19,10 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             state.MustBe(Cell, Value);
-            return Enumerable.Empty<Constraint>();
+            return ConstraintResult.Remove;
         }
     }
 }

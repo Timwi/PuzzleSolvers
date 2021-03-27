@@ -35,12 +35,12 @@ namespace PuzzleSolvers
         ///         The algorithm will automatically call this method again on all the new constraints for all cells already
         ///         placed in the grid. The constraints returned MUST NOT themselves return yet more constraints at that
         ///         point.</para></returns>
-        public abstract IEnumerable<Constraint> MarkTakens(SolverState state);
+        public abstract ConstraintResult Process(SolverState state);
 
         /// <summary>
         ///     By default, a constraint is only evaluated once for every digit placed in the grid, but not when another
         ///     constraint merely rules out a possibility. Derived types can override this and return <c>true</c> to indicate
-        ///     to the solver that the constraint should be reevaluated (meaning: have <see cref="MarkTakens"/> called on it
+        ///     to the solver that the constraint should be reevaluated (meaning: have <see cref="Process"/> called on it
         ///     again) when another constraint rules out a value in one of the affected cells of this constraint.</summary>
         public virtual bool CanReevaluate => false;
 

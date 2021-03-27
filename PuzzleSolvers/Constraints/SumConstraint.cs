@@ -25,7 +25,7 @@ namespace PuzzleSolvers
         public override bool CanReevaluate => true;
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             var minPossibleSum = AffectedCells.Sum(state.MinPossible);
             var maxPossibleSum = AffectedCells.Sum(state.MaxPossible);

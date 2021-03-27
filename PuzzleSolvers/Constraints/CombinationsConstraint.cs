@@ -29,7 +29,7 @@ namespace PuzzleSolvers
         public override bool CanReevaluate => true;
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             // This will determine which values are still possible in which of the affected cells.
             var poss = Ut.NewArray(AffectedCells.Length, i => new bool[state.MaxValue - state.MinValue + 1]);

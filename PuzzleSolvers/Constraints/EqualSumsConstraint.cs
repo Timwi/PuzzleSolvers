@@ -16,14 +16,14 @@ namespace PuzzleSolvers
         public EqualSumsConstraint(params IEnumerable<int>[] regions) : base(regions.SelectMany(r => r).Distinct()) { Regions = regions.Select(r => r.ToArray()).ToArray(); }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             for (var i = 0; i < Regions.Length; i++)
             {
                 if (Regions[i].All(cell => state[cell] != null))
                 {
                     var sum = Regions[i].Sum(cell => state[cell].Value);
-                    return Regions.Select(region => new SumConstraint(sum, region));
+                    return Regions.Select(region => new SumConstraint(sum, region)).ToArray();
                 }
             }
             return null;

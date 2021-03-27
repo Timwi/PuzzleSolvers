@@ -34,7 +34,7 @@ namespace PuzzleSolvers
         public override bool CanReevaluate => true;
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             // Determine if we know the offset
             for (var i = 0; i < Area1.Length; i++)

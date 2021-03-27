@@ -17,7 +17,7 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell == AffectedCells[0])
                 state.MarkImpossible(AffectedCells[1], value => !IsValid(state.LastPlacedValue, value));

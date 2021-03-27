@@ -33,7 +33,7 @@ namespace PuzzleSolvers
         public override bool CanReevaluate => true;
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             for (var ix = 0; ix < Area1.Length; ix++)
             {

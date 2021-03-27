@@ -73,7 +73,7 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             for (var cellIx = 0; cellIx < (state.LastPlacedCell != null ? 1 : AffectedCells != null ? AffectedCells.Length : state.GridSize); cellIx++)
             {

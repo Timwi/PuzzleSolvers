@@ -5,7 +5,7 @@ using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolverTester
 {
-    abstract class PuzzleTestFixture
+    public abstract class PuzzleTestFixture
     {
         protected void assertUniqueSolution(Puzzle puzzle, params int[] expectedSolution)
         {

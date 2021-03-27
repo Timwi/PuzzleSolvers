@@ -26,7 +26,7 @@ namespace PuzzleSolvers
         public NoTouchModuloConstraint(int width, int height, int modulo) : base(Enumerable.Range(0, width * height)) { GridWidth = width; GridHeight = height; Modulo = modulo; }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell is int cell)
             {

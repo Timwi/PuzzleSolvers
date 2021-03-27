@@ -4,7 +4,7 @@ namespace PuzzleSolvers
 {
     /// <summary>
     ///     Encapsulates information given to <see cref="Constraint"/> implementations (in a call to <see
-    ///     cref="Constraint.MarkTakens(SolverState)"/>) during the puzzle solving algorithm.</summary>
+    ///     cref="Constraint.Process(SolverState)"/>) during the puzzle solving algorithm.</summary>
     public abstract class SolverState
     {
         /// <summary>
@@ -81,12 +81,12 @@ namespace PuzzleSolvers
         }
 
         /// <summary>
-        ///     If not <c>null</c>, <see cref="Constraint.MarkTakens(SolverState)"/> was called immediately after placing a
+        ///     If not <c>null</c>, <see cref="Constraint.Process(SolverState)"/> was called immediately after placing a
         ///     value in the cell given by this index. (This value may be tentative; if the algorithm finds it to be
         ///     impossible, it will backtrack.) The implementation may examine deductions from just that one value. If
         ///     <c>null</c>, the method may have been called (a) at the very start of the algorithm before placing any values;
         ///     (b) after this constraint was returned from another constraint’s <see
-        ///     cref="Constraint.MarkTakens(SolverState)"/> call to replace it; or (c) if the constraint has <see
+        ///     cref="Constraint.Process(SolverState)"/> call to replace it; or (c) if the constraint has <see
         ///     cref="Constraint.CanReevaluate"/> and one of its affected cells has changed. In these cases, implementations
         ///     should examine the whole set of affected cells for possible deductions.</summary>
         public abstract int? LastPlacedCell { get; }

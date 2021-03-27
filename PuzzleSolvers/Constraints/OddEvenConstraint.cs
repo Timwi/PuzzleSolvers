@@ -18,7 +18,7 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             int req;
 
@@ -71,7 +71,7 @@ namespace PuzzleSolvers
             // Mark all the cells of the wrong parity as taken. After this, we don’t need the constraint anymore.
             foreach (var cell in AffectedCells)
                 state.MarkImpossible(cell, value => value % 2 != req);
-            return Enumerable.Empty<Constraint>();
+            return ConstraintResult.Remove;
         }
     }
 

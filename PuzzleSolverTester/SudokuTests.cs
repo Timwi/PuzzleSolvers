@@ -5,7 +5,7 @@ using PuzzleSolvers;
 namespace PuzzleSolverTester
 {
     [TestClass]
-    class SudokuTests : PuzzleTestFixture
+    public class SudokuTests : PuzzleTestFixture
     {
         [TestMethod]
         public void TestSudoku()

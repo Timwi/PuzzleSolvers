@@ -48,7 +48,7 @@ namespace PuzzleSolvers
         public override bool CanReevaluate => true;
 
         /// <summary>Override; see base.</summary>
-        public override IEnumerable<Constraint> MarkTakens(SolverState state)
+        public override ConstraintResult Process(SolverState state)
         {
             state.MarkImpossible(AffectedCells[0], value => value < 0 || value >= AffectedCells.Length || state.IsImpossible(AffectedCells[value], Value));
 

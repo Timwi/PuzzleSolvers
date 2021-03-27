@@ -294,12 +294,12 @@ namespace PuzzleSolvers
             {
                 var constraint = constraintsUse[cIx];
                 state.CurrentConstraint = constraint;
-                var cs = constraint.MarkTakens(state);
-                if (cs != null)
+                var cs = constraint.Process(state);
+                if (cs is ConstraintReplace repl)
                 {
                     if (newConstraints == null)
                         newConstraints = new List<Constraint>(constraintsUse.Take(cIx));
-                    newConstraints.AddRange(cs);
+                    newConstraints.AddRange(repl.NewConstraints);
                 }
                 else if (newConstraints != null)
                     newConstraints.Add(constraint);
@@ -398,86 +398,84 @@ namespace PuzzleSolvers
                 List<Constraint> newConstraintsUse = null;
                 List<Constraint> newMustReevaluate = null;
 
-                try
+                for (var i = 0; i < constraintsUse.Count; i++)
                 {
-                    for (var i = 0; i < constraintsUse.Count; i++)
+                    var constraint = constraintsUse[i];
+                    state.CurrentConstraint = constraint;
+
+                    ConstraintResult processResult = null;
+                    if ((state.LastPlacedIx != null && (constraint.AffectedCells == null || constraint.AffectedCells.Contains(ix))) || (mustReevaluate != null && mustReevaluate.Contains(constraint)))
                     {
-                        var constraint = constraintsUse[i];
-                        state.CurrentConstraint = constraint;
+                        var doExamine = instr != null && (instr.ExamineConstraint == null || instr.ExamineConstraint(constraint));
+                        var wasIntendedSolutionPossible = doExamine && intendedSolutionPossible(instr, state);
+                        var takensDebugCopy = wasIntendedSolutionPossible ? state.Takens.Select(b => (bool[]) b.Clone()).ToArray() : null;
 
-                        IEnumerable<Constraint> replaceConstraints = null;
-                        if ((state.LastPlacedIx != null && (constraint.AffectedCells == null || constraint.AffectedCells.Contains(ix))) || (mustReevaluate != null && mustReevaluate.Contains(constraint)))
+                        // CALL THE CONSTRAINT
+                        processResult = constraint.Process(state);
+
+                        // If the intended solution was previously possible but not anymore, output the requested debug information
+                        if (wasIntendedSolutionPossible && !intendedSolutionPossible(instr, state))
                         {
-                            var doExamine = instr != null && (instr.ExamineConstraint == null || instr.ExamineConstraint(constraint));
-                            var wasIntendedSolutionPossible = doExamine && intendedSolutionPossible(instr, state);
-                            var takensDebugCopy = wasIntendedSolutionPossible ? state.Takens.Select(b => (bool[]) b.Clone()).ToArray() : null;
-
-                            // CALL THE CONSTRAINT
-                            replaceConstraints = constraint.MarkTakens(state);
-
-                            // If the intended solution was previously possible but not anymore, output the requested debug information
-                            if (wasIntendedSolutionPossible && !intendedSolutionPossible(instr, state))
+                            ConsoleUtil.WriteLine("Constraint {0/Magenta} removed the intended solution:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName));
+                            var numDigits = (GridSize - 1).ToString().Length;
+                            for (var cell = 0; cell < GridSize; cell++)
                             {
-                                ConsoleUtil.WriteLine("Constraint {0/Magenta} removed the intended solution:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName));
-                                var numDigits = (GridSize - 1).ToString().Length;
-                                for (var cell = 0; cell < GridSize; cell++)
-                                {
-                                    string valueId(int v) => instr.UseLetters ? ((char) ('A' + v)).ToString() : (v + MinValue).ToString();
-                                    var cellLine = Enumerable.Range(0, MaxValue - MinValue + 1)
-                                        .Select(v => valueId(v).Color(takensDebugCopy[cell][v] != state.Takens[cell][v] ? ConsoleColor.Red : state.Takens[cell][v] ? ConsoleColor.DarkGray : ConsoleColor.Yellow))
-                                        .JoinColoredString(" ");
-                                    var cellStr = cell.ToString().PadLeft(numDigits, ' ') + ". ";
-                                    ConsoleUtil.WriteLine($"{cellStr.Color(cell == ix ? ConsoleColor.Cyan : ConsoleColor.DarkCyan)}{cellLine}   {(grid[cell] == null ? "?".Color(ConsoleColor.DarkGreen) : valueId(grid[cell].Value).Color(ConsoleColor.Green))}", null);
-                                }
-                                Console.WriteLine();
+                                string valueId(int v) => instr.UseLetters ? ((char) ('A' + v)).ToString() : (v + MinValue).ToString();
+                                var cellLine = Enumerable.Range(0, MaxValue - MinValue + 1)
+                                    .Select(v => valueId(v).Color(takensDebugCopy[cell][v] != state.Takens[cell][v] ? ConsoleColor.Red : state.Takens[cell][v] ? ConsoleColor.DarkGray : ConsoleColor.Yellow))
+                                    .JoinColoredString(" ");
+                                var cellStr = cell.ToString().PadLeft(numDigits, ' ') + ". ";
+                                ConsoleUtil.WriteLine($"{cellStr.Color(cell == ix ? ConsoleColor.Cyan : ConsoleColor.DarkCyan)}{cellLine}   {(grid[cell] == null ? "?".Color(ConsoleColor.DarkGreen) : valueId(grid[cell].Value).Color(ConsoleColor.Green))}", null);
                             }
+                            Console.WriteLine();
                         }
 
-                        if (replaceConstraints != null)
-                        {
-                            // A constraint changed. That means we definitely need a new list of constraints for the recursive call.
-                            if (newConstraintsUse == null)
-                            {
-                                newConstraintsUse = new List<Constraint>(constraintsUse.Take(i));
-                                if (newMustReevaluate == null)
-                                    newMustReevaluate = new List<Constraint>();
-                            }
-                            var cIx = newConstraintsUse.Count;
-                            newConstraintsUse.AddRange(replaceConstraints);
-                            newMustReevaluate.AddRange(newConstraintsUse.Skip(cIx));
-                        }
-                        else if (newConstraintsUse != null)
-                            newConstraintsUse.Add(constraint);
+                        if (processResult is ConstraintViolation)
+                            goto digitBusted;
                     }
 
-                    // Check if any reevaluatable constraints affect a cell that changed
-                    if (state.TakensChanged != null)
-                        foreach (var constraint in constraintsUse)
-                            if (constraint.CanReevaluate && (constraint.AffectedCells == null
-                                ? state.TakensChanged.Any(tup => tup.changed && tup.initiator != constraint)
-                                : constraint.AffectedCells.Any(c => state.TakensChanged[c].changed && state.TakensChanged[c].initiator != constraint)))
-                            {
-                                if (newMustReevaluate == null)
-                                    newMustReevaluate = new List<Constraint>();
-                                newMustReevaluate.Add(constraint);
-                            }
-
-                    if (newConstraintsUse != null || newMustReevaluate != null)
+                    // This code MUST be kept outside of the “if” above. This is because its “else” clause needs to run even if the above “if” didn’t.
+                    if (processResult is ConstraintReplace repl)
                     {
-                        constraintsUse = newConstraintsUse ?? constraintsUse;
-                        mustReevaluate = newMustReevaluate;
-                        state.LastPlacedIx = null;
-                        state.ClearTakensChanged();
-                        goto reevaluate;
+                        // A constraint changed. That means we definitely need a new list of constraints for the recursive call.
+                        if (newConstraintsUse == null)
+                        {
+                            newConstraintsUse = new List<Constraint>(constraintsUse.Take(i));
+                            if (newMustReevaluate == null)
+                                newMustReevaluate = new List<Constraint>();
+                        }
+                        var cIx = newConstraintsUse.Count;
+                        newConstraintsUse.AddRange(repl.NewConstraints);
+                        newMustReevaluate.AddRange(newConstraintsUse.Skip(cIx));
                     }
+                    else if (newConstraintsUse != null)
+                        newConstraintsUse.Add(constraint);
+                }
 
-                    // Allow this list to be garbage-collected
-                    mustReevaluate = null;
-                }
-                catch (ConstraintViolationException)
+                // Check if any reevaluatable constraints affect a cell that changed
+                if (state.TakensChanged != null)
+                    foreach (var constraint in constraintsUse)
+                        if (constraint.CanReevaluate && (constraint.AffectedCells == null
+                            ? state.TakensChanged.Any(tup => tup.changed && tup.initiator != constraint)
+                            : constraint.AffectedCells.Any(c => state.TakensChanged[c].changed && state.TakensChanged[c].initiator != constraint)))
+                        {
+                            if (newMustReevaluate == null)
+                                newMustReevaluate = new List<Constraint>();
+                            newMustReevaluate.Add(constraint);
+                        }
+
+                if (newConstraintsUse != null || newMustReevaluate != null)
                 {
-                    goto digitBusted;
+                    constraintsUse = newConstraintsUse ?? constraintsUse;
+                    mustReevaluate = newMustReevaluate;
+                    state.LastPlacedIx = null;
+                    state.ClearTakensChanged();
+                    goto reevaluate;
                 }
+
+                // Allow this list to be garbage-collected
+                mustReevaluate = null;
+
                 foreach (var solution in solve(grid, state.Takens, constraintsUse, cellPriority, instr, recursionDepth + 1))
                     yield return solution;
 
@@ -562,7 +560,7 @@ namespace PuzzleSolvers
                 if (Grid[cell] != null)
                 {
                     if (Grid[cell].Value + MinVal != value)
-                        throw new ConstraintViolationException();
+                        throw new InvalidOperationException("A constraint attempted to set a cell to a value that is already set to a different value.");
                     return;
                 }
                 for (var otherValue = MinVal; otherValue <= MaxVal; otherValue++)
