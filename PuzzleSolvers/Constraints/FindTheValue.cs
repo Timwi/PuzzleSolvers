@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PuzzleSolvers
 {
@@ -13,7 +15,7 @@ namespace PuzzleSolvers
     {
         /// <summary>The “focus” cell that indicates how far <see cref="Value"/> is.</summary>
         public int Cell { get; private set; }
-        /// <summary>The value that must be in the cell a number of steps in <see cref="Direction"/> from <see cref="Cell"/>.</summary>
+        /// <summary>The value that must be in the cell a number of steps away from <see cref="Cell"/>.</summary>
         public int Value { get; private set; }
 
         /// <summary>Constructor.</summary>
@@ -21,6 +23,8 @@ namespace PuzzleSolvers
         {
             Cell = cell;
             Value = value;
+            if (AffectedCells.Length == 0 || AffectedCells[0] != Cell)
+                throw new InvalidOperationException("The first affected cell must be ‘cell’.");
         }
 
         /// <summary>
@@ -60,6 +64,16 @@ namespace PuzzleSolvers
         }
 
         /// <summary>Used to indicate directions in <see cref="FindTheValueConstraint(int, int, int, CellDirection, int)"/>.</summary>
-        public enum CellDirection { Up, Right, Down, Left }
+        public enum CellDirection
+        {
+            /// <summary>Up (negative Y direction).</summary>
+            Up,
+            /// <summary>Right (positive X direction).</summary>
+            Right,
+            /// <summary>Down (positive Y direction).</summary>
+            Down,
+            /// <summary>Left (negative X direction).</summary>
+            Left
+        }
     }
 }
