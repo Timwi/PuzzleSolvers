@@ -5,7 +5,7 @@ using System.Linq;
 namespace PuzzleSolvers
 {
     /// <summary>Constrains three cells to values that satisfy a lambda expression.</summary>
-    public sealed class ThreeCellLambdaConstraint : Constraint
+    public class ThreeCellLambdaConstraint : Constraint
     {
         /// <summary>A function that determines whether a set of values is valid in the relevant cells.</summary>
         public Func<int, int, int, bool> IsValid { get; private set; }

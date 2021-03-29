@@ -8,7 +8,7 @@ namespace PuzzleSolvers
     ///     Constrains six cells to values that satisfy a lambda expression.</summary>
     /// <remarks>
     ///     This constraint is not very efficient as it will only be evaluated once all but one of the cells is filled in.</remarks>
-    public sealed class SixCellLambdaConstraint : Constraint
+    public class SixCellLambdaConstraint : Constraint
     {
         /// <summary>A function that determines whether a set of values is valid in the relevant cells.</summary>
         public Func<int, int, int, int, int, int, bool> IsValid { get; private set; }

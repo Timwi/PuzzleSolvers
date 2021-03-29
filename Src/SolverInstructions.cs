@@ -5,7 +5,7 @@ namespace PuzzleSolvers
     /// <summary>
     ///     Use this to instruct the puzzle solver (<see cref="Puzzle.Solve(SolverInstructions)"/>) to perform certain types
     ///     of analysis for the debugging of constraint implementations.</summary>
-    public sealed class SolverInstructions
+    public class SolverInstructions
     {
         /// <summary>Shows the first n cells of the solver’s recursive process on the console.</summary>
         public int? ShowContinuousProgress;

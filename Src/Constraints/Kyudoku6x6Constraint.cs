@@ -7,7 +7,7 @@ namespace PuzzleSolvers
     /// <summary>
     ///     Describes a constraint that will solve a Kyudoku puzzle given a 6×6 grid of numbers 1–9. The solution will contain
     ///     a 0 for marked cells and a 1 for struck-out cells.</summary>
-    public sealed class Kyudoku6x6Constraint : Constraint
+    public class Kyudoku6x6Constraint : Constraint
     {
         /// <summary>Initial grid of numbers to operate on.</summary>
         public int[] NumberGrid { get; private set; }

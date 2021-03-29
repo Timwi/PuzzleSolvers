@@ -7,7 +7,7 @@ namespace PuzzleSolvers
     /// <summary>
     ///     Describes a constraint in a number-placement puzzle (such as Sudoku) where several regions must have the same sum,
     ///     but the sum is not given.</summary>
-    public sealed class EqualSumsConstraint : Constraint
+    public class EqualSumsConstraint : Constraint
     {
         /// <summary>Contains the regions affected by this constraint. Each region is an array of cell indices.</summary>
         public int[][] Regions { get; private set; }

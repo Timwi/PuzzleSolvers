@@ -6,7 +6,7 @@ using RT.Util.ExtensionMethods;
 namespace PuzzleSolvers
 {
     /// <summary>Describes a constraint in which a group of cells can be only all evens or all odds.</summary>
-    public sealed class OddEvenConstraint : Constraint
+    public class OddEvenConstraint : Constraint
     {
         /// <summary>Specifies the specific flavor of this constraint.</summary>
         public OddEvenType Type { get; private set; }

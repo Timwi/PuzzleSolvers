@@ -5,7 +5,7 @@ namespace PuzzleSolvers
     /// <summary>
     ///     Describes a constraint in a number placement puzzle in which cells that are diagonal from each other (like a
     ///     bishop’s move in chess) cannot contain the same value.</summary>
-    public sealed class AntiBishopConstraint : AntiChessConstraint
+    public class AntiBishopConstraint : AntiChessConstraint
     {
         /// <summary>
         ///     Constructor.</summary>

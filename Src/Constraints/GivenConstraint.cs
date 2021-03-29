@@ -4,7 +4,7 @@ using System.Linq;
 namespace PuzzleSolvers
 {
     /// <summary>Describes a given in a puzzle (a value already pre-filled at the start).</summary>
-    public sealed class GivenConstraint : Constraint
+    public class GivenConstraint : Constraint
     {
         /// <summary>The index of the cell that contains this given.</summary>
         public int Cell { get; private set; }

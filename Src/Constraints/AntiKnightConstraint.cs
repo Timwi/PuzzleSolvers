@@ -7,7 +7,7 @@ namespace PuzzleSolvers
     /// <summary>
     ///     Describes a constraint in a number placement puzzle in which cells that are a knight’s move away from each other
     ///     cannot contain the same value.</summary>
-    public sealed class AntiKnightConstraint : AntiChessConstraint
+    public class AntiKnightConstraint : AntiChessConstraint
     {
         /// <summary>
         ///     If <c>true</c>, the constraint considers the grid to be toroidal, meaning that it wraps around the left/right

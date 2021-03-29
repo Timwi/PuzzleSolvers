@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace PuzzleSolvers
 {
@@ -58,6 +59,30 @@ namespace PuzzleSolvers
                     }
             }
             return recurse(new int[numDigits], 0);
+        }
+
+        /// <summary>Returns the set of cells adjacent to the specified cell (including diagonals).</summary>
+        public static IEnumerable<int> Adjacent(int cell, int gridWidth = 9, int gridHeight = 9)
+        {
+            var x = cell % gridWidth;
+            var y = cell / gridHeight;
+            for (var xx = x - 1; xx <= x + 1; xx++)
+                if (xx >= 0 && xx < gridWidth)
+                    for (var yy = y - 1; yy <= y + 1; yy++)
+                        if (yy >= 0 && yy < gridHeight && (xx != x || yy != y))
+                            yield return xx + gridWidth * yy;
+        }
+
+        /// <summary>Returns the set of cells orthogonally adjacent to the specified cell (no diagonals).</summary>
+        public static IEnumerable<int> Orthogonal(int cell, int gridWidth = 9, int gridHeight = 9)
+        {
+            var x = cell % gridWidth;
+            var y = cell / gridHeight;
+            for (var xx = x - 1; xx <= x + 1; xx++)
+                if (xx >= 0 && xx < gridWidth)
+                    for (var yy = y - 1; yy <= y + 1; yy++)
+                        if (yy >= 0 && yy < gridHeight && (xx == x || yy == y) && (xx != x || yy != y))
+                            yield return xx + gridWidth * yy;
         }
     }
 }

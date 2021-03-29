@@ -5,7 +5,7 @@ using RT.Util.ExtensionMethods;
 namespace PuzzleSolvers
 {
     /// <summary>Describes a Sudoku puzzle with irregular regions.</summary>
-    public sealed class JigsawSudoku : LatinSquare
+    public class JigsawSudoku : LatinSquare
     {
         /// <summary>
         ///     Constructor.</summary>

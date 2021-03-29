@@ -6,7 +6,7 @@ using RT.Util.ExtensionMethods;
 namespace PuzzleSolvers
 {
     /// <summary>Encapsulates a 9×9 Sudoku puzzle with Killer cages (sum + uniqueness constraints).</summary>
-    public sealed class KillerSudoku : Sudoku
+    public class KillerSudoku : Sudoku
     {
         /// <summary>
         ///     Constructs a Killer Sudoku with cages (regions) that each have a <see cref="SumConstraint"/> and a <see

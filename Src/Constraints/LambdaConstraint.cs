@@ -8,7 +8,7 @@ namespace PuzzleSolvers
     public delegate ConstraintResult CustomConstraint(SolverState state);
 
     /// <summary>Can be used to describe any constraint that applies to the whole puzzle using a lambda expression.</summary>
-    public sealed class LambdaConstraint : Constraint
+    public class LambdaConstraint : Constraint
     {
         /// <summary>The function used to evaluate this constraint.</summary>
         public CustomConstraint Lambda { get; private set; }
