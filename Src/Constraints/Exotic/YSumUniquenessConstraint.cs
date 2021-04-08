@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace PuzzleSolvers
+namespace PuzzleSolvers.Exotic
 {
     /// <summary>
     ///     Describes a “Y-sum” constraint: the first Y numbers must sum up to a specified total, where Y is the Xth digit and
