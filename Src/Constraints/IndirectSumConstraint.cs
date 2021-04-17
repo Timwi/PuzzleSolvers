@@ -19,7 +19,7 @@ namespace PuzzleSolvers
         public IndirectSumConstraint(int sumCell, IEnumerable<int> region) : base(region.Concat(new[] { sumCell }))
         {
             SumCell = sumCell;
-            Region = region?.ToArray();
+            Region = region.ToArray();
         }
 
         /// <summary>Override; see base.</summary>

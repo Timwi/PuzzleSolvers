@@ -30,6 +30,12 @@ namespace PuzzleSolvers
         {
             NewConstraints = newConstraints ?? throw new ArgumentNullException(nameof(newConstraints));
         }
+
+        /// <summary>Constructor.</summary>
+        public ConstraintReplace(params Constraint[] newConstraints)
+        {
+            NewConstraints = newConstraints ?? throw new ArgumentNullException(nameof(newConstraints));
+        }
     }
 
     /// <summary>
