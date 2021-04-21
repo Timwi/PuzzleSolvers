@@ -62,7 +62,7 @@
     <Compile Include="SudokuTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PuzzleSolvers\PuzzleSolvers.csproj">
+    <ProjectReference Include="..\Src\PuzzleSolvers.csproj">
       <Project>{FCC3622F-14E7-4BAA-9A15-B72EC86E5B44}</Project>
       <Name>PuzzleSolvers</Name>
     </ProjectReference>

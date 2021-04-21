@@ -3,12 +3,20 @@ using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers.Constraints.Exotic
 {
-    public sealed class LudokuTrackConstraint : Constraint
+    /// <summary>
+    ///     Describes a constraint in a number-placement puzzle. Two cells that are n steps from one another along the track
+    ///     can’t both have the number n. The track is assumed to be a closed loop.</summary>
+    public sealed class TrackConstraint : Constraint
     {
-        public LudokuTrackConstraint(IEnumerable<int> affectedCells) : base(affectedCells)
+        /// <summary>
+        ///     Constructor.</summary>
+        /// <param name="affectedCells">
+        ///     Describes the track. The order of the cells is significant, and the track is assumed to loop back on itself.</param>
+        public TrackConstraint(IEnumerable<int> affectedCells) : base(affectedCells)
         {
         }
 
+        /// <summary>Override; see base.</summary>
         public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell != null)
