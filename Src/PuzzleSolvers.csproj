@@ -11,6 +11,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Properties\**" />
+    <Compile Remove="RT.Util.Core\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <EmbeddedResource Remove="RT.Util.Core\**" />
+    <None Remove="Properties\**" />
+    <None Remove="RT.Util.Core\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Func.cs" />
+    <Compile Remove="PuzzleNETFramework.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="RT.Util.Core" Version="2.0.1684" />
   </ItemGroup>
 

@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7889A11B-5062-4282-8BB3-479745AD5FAC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PuzzleSolversNETFramework</RootNamespace>
+    <AssemblyName>PuzzleSolversNETFramework</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;EXPORT_UTIL</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <IntermediateOutputPath>C:\Users\Timwi\AppData\Local\Temp\vs423E.tmp\Debug\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;EXPORT_UTIL</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <IntermediateOutputPath>C:\Users\Timwi\AppData\Local\Temp\vs423E.tmp\Release\</IntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\Unity2019\Editor\Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="ValueTupleBridge, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ValueTupleBridge.0.1.5\lib\net35\ValueTupleBridge.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Binairo.cs" />
+    <Compile Include="ConstraintResult.cs" />
+    <Compile Include="Constraints\AntiBishopConstraint.cs" />
+    <Compile Include="Constraints\AntiChessConstraint.cs" />
+    <Compile Include="Constraints\AntiKingConstraint.cs" />
+    <Compile Include="Constraints\AntiKnightConstraint.cs" />
+    <Compile Include="Constraints\BattlefieldUniquenessConstraint.cs" />
+    <Compile Include="Constraints\CloneConstraint.cs" />
+    <Compile Include="Constraints\CombinationsConstraint.cs" />
+    <Compile Include="Constraints\ConsecutiveUniquenessConstraint.cs" />
+    <Compile Include="Constraints\Constraint.cs" />
+    <Compile Include="Constraints\EqualSumsConstraint.cs" />
+    <Compile Include="Constraints\Exotic\LittleSandwichConstraint.cs" />
+    <Compile Include="Constraints\Exotic\NeighborSumConstraint.cs" />
+    <Compile Include="Constraints\Exotic\TrackConstraint.cs" />
+    <Compile Include="Constraints\Exotic\YSumUniquenessConstraint.cs" />
+    <Compile Include="Constraints\FindTheValue.cs" />
+    <Compile Include="Constraints\FiveCellLambdaConstraint.cs" />
+    <Compile Include="Constraints\FourCellLambdaConstraint.cs" />
+    <Compile Include="Constraints\GivenConstraint.cs" />
+    <Compile Include="Constraints\IndirectSumConstraint.cs" />
+    <Compile Include="Constraints\Kyudoku6x6Constraint.cs" />
+    <Compile Include="Constraints\LambdaConstraint.cs" />
+    <Compile Include="Constraints\LessThanConstraint.cs" />
+    <Compile Include="Constraints\NoConsecutiveConstraint.cs" />
+    <Compile Include="Constraints\NoTouchModuloConstraint.cs" />
+    <Compile Include="Constraints\OddEvenConstraint.cs" />
+    <Compile Include="Constraints\OffsetCloneConstraint.cs" />
+    <Compile Include="Constraints\OneCellLambdaConstraint.cs" />
+    <Compile Include="Constraints\OrConstraint.cs" />
+    <Compile Include="Constraints\ParityEvennessConstraint.cs" />
+    <Compile Include="Constraints\ParityNoTripletsConstraint.cs" />
+    <Compile Include="Constraints\ParityUniqueRowsColumnsConstraint.cs" />
+    <Compile Include="Constraints\PermutationUniquenessConstraint.cs" />
+    <Compile Include="Constraints\ProductConstraint.cs" />
+    <Compile Include="Constraints\SandwichUniquenessConstraint.cs" />
+    <Compile Include="Constraints\SandwichWraparoundUniquenessConstraint.cs" />
+    <Compile Include="Constraints\SixCellLambdaConstraint.cs" />
+    <Compile Include="Constraints\SkyscraperUniquenessConstraint.cs" />
+    <Compile Include="Constraints\SumAlternativeConstraint.cs" />
+    <Compile Include="Constraints\SumConstraint.cs" />
+    <Compile Include="Constraints\SumOrProductConstraint.cs" />
+    <Compile Include="Constraints\SumUniquenessConstraint.cs" />
+    <Compile Include="Constraints\ThreeCellLambdaConstraint.cs" />
+    <Compile Include="Constraints\TwoCellLambdaConstraint.cs" />
+    <Compile Include="Constraints\UniquenessConstraint.cs" />
+    <Compile Include="Constraints\XSumUniquenessConstraint.cs" />
+    <Compile Include="Fillomino.cs" />
+    <Compile Include="FrameSumSudoku.cs" />
+    <Compile Include="Func.cs" />
+    <Compile Include="JigsawSudoku.cs" />
+    <Compile Include="KillerSudoku.cs" />
+    <Compile Include="LatinSquare.cs" />
+    <Compile Include="Numberlink.cs" />
+    <Compile Include="PuzzleNETFramework.cs" />
+    <Compile Include="PuzzleUtil.cs" />
+    <Compile Include="RT.Util.Core\Alignment.cs" />
+    <Compile Include="RT.Util.Core\ArrayExtensions.cs" />
+    <Compile Include="RT.Util.Core\AutoDictionary.cs" />
+    <Compile Include="RT.Util.Core\AutoList.cs" />
+    <Compile Include="RT.Util.Core\BinValues.cs" />
+    <Compile Include="RT.Util.Core\CollectionExtensions.cs" />
+    <Compile Include="RT.Util.Core\ColoredConsoleOut.cs" />
+    <Compile Include="RT.Util.Core\ConsoleColoredString.cs" />
+    <Compile Include="RT.Util.Core\ConsoleExtensions.cs" />
+    <Compile Include="RT.Util.Core\ConsoleUtil.cs" />
+    <Compile Include="RT.Util.Core\CustomComparer.cs" />
+    <Compile Include="RT.Util.Core\DictionaryExtensions.cs" />
+    <Compile Include="RT.Util.Core\EggsML.cs" />
+    <Compile Include="RT.Util.Core\EnumStrong.cs" />
+    <Compile Include="RT.Util.Core\Extensions.cs" />
+    <Compile Include="RT.Util.Core\General.cs" />
+    <Compile Include="RT.Util.Core\IEnumerableExtensions.cs" />
+    <Compile Include="RT.Util.Core\LazyList.cs" />
+    <Compile Include="RT.Util.Core\ListSorted.cs" />
+    <Compile Include="RT.Util.Core\OffsetToLineCol.cs" />
+    <Compile Include="RT.Util.Core\Parallel.cs" />
+    <Compile Include="RT.Util.Core\QueueViewable.cs" />
+    <Compile Include="RT.Util.Core\ReadOnlyCollections.cs" />
+    <Compile Include="RT.Util.Core\RecentlyUsedCache.cs" />
+    <Compile Include="RT.Util.Core\ReduceRequiredSet.cs" />
+    <Compile Include="RT.Util.Core\ReflectionExtensions.cs" />
+    <Compile Include="RT.Util.Core\StringExtensions.cs" />
+    <Compile Include="RT.Util.Core\TextTable.cs" />
+    <Compile Include="SandwichSudoku.cs" />
+    <Compile Include="SolverInstructions.cs" />
+    <Compile Include="SolverState.cs" />
+    <Compile Include="Sudoku.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Src\PuzzleSolvers.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Src\PuzzleSolvers.csproj.user" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

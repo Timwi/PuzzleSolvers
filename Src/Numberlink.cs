@@ -104,7 +104,7 @@ namespace PuzzleSolvers
                 if (examined.Length == paths.Length)
                 {
                     if (!paths.All(arr => arr.Length == 1))
-                        throw new InternalErrorException("The Numberlink.Solve() algorithm encountered a bug. Please report it to the author!");
+                        throw new InvalidOperationException("The Numberlink.Solve() algorithm encountered a bug. Please report it to the author!");
                     yield return paths.Select(arr => arr[0]).ToArray();
                     yield break;
                 }
