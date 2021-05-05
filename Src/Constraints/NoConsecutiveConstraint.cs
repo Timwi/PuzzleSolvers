@@ -16,9 +16,15 @@ namespace PuzzleSolvers
         /// <summary>
         ///     Optionally specifies a limited set of cells on which the no-consecutive constraint is enforced.</summary>
         /// <remarks>
-        ///     Note this differs from <see cref="Constraint.AffectedCells"/> as that will contain all affected cells plus
-        ///     those that are adjacent to them.</remarks>
+        ///     Note that if <see cref="EnforcedCellsOnly"/> is <c>false</c>, this differs from <see
+        ///     cref="Constraint.AffectedCells"/> as that will contain all enforced cells plus those that are adjacent to
+        ///     them.</remarks>
         public int[] EnforcedCells { get; private set; }
+        /// <summary>
+        ///     If <c>true</c>, only adjacent cells that are both within <see cref="EnforcedCells"/> are enforced. Otherwise,
+        ///     cells outside of <see cref="EnforcedCells"/> that are adjacent to a cell in <see cref="EnforcedCells"/> are
+        ///     also enforced.</summary>
+        public bool EnforcedCellsOnly { get; private set; }
         /// <summary>The width of the grid this constraint applies to.</summary>
         public int GridWidth { get; private set; }
         /// <summary>The height of the grid this constraint applies to.</summary>
@@ -40,7 +46,7 @@ namespace PuzzleSolvers
         ///     See <see cref="AffectedValues"/>.</param>
         /// <param name="enforcedCells">
         ///     See <see cref="EnforcedCells"/>. If <c>null</c>, the default is to enforce the entire grid.</param>
-        public NoConsecutiveConstraint(int gridWidth, int gridHeight, bool includeDiagonals, int[] affectedValues = null, IEnumerable<int> enforcedCells = null)
+        public NoConsecutiveConstraint(int gridWidth, int gridHeight, bool includeDiagonals, int[] affectedValues = null, IEnumerable<int> enforcedCells = null, bool enforcedCellsOnly = false)
             : base(null)
         {
             GridWidth = gridWidth;
@@ -48,7 +54,8 @@ namespace PuzzleSolvers
             IncludeDiagonals = includeDiagonals;
             AffectedValues = affectedValues;
             EnforcedCells = enforcedCells?.ToArray();
-            AffectedCells = EnforcedCells?.SelectMany(cell => AdjacentCells(cell, gridWidth, gridHeight, includeDiagonals)).Distinct().ToArray();
+            EnforcedCellsOnly = enforcedCellsOnly;
+            AffectedCells = EnforcedCells == null ? null : EnforcedCellsOnly ? EnforcedCells : EnforcedCells.SelectMany(cell => AdjacentCells(cell, gridWidth, gridHeight, includeDiagonals)).Distinct().ToArray();
         }
 
         /// <summary>
@@ -82,7 +89,9 @@ namespace PuzzleSolvers
                     continue;
 
                 foreach (var relatedCell in AdjacentCells(cell, GridWidth, GridHeight, IncludeDiagonals))
-                    if (EnforcedCells == null || EnforcedCells.Contains(relatedCell) || EnforcedCells.Contains(cell))
+                    if (EnforcedCells == null || (EnforcedCellsOnly
+                            ? (EnforcedCells.Contains(cell) && EnforcedCells.Contains(relatedCell))
+                            : (EnforcedCells.Contains(cell) || EnforcedCells.Contains(relatedCell))))
                     {
                         if (state[cell].Value > state.MinValue && (AffectedValues == null || AffectedValues.Contains(state[cell].Value - 1)))
                             state.MarkImpossible(relatedCell, state[cell].Value - 1);
