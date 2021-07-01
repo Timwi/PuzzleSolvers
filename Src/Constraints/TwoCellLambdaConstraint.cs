@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace PuzzleSolvers
 {
@@ -22,7 +21,7 @@ namespace PuzzleSolvers
             if (state.LastPlacedCell == AffectedCells[0])
                 state.MarkImpossible(AffectedCells[1], value => !IsValid(state.LastPlacedValue, value));
             else if (state.LastPlacedCell == AffectedCells[1])
-                state.MarkImpossible(AffectedCells[0], value => !IsValid(state.LastPlacedValue, value));
+                state.MarkImpossible(AffectedCells[0], value => !IsValid(value, state.LastPlacedValue));
             return null;
         }
     }
