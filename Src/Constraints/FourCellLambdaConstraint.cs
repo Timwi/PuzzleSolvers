@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
@@ -27,16 +28,36 @@ namespace PuzzleSolvers
                 return null;
 
             var unknowns = AffectedCells.Count(af => state[af] == null);
-            if (unknowns != 1)
-                return null;
-            var unknown = AffectedCells.First(af => state[af] == null);
 
-            state.MarkImpossible(unknown, value => !IsValid(
-                state[AffectedCells[0]] ?? value,
-                state[AffectedCells[1]] ?? value,
-                state[AffectedCells[2]] ?? value,
-                state[AffectedCells[3]] ?? value
-            ));
+            if (unknowns == 1)
+            {
+                var unknown = AffectedCells.First(af => state[af] == null);
+
+                state.MarkImpossible(unknown, value => !IsValid(
+                    state[AffectedCells[0]] ?? value,
+                    state[AffectedCells[1]] ?? value,
+                    state[AffectedCells[2]] ?? value,
+                    state[AffectedCells[3]] ?? value
+                ));
+            }
+            else if (unknowns == 2)
+            {
+                var unkn1 = AffectedCells.First(af => state[af] == null);
+                var unkn1Ix = AffectedCells.IndexOf(unkn1);
+                var unkn2 = AffectedCells.Last(af => state[af] == null);
+                var numValues = state.MaxValue - state.MinValue + 1;
+                var possibles = new bool[numValues * numValues];
+                for (var val1 = state.MinValue; val1 <= state.MaxValue; val1++)
+                    for (var val2 = state.MinValue; val2 <= state.MaxValue; val2++)
+                        possibles[(val1 - state.MinValue) + numValues * (val2 - state.MinValue)] = IsValid(
+                            state[AffectedCells[0]] ?? (unkn1Ix == 0 ? val1 : val2),
+                            state[AffectedCells[1]] ?? (unkn1Ix == 1 ? val1 : val2),
+                            state[AffectedCells[2]] ?? (unkn1Ix == 2 ? val1 : val2),
+                            state[AffectedCells[3]] ?? (unkn1Ix == 3 ? val1 : val2));
+                state.MarkImpossible(unkn1, value1 => Enumerable.Range(0, numValues).All(value2 => !possibles[(value1 - state.MinValue) + numValues * value2]));
+                state.MarkImpossible(unkn2, value2 => Enumerable.Range(0, numValues).All(value1 => !possibles[value1 + numValues * (value2 - state.MinValue)]));
+            }
+
             return null;
         }
     }
