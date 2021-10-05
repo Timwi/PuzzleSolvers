@@ -495,17 +495,19 @@ namespace PuzzleSolvers
             instr != null && instr.IntendedSolution != null &&
             instr.IntendedSolution.All((v, cell) => state.Grid[cell] == v - MinValue || (state.Grid[cell] == null && !state.Takens[cell][v - MinValue]));
 
-        void __debug_generateSvg(SolverStateImpl state, int[] intendedSolution = null, IEnumerable<int> highlightIxs = null)
+        void __debug_generateSvg(SolverStateImpl state, int recursionDepth = 0, int[] intendedSolution = null, IEnumerable<int> highlightIxs = null, int width = 9, int height = 9, int values = 9, int wrap = 3, bool letters = false)
         {
+            string cnv(int val) => letters ? ((char) ('A' + val)).ToString() : (val + state.MinVal).ToString();
             File.WriteAllText(@"D:\temp\temp.svg", $@"
-                <svg viewBox='-.1 -.1 9.2 9.2' xmlns='http://www.w3.org/2000/svg' text-anchor='middle' font-family='Work Sans'>
-                    {Enumerable.Range(0, 81).Select(cell => $@"
-                        <rect x='{cell % 9}' y='{cell / 9}' width='1' height='1' stroke='black' stroke-width='{(highlightIxs != null && highlightIxs.Contains(cell) ? .05 : .01)}' fill='{(intendedSolution != null && (state.Grid[cell] != null ? (state.Grid[cell].Value != intendedSolution[cell] - state.MinVal) : (state.Takens[cell][intendedSolution[cell] - state.MinVal])) ? "rgba(255, 0, 0, .1)" : "none")}' />
+                <svg viewBox='-.1 -.1 {width + 1.2} {width + .2}' xmlns='http://www.w3.org/2000/svg' text-anchor='middle' font-family='Work Sans'>
+                    {Enumerable.Range(0, width * height).Select(cell => $@"
+                        <rect x='{cell % width}' y='{cell / width}' width='1' height='1' stroke='black' stroke-width='{(highlightIxs != null && highlightIxs.Contains(cell) ? .05 : .01)}' fill='{(intendedSolution != null && (state.Grid[cell] != null ? (state.Grid[cell].Value != intendedSolution[cell] - state.MinVal) : (state.Takens[cell][intendedSolution[cell] - state.MinVal])) ? "rgba(255, 0, 0, .1)" : "none")}' />
                         {(state.Grid[cell] != null
-                            ? $"<text x='{cell % 9 + .5}' y='{cell / 9 + .8}' font-size='.8'>{state.Grid[cell] + state.MinVal}</text>"
-                            : Enumerable.Range(0, 9).Where(v => !state.Takens[cell][v]).Select(v => $"<text x='{cell % 9 + .25 * (1 + v % 3)}' y='{cell / 9 + .25 * (1 + v / 3) + .1}' font-size='.3'>{v + state.MinVal}</text>").JoinString()
+                            ? $"<text x='{cell % width + .5}' y='{cell / width + .8}' font-size='.8'>{cnv(state.Grid[cell].Value)}</text>"
+                            : Enumerable.Range(0, values).Where(v => !state.Takens[cell][v]).Select(v => $"<text x='{cell % width + 1d / (wrap + 1) * (1 + v % wrap)}' y='{cell / width + 1d / (wrap + 1) * (1 + v / wrap) + .1}' font-size='.2'>{cnv(v)}</text>").JoinString()
                         )}
                     ").JoinString()}
+                    <text text-anchor='left' x='{width+.1}' y='1' font-size='.1'>{recursionDepth}</text>
                 </svg>
             ");
         }
