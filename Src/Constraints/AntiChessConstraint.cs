@@ -38,7 +38,7 @@ namespace PuzzleSolvers
             GridHeight = gridHeight;
             AffectedValues = affectedValues;
             EnforcedCells = enforcedCells?.ToArray();
-            AffectedCells = enforcedCells?.SelectMany(getRelatedCells).Distinct().ToArray();
+            AffectedCells = enforcedCells?.SelectMany(getRelatedCells).Concat(enforcedCells).Distinct().ToArray();
         }
 
         /// <summary>Specifies what cells a specific cell needs to be compared against for the constraint.</summary>

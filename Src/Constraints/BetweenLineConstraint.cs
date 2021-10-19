@@ -21,37 +21,33 @@ namespace PuzzleSolvers
         public override ConstraintResult Process(SolverState state)
         {
             var ix = state.LastPlacedCell;
-            if (state.LastPlacedCell == null)
+            if (ix == null)
             {
-                // The inside of the line cannot contain a 1 or a 9
+                // The inside of the line cannot contain the min or max value
                 for (var icIx = 0; icIx < InnerCells.Length; icIx++)
                 {
-                    state.MarkImpossible(InnerCells[icIx], 1);
-                    state.MarkImpossible(InnerCells[icIx], 9);
+                    state.MarkImpossible(InnerCells[icIx], state.MinValue);
+                    state.MarkImpossible(InnerCells[icIx], state.MaxValue);
                 }
                 return null;
             }
 
-            // If both caps are filled in, all the inner cells must simply be between them.
-            if (state[Cap1] != null && state[Cap2] != null)
+            if (ix == Cap1 || ix == Cap2)
             {
-                // We don’t need to recompute this multiple times.
-                if (!(ix == Cap1 || ix == Cap2))
-                    return null;
-                var min = Math.Min(state[Cap1].Value, state[Cap2].Value);
-                var max = Math.Max(state[Cap1].Value, state[Cap2].Value);
-                for (var icIx = 0; icIx < InnerCells.Length; icIx++)
-                    state.MarkImpossible(InnerCells[icIx], v => v <= min || v >= max);
-            }
-            // If one cap is filled in, all the inner cells must simply be different from it.
-            else if (state[Cap1] != null || state[Cap2] != null)
-            {
-                // We don’t need to recompute this multiple times.
-                if (!(ix == Cap1 || ix == Cap2))
-                    return null;
-                var v = state[Cap1] ?? state[Cap2].Value;
-                for (var icIx = 0; icIx < InnerCells.Length; icIx++)
-                    state.MarkImpossible(InnerCells[icIx], v);
+                // If both caps are filled in, all the inner cells must be between them.
+                if (state[Cap1] != null && state[Cap2] != null)
+                {
+                    var min = Math.Min(state[Cap1].Value, state[Cap2].Value);
+                    var max = Math.Max(state[Cap1].Value, state[Cap2].Value);
+                    for (var icIx = 0; icIx < InnerCells.Length; icIx++)
+                        state.MarkImpossible(InnerCells[icIx], v => v <= min || v >= max);
+                }
+                // If one cap is filled in, all the inner cells must be different from it.
+                else
+                {
+                    for (var icIx = 0; icIx < InnerCells.Length; icIx++)
+                        state.MarkImpossible(InnerCells[icIx], state.LastPlacedValue);
+                }
             }
 
             var curMin = InnerCells.Where(c => state[c] != null).MinOrNull(c => state[c].Value);
