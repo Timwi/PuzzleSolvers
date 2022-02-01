@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PuzzleSolvers
 {
@@ -19,8 +17,7 @@ namespace PuzzleSolvers
         /// <summary>Override; see base.</summary>
         public override ConstraintResult Process(SolverState state)
         {
-            if (state.LastPlacedCell == null)
-                state.MarkImpossible(AffectedCells[0], value => !IsValid(value));
+            state.MarkImpossible(AffectedCells[0], value => !IsValid(value));
             return ConstraintResult.Remove;
         }
     }
