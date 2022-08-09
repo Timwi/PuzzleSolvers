@@ -73,11 +73,17 @@ namespace PuzzleSolvers
                     {
                         // grid[cap1] must be < curMin
                         state.MarkImpossible(cap1, v => v >= curMin.Value);
+                        // The rest of the inner cells must be < state[cap2]
+                        foreach (var cell in InnerCells)
+                            state.MarkImpossible(cell, v => v >= state[cap2].Value);
                     }
                     else if (state[cap2].Value < curMin.Value)
                     {
                         // grid[cap1] must be > curMax
                         state.MarkImpossible(cap1, v => v <= curMax);
+                        // The rest of the inner cells must be > state[cap2]
+                        foreach (var cell in InnerCells)
+                            state.MarkImpossible(cell, v => v <= state[cap2].Value);
                     }
                     else
                         throw new InvalidOperationException("BetweenLineConstraint encountered an internal bug.");
