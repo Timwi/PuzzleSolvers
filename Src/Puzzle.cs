@@ -349,15 +349,12 @@ namespace PuzzleSolvers
                         count++;
                 if (count == 0)
                     yield break;
-                if (count == 1)
-                {
-                    ix = cell;
-                    goto immediate;
-                }
                 if (count < fewestPossibleValues)
                 {
                     ix = cell;
                     fewestPossibleValues = count;
+                    if (count == 1)
+                        goto immediate;
                 }
             }
 
@@ -370,6 +367,7 @@ namespace PuzzleSolvers
             immediate:
             var startAt = instr?.Randomizer?.Next(0, takens[ix].Length) ?? 0;
             var state = new SolverStateImpl { Grid = grid, GridSizeVal = GridSize, MinVal = MinValue, MaxVal = MaxValue, Takens = takens };
+            var showContinuousProgress = fewestPossibleValues > 1 && instr != null && instr.ShowContinuousProgress != null && recursionDepth < instr.ShowContinuousProgress.Value;
 
             for (var tVal = 0; tVal < takens[ix].Length; tVal++)
             {
@@ -377,11 +375,11 @@ namespace PuzzleSolvers
                 if (takens[ix][val])
                     continue;
 
-                if (instr != null && instr.ShowContinuousProgress != null && recursionDepth < instr.ShowContinuousProgress.Value)
+                if (showContinuousProgress)
                 {
                     Console.CursorLeft = 0;
                     Console.CursorTop = recursionDepth + (instr.ShowContinuousProgressConsoleTop ?? 0);
-                    ConsoleUtil.Write($"Cell {ix}: " + Enumerable.Range(0, takens[ix].Length).Select(i => (i + startAt) % takens[ix].Length).Where(v => !instr.ShowContinuousProgressShortened || !takens[ix][v]).Select(v => (v + MinValue).ToString().Color(
+                    ConsoleUtil.Write($"Cell {ix.ToString().PadLeft((takens.Length - 1).ToString().Length)}: " + Enumerable.Range(0, takens[ix].Length).Select(i => (i + startAt) % takens[ix].Length).Where(v => !instr.ShowContinuousProgressShortened || !takens[ix][v]).Select(v => (v + MinValue).ToString().Color(
                         takens[ix][v] ? ConsoleColor.DarkBlue : v == val ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
                         v == val ? ConsoleColor.DarkGreen : ConsoleColor.Black)).JoinColoredString(" "));
                 }
@@ -476,14 +474,14 @@ namespace PuzzleSolvers
                 // Allow this list to be garbage-collected
                 mustReevaluate = null;
 
-                foreach (var solution in solve(grid, state.Takens, constraintsUse, cellPriority, instr, recursionDepth + 1))
+                foreach (var solution in solve(grid, state.Takens, constraintsUse, cellPriority, instr, fewestPossibleValues == 1 ? recursionDepth : recursionDepth + 1))
                     yield return solution;
 
                 digitBusted:;
             }
             grid[ix] = null;
 
-            if (instr != null && instr.ShowContinuousProgress != null && recursionDepth < instr.ShowContinuousProgress.Value)
+            if (showContinuousProgress)
             {
                 Console.CursorLeft = 0;
                 Console.CursorTop = recursionDepth + (instr.ShowContinuousProgressConsoleTop ?? 0);
