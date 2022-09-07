@@ -338,6 +338,7 @@ namespace PuzzleSolvers
         private IEnumerable<int[]> solve(int?[] grid, bool[][] takens, List<Constraint> constraints, int[] cellPriority, SolverInstructions instr, int recursionDepth = 0)
         {
             var fewestPossibleValues = int.MaxValue;
+            var fewestCombinations = int.MaxValue;
             var ix = -1;
             foreach (var cell in cellPriority)
             {
@@ -349,10 +350,15 @@ namespace PuzzleSolvers
                         count++;
                 if (count == 0)
                     yield break;
-                if (count < fewestPossibleValues)
+
+                if (count > fewestPossibleValues)
+                    continue;
+                var numComb = constraints.Where(c => c.NumCombinations != null && (c.AffectedCells == null || c.AffectedCells.Contains(cell))).MinOrNull(c => c.NumCombinations.Value);
+                if (count < fewestPossibleValues || (numComb != null && numComb.Value < fewestCombinations))
                 {
                     ix = cell;
                     fewestPossibleValues = count;
+                    fewestCombinations = numComb != null ? numComb.Value : count < fewestPossibleValues ? int.MaxValue : fewestCombinations;
                     if (count == 1)
                         goto immediate;
                 }
@@ -360,6 +366,11 @@ namespace PuzzleSolvers
 
             if (ix == -1)
             {
+                if (instr != null && instr.ShowContinuousProgress != null)
+                {
+                    Console.CursorLeft = 0;
+                    Console.CursorTop = Math.Min(recursionDepth, instr.ShowContinuousProgress.Value) + (instr.ShowContinuousProgressConsoleTop ?? 0);
+                }
                 yield return grid.Select(val => val.Value).ToArray();
                 yield break;
             }
@@ -485,7 +496,7 @@ namespace PuzzleSolvers
             {
                 Console.CursorLeft = 0;
                 Console.CursorTop = recursionDepth + (instr.ShowContinuousProgressConsoleTop ?? 0);
-                Console.Write(new string(' ', Console.BufferWidth - 1));
+                Console.WriteLine(new string(' ', Console.BufferWidth - 1));
             }
         }
 

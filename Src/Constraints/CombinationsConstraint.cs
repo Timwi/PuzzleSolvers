@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RT.Util;
@@ -13,6 +13,9 @@ namespace PuzzleSolvers
     {
         /// <summary>The set of combinations allowed for the specified set of cells.</summary>
         public int?[][] Combinations { get; private set; }
+
+        /// <summary>Override; see base.</summary>
+        public override int? NumCombinations => Combinations.Length;
 
         /// <summary>Constructor.</summary>
         public CombinationsConstraint(IEnumerable<int> affectedCells, IEnumerable<int?[]> combinations) : base(affectedCells)
@@ -61,13 +64,11 @@ namespace PuzzleSolvers
 
             // Mark any cell values that are no longer possible as taken
             for (var lstIx = 0; lstIx < poss.Length; lstIx++)
-                if (state[AffectedCells[lstIx]] == null && poss[lstIx] != null)
-                    for (var v = 0; v < poss[lstIx].Length; v++)
-                        if (!poss[lstIx][v] && !state.IsImpossible(AffectedCells[lstIx], v + state.MinValue))
-                            state.MarkImpossible(AffectedCells[lstIx], v + state.MinValue);
+                if (poss[lstIx] != null)
+                    state.MarkImpossible(AffectedCells[lstIx], v => !poss[lstIx][v - state.MinValue]);
 
             if (newComb != null)
-                return new[] { new CombinationsConstraint(AffectedCells, newComb.ToArray()) };
+                return newComb.Count == 1 ? ConstraintResult.Remove : new[] { new CombinationsConstraint(AffectedCells, newComb.ToArray()) };
             return null;
         }
 

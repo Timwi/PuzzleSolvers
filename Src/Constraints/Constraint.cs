@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -43,6 +43,11 @@ namespace PuzzleSolvers
         ///     to the solver that the constraint should be reevaluated (meaning: have <see cref="Process"/> called on it
         ///     again) when another constraint rules out a value in one of the affected cells of this constraint.</summary>
         public virtual bool CanReevaluate => false;
+
+        /// <summary>
+        ///     Indicates an approximate number of possible combinations of digits this constraint can still accommodate. This
+        ///     will help the solver prioritize cells when multiple cells have the same number of combinations individually.</summary>
+        public virtual int? NumCombinations => null;
 
         /// <summary>
         ///     Converts a convenient coordinate notation into puzzle-grid indices.</summary>

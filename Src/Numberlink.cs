@@ -6,7 +6,7 @@ using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
-    /// <summary>Contains an algorithm for solving Numberlink puzzles. This solver is independent of <see cref="Puzzle"/>.</summary>
+    /// <summary>Contains an algorithm for solving Numberlink puzzles. This solver does not use <see cref="Puzzle"/>.</summary>
     public static class Numberlink
     {
         /// <summary>

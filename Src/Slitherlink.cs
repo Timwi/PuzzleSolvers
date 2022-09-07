@@ -5,7 +5,7 @@ using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
-    /// <summary>Provides functions to solve Slitherlink puzzles.</summary>
+    /// <summary>Provides functions to solve Slitherlink puzzles. This solver does not use <see cref="Puzzle"/>.</summary>
     public static class Slitherlink
     {
         /// <summary>Solves a Slitherlink puzzle on a rectangular grid and returns all solutions found.</summary>
