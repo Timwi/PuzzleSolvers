@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RT.Util.ExtensionMethods;
@@ -8,14 +8,31 @@ namespace PuzzleSolvers
     /// <summary>Provides functions to solve Slitherlink puzzles. This solver does not use <see cref="Puzzle"/>.</summary>
     public static class Slitherlink
     {
-        /// <summary>Solves a Slitherlink puzzle on a rectangular grid and returns all solutions found.</summary>
-        /// <param name="width">Width of the grid in squares.</param>
-        /// <param name="height">Height of the grid in squares.</param>
-        /// <param name="clues">Clues (number of edges that are part of the loop).</param>
-        /// <returns>A boolean array for each solution. The array specifies which cells are inside of the loop.</returns>
-        public static IEnumerable<bool[]> Solve(int width, int height, int?[] clues) => slitherlinkRecurse(width, height, clues, new bool?[width * height], new List<(int ix1, int ix2)>(), 0, 0);
+        /// <summary>
+        ///     Solves a Slitherlink puzzle on a rectangular grid and returns all solutions found.</summary>
+        /// <param name="width">
+        ///     Width of the grid in squares.</param>
+        /// <param name="height">
+        ///     Height of the grid in squares.</param>
+        /// <param name="clues">
+        ///     Clues (number of edges that are part of the loop). May be <c>null</c>, in which case all possible Slitherlinks
+        ///     of the specified size are generated.</param>
+        /// <param name="randomizer">
+        ///     Permits the results to be randomized.</param>
+        /// <param name="minNumLoops">
+        ///     Minimum number of loops allowed in the solution.</param>
+        /// <param name="maxNumLoops">
+        ///     Maximum number of loops allowed in the solution.</param>
+        /// <returns>
+        ///     A boolean array for each solution. The array specifies which cells are inside of the loop.</returns>
+        public static IEnumerable<bool[]> Solve(int width, int height, int?[] clues = null, Random randomizer = null, int minNumLoops = 1, int maxNumLoops = 1)
+        {
+            if (minNumLoops > maxNumLoops)
+                throw new ArgumentException("‘minNumLoops must be less than or equal to ‘maxNumLoops’.", nameof(maxNumLoops));
+            return slitherlinkRecurse(width, height, clues, new bool?[width * height], new List<(int ix1, int ix2)>(), 0, 0, randomizer, minNumLoops, maxNumLoops);
+        }
 
-        private static IEnumerable<bool[]> slitherlinkRecurse(int w, int h, int?[] clues, bool?[] sofar, List<(int ix1, int ix2)> segments, int closedLoops, int depth)
+        private static IEnumerable<bool[]> slitherlinkRecurse(int w, int h, int?[] clues, bool?[] sofar, List<(int ix1, int ix2)> segments, int closedLoops, int depth, Random randomizer, int minNumLoops, int maxNumLoops)
         {
             void addLine(int ix1, int ix2)
             {
@@ -67,7 +84,7 @@ namespace PuzzleSolvers
                         firstNullIx = i;
                     continue;
                 }
-                if (clues[i] == null)
+                if (clues == null || clues[i] == null)
                     continue;
                 var x = i % w;
                 var y = i / w;
@@ -123,27 +140,42 @@ namespace PuzzleSolvers
                     yield break;
             }
 
-            if (firstNullIx == -1 && closedLoops == 1 && segments.Count == 0)
+            if (firstNullIx == -1 && closedLoops >= minNumLoops && closedLoops <= maxNumLoops && segments.Count == 0)
             {
                 yield return sofar.Select(b => b.Value).ToArray();
                 yield break;
             }
 
-            if (firstNullIx == -1 || closedLoops > 1 || (closedLoops > 0 && segments.Count > 0))
+            if (firstNullIx == -1 || closedLoops > maxNumLoops || (closedLoops >= maxNumLoops && segments.Count > 0))
                 yield break;
 
+            var ofs = randomizer != null && randomizer.Next(0, 2) != 0;
             var oldSofar = sofar.ToArray();
             var oldClosedLoops = closedLoops;
             var oldSegments = segments.ToList();
-            setPixel(firstNullIx, true);
-            foreach (var solution in slitherlinkRecurse(w, h, clues, sofar, segments, closedLoops, depth + 1))
+            setPixel(firstNullIx, ofs);
+            foreach (var solution in slitherlinkRecurse(w, h, clues, sofar, segments, closedLoops, depth + 1, randomizer, minNumLoops, maxNumLoops))
                 yield return solution;
             sofar = oldSofar;
             closedLoops = oldClosedLoops;
             segments = oldSegments;
-            setPixel(firstNullIx, false);
-            foreach (var solution in slitherlinkRecurse(w, h, clues, sofar, segments, closedLoops, depth + 1))
+            setPixel(firstNullIx, !ofs);
+            foreach (var solution in slitherlinkRecurse(w, h, clues, sofar, segments, closedLoops, depth + 1, randomizer, minNumLoops, maxNumLoops))
                 yield return solution;
         }
+
+        /// <summary>
+        ///     Returns an array containing all of the Slitherlink clues for the specified grid.</summary>
+        /// <param name="grid">
+        ///     A filled grid of pixels.</param>
+        /// <param name="width">
+        ///     The width of the grid. The height is assumed to be <paramref name="grid"/>.Length − <paramref name="width"/>.</param>
+        /// <remarks>
+        ///     This method will not check whether the grid is a valid Slitherlink (a single contiguous region with no holes).</remarks>
+        public static int[] CalculateSlitherlinkClues(bool[] grid, int width) => grid.Select((v, i) =>
+            ((i % width > 0 ? grid[i - 1] != v : v) ? 1 : 0) +
+            ((i % width + 1 < width ? grid[i + 1] != v : v) ? 1 : 0) +
+            ((i - width >= 0 ? grid[i - width] != v : v) ? 1 : 0) +
+            ((i + width < grid.Length ? grid[i + width] != v : v) ? 1 : 0)).ToArray();
     }
 }
