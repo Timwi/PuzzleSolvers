@@ -121,7 +121,7 @@ namespace PuzzleSolvers
             var background = ConsoleColor.DarkBlue;
             foreach (var constraint in constraints)
             {
-                AddConstraint(constraint, null, avoidColors ? (ConsoleColor?) null : background);
+                AddConstraint(constraint, avoidColors ? null : ConsoleColor.White, avoidColors ? null : background);
                 background = (ConsoleColor) (((int) background % 7) + 1);
             }
             return this;

@@ -44,14 +44,10 @@ namespace PuzzleSolvers
             {
                 // Can this combination be ruled out?
                 if (AffectedCells.Any((cellIx, lstIx) => Combinations[i][lstIx] != null && (state[cellIx] == null ? state.IsImpossible(cellIx, Combinations[i][lstIx].Value) : (state[cellIx].Value != Combinations[i][lstIx].Value))))
-                {
-                    if (newComb == null)
-                        newComb = new List<int?[]>(Combinations.Take(i));
-                }
+                    newComb ??= new List<int?[]>(Combinations.Take(i));
                 else
                 {
-                    if (newComb != null)
-                        newComb.Add(Combinations[i]);
+                    newComb?.Add(Combinations[i]);
 
                     // Remember the possibilities for each cell
                     for (var lstIx = 0; lstIx < Combinations[i].Length; lstIx++)

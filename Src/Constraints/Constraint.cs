@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
@@ -92,5 +93,9 @@ namespace PuzzleSolvers
                 throw new ArgumentException(string.Format(@"The coordinate “{0}” is not in a valid format. Expected a column letter followed by a row digit.", str), nameof(str));
             return m.Groups["col"].Value[0] - 'A' + gridWidth * (int.Parse(m.Groups["row"].Value) - 1);
         }
+
+        /// <summary>Returns a string showing the set of valid values for the affected cells.</summary>
+        protected string __debug_str(SolverState state) =>
+            AffectedCells.Select(c => state[c] == null ? $"[{Enumerable.Range(state.MinValue, state.MaxValue - state.MinValue + 1).Select(v => state.IsImpossible(c, v) ? "" : v.ToString()).JoinString()}]" : state[c].ToString()).JoinString(",");
     }
 }
