@@ -332,6 +332,9 @@ namespace PuzzleSolvers
             });
             var cellPriority = cellPriorities.Select(tup => tup.cell).ToArray();
 
+            if (solverInstructions?.BulkLoggingFile != null)
+                File.WriteAllText(solverInstructions.BulkLoggingFile, "");
+
             return solve(grid, takens, constraintsUse, cellPriority, solverInstructions).Select(solution => solution.Select(val => val + MinValue).ToArray());
         }
 
@@ -371,7 +374,10 @@ namespace PuzzleSolvers
                     Console.CursorLeft = 0;
                     Console.CursorTop = Math.Min(recursionDepth, instr.ShowContinuousProgress.Value) + (instr.ShowContinuousProgressConsoleTop ?? 0);
                 }
-                yield return grid.Select(val => val.Value).ToArray();
+                var solutionArr = grid.Select(val => val.Value).ToArray();
+                if (instr?.BulkLoggingFile != null)
+                    File.AppendAllText(instr.BulkLoggingFile, $"{new string(' ', recursionDepth)}Solution found: {solutionArr.JoinString()}\n");
+                yield return solutionArr;
                 yield break;
             }
 
@@ -385,6 +391,9 @@ namespace PuzzleSolvers
                 var val = (tVal + startAt) % takens[ix].Length;
                 if (takens[ix][val])
                     continue;
+
+                if (instr?.BulkLoggingFile != null)
+                    File.AppendAllText(instr.BulkLoggingFile, $"{new string(' ', recursionDepth)}Cell {ix} trying {val}\n");
 
                 if (showContinuousProgress)
                 {
