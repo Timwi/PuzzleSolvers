@@ -22,8 +22,6 @@ namespace PuzzleSolvers
         /// <summary>Override; see base.</summary>
         public override bool CanReevaluate => true;
 
-        private List<int>[] _optimizationList = null;
-
         /// <summary>Override; see base.</summary>
         public override ConstraintResult Process(SolverState state)
         {
@@ -46,12 +44,7 @@ namespace PuzzleSolvers
             // Special case: if the number of values equals the number of cells, we can detect further optimizations
             if (state.MaxValue - state.MinValue + 1 == AffectedCells.Length)
             {
-                if (_optimizationList == null || _optimizationList.Length != state.MaxValue - state.MinValue + 1)
-                    _optimizationList = new List<int>[state.MaxValue - state.MinValue + 1];
-                var cells = _optimizationList;
-                for (var i = 0; i < cells.Length; i++)
-                    if (cells[i] != null)
-                        cells[i].Clear();
+                var cells = new List<int>[state.MaxValue - state.MinValue + 1];
 
                 foreach (var cell in AffectedCells)
                     for (var v = state.MinValue; v <= state.MaxValue; v++)

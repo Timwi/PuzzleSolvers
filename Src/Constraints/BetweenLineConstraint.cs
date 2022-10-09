@@ -1,14 +1,35 @@
-﻿using System;
+using System;
 using System.Linq;
 using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
+    /// <summary>
+    ///     Describes a “between line” constraint: every digit within the <see cref="InnerCells"/> must lie numerically
+    ///     between the values in cells <see cref="Cap1"/> and <see cref="Cap2"/> (exclusive).</summary>
     public class BetweenLineConstraint : Constraint
     {
+        /// <summary>
+        ///     The cell containing one of the caps of the between line.</summary>
+        /// <remarks>
+        ///     The constraint does not require this to be the lower or upper cap of the between line.</remarks>
         public int Cap1 { get; private set; }
+        /// <summary>
+        ///     The cell containing the other cap of the between line.</summary>
+        /// <remarks>
+        ///     The constraint does not require this to be the lower or upper cap of the between line.</remarks>
         public int Cap2 { get; private set; }
+        /// <summary>The set of cells along the between line.</summary>
         public int[] InnerCells { get; private set; }
+
+        /// <summary>
+        ///     Constructor.</summary>
+        /// <param name="cap1">
+        ///     The cell containing one of the caps of the between line.</param>
+        /// <param name="cap2">
+        ///     The cell containing the other cap of the between line.</param>
+        /// <param name="innerCells">
+        ///     The set of cells along the between line.</param>
         public BetweenLineConstraint(int cap1, int cap2, int[] innerCells) : base(innerCells.Concat(new[] { cap1, cap2 }))
         {
             if (cap1 == cap2)
@@ -18,6 +39,7 @@ namespace PuzzleSolvers
             InnerCells = innerCells ?? throw new ArgumentNullException(nameof(innerCells));
         }
 
+        /// <summary>Override; see base.</summary>
         public override ConstraintResult Process(SolverState state)
         {
             var ix = state.LastPlacedCell;

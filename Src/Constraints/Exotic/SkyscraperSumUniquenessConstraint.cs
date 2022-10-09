@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using RT.Util.ExtensionMethods;
 
-namespace PuzzleSolvers
+namespace PuzzleSolvers.Exotic
 {
     /// <summary>
     ///     Describes a “skyscraper sum” constraint: the numbers in the grid represent the height of a skyscraper; taller

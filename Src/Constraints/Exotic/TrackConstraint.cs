@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using RT.Util.ExtensionMethods;
 
-namespace PuzzleSolvers.Constraints.Exotic
+namespace PuzzleSolvers.Exotic
 {
     /// <summary>
     ///     Describes a constraint in a number-placement puzzle. Two cells that are n steps from one another along the track
