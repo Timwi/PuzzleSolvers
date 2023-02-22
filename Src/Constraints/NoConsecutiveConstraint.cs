@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PuzzleSolvers
@@ -46,6 +46,8 @@ namespace PuzzleSolvers
         ///     See <see cref="AffectedValues"/>.</param>
         /// <param name="enforcedCells">
         ///     See <see cref="EnforcedCells"/>. If <c>null</c>, the default is to enforce the entire grid.</param>
+        /// <param name="enforcedCellsOnly">
+        ///     See <see cref="EnforcedCellsOnly"/>.</param>
         public NoConsecutiveConstraint(int gridWidth, int gridHeight, bool includeDiagonals, int[] affectedValues = null, IEnumerable<int> enforcedCells = null, bool enforcedCellsOnly = false)
             : base(null)
         {

@@ -7,9 +7,9 @@ namespace PuzzleSolvers
     public abstract class ConstraintResult
     {
         /// <summary>Converts from a <see cref="Constraint"/> array to a <see cref="ConstraintReplace"/>.</summary>
-        public static implicit operator ConstraintResult(Constraint[] seq) => new ConstraintReplace(seq);
+        public static implicit operator ConstraintResult(Constraint[] seq) => seq == null ? null : new ConstraintReplace(seq);
         /// <summary>Converts from a <see cref="Constraint"/> list to a <see cref="ConstraintReplace"/>.</summary>
-        public static implicit operator ConstraintResult(List<Constraint> seq) => new ConstraintReplace(seq);
+        public static implicit operator ConstraintResult(List<Constraint> seq) => seq == null ? null : new ConstraintReplace(seq);
 
         /// <summary>Easy access to a <see cref="ConstraintReplace"/> that removes a constraint.</summary>
         public static readonly ConstraintResult Remove = new ConstraintReplace(new Constraint[0]);
