@@ -277,8 +277,6 @@ namespace PuzzleSolvers
                 throw new InvalidOperationException(@"solverInstructions.ExamineConstraints cannot be specified when solverInstructions.IntendedSolution is null.");
             if (solverInstructions != null && solverInstructions.IntendedSolution != null && solverInstructions.IntendedSolution.Length != GridSize)
                 throw new InvalidOperationException(@"solverInstructions.IntendedSolution must have the same length as the size of the puzzle.");
-            if (solverInstructions != null && solverInstructions.UseLetters && GridSize > 26)
-                throw new InvalidOperationException(@"solverInstructions.UseLetters cannot be true when there are more than 26 cells in the puzzle.");
 
             _numVals = MaxValue - MinValue + 1;
             var grid = new int?[GridSize];
@@ -435,14 +433,14 @@ namespace PuzzleSolvers
                         if (wasIntendedSolutionPossible && !intendedSolutionPossible(instr, state))
                         {
                             ConsoleUtil.WriteLine("Constraint {0/Magenta} removed the intended solution:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName));
-                            var numDigits = (GridSize - 1).ToString().Length;
+                            var numDigits = instr.GetCellName == null ? (GridSize - 1).ToString().Length : Enumerable.Range(0, GridSize).Max(c => instr.GetCellName(c).Length);
                             for (var cell = 0; cell < GridSize; cell++)
                             {
-                                string valueId(int v) => instr.UseLetters ? ((char) ('A' + v)).ToString() : (v + MinValue).ToString();
+                                string valueId(int v) => instr.GetValueName != null ? instr.GetValueName(v + MinValue) : (v + MinValue).ToString();
                                 var cellLine = Enumerable.Range(0, MaxValue - MinValue + 1)
                                     .Select(v => valueId(v).Color(takensDebugCopy[cell][v] != state.Takens[cell][v] ? ConsoleColor.Red : state.Takens[cell][v] ? ConsoleColor.DarkGray : ConsoleColor.Yellow))
                                     .JoinColoredString(" ");
-                                var cellStr = cell.ToString().PadLeft(numDigits, ' ') + ". ";
+                                var cellStr = (instr.GetCellName != null ? instr.GetCellName(cell) : cell.ToString()).PadLeft(numDigits, ' ') + ". ";
                                 ConsoleUtil.WriteLine($"{cellStr.Color(cell == ix ? ConsoleColor.Cyan : ConsoleColor.DarkCyan)}{cellLine}   {(grid[cell] == null ? "?".Color(ConsoleColor.DarkGreen) : valueId(grid[cell].Value).Color(ConsoleColor.Green))}", null);
                             }
                             Console.WriteLine();

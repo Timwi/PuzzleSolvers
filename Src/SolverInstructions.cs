@@ -36,9 +36,15 @@ namespace PuzzleSolvers
         ///     This may be necessary for speed reasons.</summary>
         public Func<Constraint, bool> ExamineConstraint;
         /// <summary>
-        ///     Only applies when <see cref="ExamineConstraint"/> is not <c>null</c>. Specifies that the debug output should
-        ///     use letters A–Z to identify the cells in a puzzle with 26 or fewer cells. Otherwise, numbers from 0 are used.</summary>
-        public bool UseLetters;
+        ///     Only applies when <see cref="IntendedSolution"/> is not <c>null</c>. Specifies how the debug output should
+        ///     identify the cells in a puzzle (locations where digits are entered). When not specified, the cells are
+        ///     numbered from 0.</summary>
+        public Func<int, string> GetCellName;
+        /// <summary>
+        ///     Only applies when <see cref="IntendedSolution"/> is not <c>null</c>. Specifies how the debug output should
+        ///     identify the values in a puzzle (the digits that are being entered into the cells). When not specified, the
+        ///     values are numbered from <see cref="Puzzle.MinValue"/>.</summary>
+        public Func<int, string> GetValueName;
         /// <summary>
         ///     If not <c>null</c>, the solver outputs extremely verbose information to this file describing the solving
         ///     process.</summary>
