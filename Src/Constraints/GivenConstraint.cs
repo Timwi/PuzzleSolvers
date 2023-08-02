@@ -24,5 +24,8 @@ namespace PuzzleSolvers
             state.MustBe(Cell, Value);
             return ConstraintResult.Remove;
         }
+
+        /// <summary>Override; see base.</summary>
+        public override string ToString() => $"Given: {Cell} is {Value}";
     }
 }

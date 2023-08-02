@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 
 namespace PuzzleSolvers
 {
@@ -80,15 +81,28 @@ namespace PuzzleSolvers
             return MinValue;
         }
 
+        /// <summary>Returns a collection of values that are still possible for the specified <paramref name="cell"/>.</summary>
+        public IEnumerable<int> Possible(int cell)
+        {
+            if (this[cell] is int already)
+            {
+                yield return already;
+                yield break;
+            }
+            for (var value = MinValue; value <= MaxValue; value++)
+                if (!IsImpossible(cell, value))
+                    yield return value;
+        }
+
         /// <summary>
-        ///     If not <c>null</c>, <see cref="Constraint.Process(SolverState)"/> was called immediately after placing a
-        ///     value in the cell given by this index. (This value may be tentative; if the algorithm finds it to be
-        ///     impossible, it will backtrack.) The implementation may examine deductions from just that one value. If
-        ///     <c>null</c>, the method may have been called (a) at the very start of the algorithm before placing any values;
-        ///     (b) after this constraint was returned from another constraint’s <see
-        ///     cref="Constraint.Process(SolverState)"/> call to replace it; or (c) if the constraint has <see
-        ///     cref="Constraint.CanReevaluate"/> and one of its affected cells has changed. In these cases, implementations
-        ///     should examine the whole set of affected cells for possible deductions.</summary>
+        ///     If not <c>null</c>, <see cref="Constraint.Process(SolverState)"/> was called immediately after placing a value
+        ///     in the cell given by this index. (This value may be tentative; if the algorithm finds it to be impossible, it
+        ///     will backtrack.) The implementation may examine deductions from just that one value. If <c>null</c>, the
+        ///     method may have been called (a) at the very start of the algorithm before placing any values; (b) after this
+        ///     constraint was returned from another constraint’s <see cref="Constraint.Process(SolverState)"/> call to
+        ///     replace it; or (c) if the constraint has <see cref="Constraint.CanReevaluate"/> and one of its affected cells
+        ///     has changed. In these cases, implementations should examine the whole set of affected cells for possible
+        ///     deductions.</summary>
         public abstract int? LastPlacedCell { get; }
 
         /// <summary>
