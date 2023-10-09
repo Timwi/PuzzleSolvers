@@ -81,7 +81,7 @@ namespace PuzzleSolvers
                             yield return xx + gridWidth * yy;
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             for (var cellIx = 0; cellIx < (state.LastPlacedCell != null ? 1 : AffectedCells != null ? AffectedCells.Length : state.GridSize); cellIx++)

@@ -50,11 +50,11 @@ namespace PuzzleSolvers
             public override bool AllSame<T>(int cell, Func<int, T> predicate, out T result) => throw new NotImplementedException();
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override bool CanReevaluate => _canReevaluate;
         private readonly bool _canReevaluate;
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell != null && !AffectedCells.Contains(state.LastPlacedCell.Value))
@@ -83,7 +83,7 @@ namespace PuzzleSolvers
                 state.MarkImpossible(cell, value => innerTakens.All(taken => taken == null || taken[cell][value - state.MinValue]));
 
             if (newSubconstraints != null)
-                return new[] { new OrConstraint(newSubconstraints) };
+                return new OrConstraint(newSubconstraints);
             return null;
         }
     }

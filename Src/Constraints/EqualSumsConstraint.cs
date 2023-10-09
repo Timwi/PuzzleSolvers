@@ -15,7 +15,7 @@ namespace PuzzleSolvers
         /// <summary>Constructor.</summary>
         public EqualSumsConstraint(params IEnumerable<int>[] regions) : base(regions.SelectMany(r => r).Distinct()) { Regions = regions.Select(r => r.ToArray()).ToArray(); }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             for (var i = 0; i < Regions.Length; i++)

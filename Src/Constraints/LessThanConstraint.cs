@@ -33,10 +33,10 @@ namespace PuzzleSolvers
                 yield return new LessThanConstraint(TranslateCoordinates(piece, gridWidth));
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override bool CanReevaluate => true;
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             var min = state.MinPossible(AffectedCells[0]) + 1;

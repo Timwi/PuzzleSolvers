@@ -14,7 +14,7 @@ namespace PuzzleSolvers
         /// <summary>The set of combinations allowed for the specified set of cells.</summary>
         public int?[][] Combinations { get; private set; }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override int? NumCombinations => Combinations.Length;
 
         /// <summary>Constructor.</summary>
@@ -28,10 +28,10 @@ namespace PuzzleSolvers
         /// <summary>Constructor.</summary>
         public CombinationsConstraint(IEnumerable<int> affectedCells, IEnumerable<int[]> combinations) : this(affectedCells, combinations.Select(comb => comb.Select(Ut.Nullable).ToArray())) { }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override bool CanReevaluate => true;
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             // This will determine which values are still possible in which of the affected cells.

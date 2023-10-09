@@ -31,15 +31,15 @@ namespace PuzzleSolvers
             Regions = regions.ToArray();
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override bool CanReevaluate => true;
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             // This can only happen if the user has specified a single region at the start.
             if (Regions.Length == 1)
-                return new[] { new SumConstraint(Sum, Regions[0]) };
+                return new SumConstraint(Sum, Regions[0]);
 
             // Find out which regions can now be ruled out
             List<int[]> newRegions = null;
@@ -66,9 +66,9 @@ namespace PuzzleSolvers
                     // This can only happen if some regions overlap and the algorithm filled in one of the shared cells.
                     return ConstraintResult.Violation;
                 else if (newRegions.Count == 1)
-                    return new[] { new SumConstraint(Sum, newRegions[0]) };
+                    return new SumConstraint(Sum, newRegions[0]);
                 else
-                    return new[] { new SumAlternativeConstraint(Sum, newRegions) };
+                    return new SumAlternativeConstraint(Sum, newRegions);
             }
             return null;
         }

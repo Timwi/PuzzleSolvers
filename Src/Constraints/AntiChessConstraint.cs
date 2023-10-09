@@ -44,7 +44,7 @@ namespace PuzzleSolvers
         /// <summary>Specifies what cells a specific cell needs to be compared against for the constraint.</summary>
         protected abstract IEnumerable<int> getRelatedCells(int cell);
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override sealed ConstraintResult Process(SolverState state)
         {
             for (var cellIx = 0; cellIx < (state.LastPlacedCell != null ? 1 : AffectedCells != null ? AffectedCells.Length : state.GridSize); cellIx++)

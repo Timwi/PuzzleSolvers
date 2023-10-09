@@ -23,7 +23,7 @@ namespace PuzzleSolvers
             SideLength = sideLength;
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell is int cell)

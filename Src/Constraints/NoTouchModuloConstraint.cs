@@ -25,7 +25,7 @@ namespace PuzzleSolvers
         ///     The quotient modulo which the constraint is computed.</param>
         public NoTouchModuloConstraint(int width, int height, int modulo) : base(Enumerable.Range(0, width * height)) { GridWidth = width; GridHeight = height; Modulo = modulo; }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell is int cell)

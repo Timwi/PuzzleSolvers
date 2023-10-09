@@ -30,10 +30,10 @@ namespace PuzzleSolvers
                 throw new ArgumentException("The two clone areas must have the same size.", nameof(area2));
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override bool CanReevaluate => true;
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             // Determine if we know the offset

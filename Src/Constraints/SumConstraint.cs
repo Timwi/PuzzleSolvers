@@ -21,10 +21,10 @@ namespace PuzzleSolvers
         /// <summary>Constructor.</summary>
         public SumConstraint(int sum, IEnumerable<int> affectedCells) : base(affectedCells) { Sum = sum; }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override bool CanReevaluate => true;
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             var minPossibleSum = AffectedCells.Sum(state.MinPossible);

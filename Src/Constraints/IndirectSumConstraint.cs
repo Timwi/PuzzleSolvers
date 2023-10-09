@@ -22,10 +22,10 @@ namespace PuzzleSolvers
             Region = region.ToArray();
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override bool CanReevaluate => true;
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             var minPossibleTarget = state.MinPossible(SumCell);

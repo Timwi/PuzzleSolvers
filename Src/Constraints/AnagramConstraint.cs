@@ -24,10 +24,10 @@ namespace PuzzleSolvers
                 throw new ArgumentException($"The combinations passed to an AnagramConstraint must match the size of the region ({AffectedCells.Length}).");
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override bool CanReevaluate => true;
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             // This will determine which values are still possible in any of the remaining anagrams.
@@ -66,7 +66,7 @@ namespace PuzzleSolvers
                 state.MarkImpossible(cell, v => !poss[v - state.MinValue]);
 
             if (newComb != null)
-                return new[] { new AnagramConstraint(AffectedCells, newComb.ToArray()) };
+                return new AnagramConstraint(AffectedCells, newComb.ToArray());
 
             return null;
         }

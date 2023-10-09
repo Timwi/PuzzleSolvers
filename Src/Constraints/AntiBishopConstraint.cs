@@ -37,7 +37,7 @@ namespace PuzzleSolvers
             }
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         protected override IEnumerable<int> getRelatedCells(int cell) => BishopsMoves(cell, GridWidth, GridHeight);
     }
 }

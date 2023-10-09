@@ -18,14 +18,14 @@ namespace PuzzleSolvers
             Value = value;
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             state.MustBe(Cell, Value);
             return ConstraintResult.Remove;
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override string ToString() => $"Given: {Cell} is {Value}";
     }
 }

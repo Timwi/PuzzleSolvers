@@ -60,7 +60,7 @@ namespace PuzzleSolvers
                             yield return (x + dx + gridWidth) % gridWidth + gridWidth * ((y + dy + gridHeight) % gridHeight);
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         protected override IEnumerable<int> getRelatedCells(int cell) => KnightsMoves(cell, GridWidth, GridHeight, Toroidal);
     }
 }

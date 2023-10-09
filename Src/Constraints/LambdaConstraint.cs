@@ -19,7 +19,7 @@ namespace PuzzleSolvers
             Lambda = lambda;
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state) => Lambda(state);
     }
 }

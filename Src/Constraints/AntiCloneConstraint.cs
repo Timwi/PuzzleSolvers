@@ -24,7 +24,7 @@ namespace PuzzleSolvers
         /// <summary>Determines the regions that must not be equal.</summary>
         public int[][] Regions { get; private set; }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             for (var regionIx = 0; regionIx < Regions.Length; regionIx++)

@@ -39,7 +39,7 @@ namespace PuzzleSolvers
             InnerCells = innerCells ?? throw new ArgumentNullException(nameof(innerCells));
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             var ix = state.LastPlacedCell;

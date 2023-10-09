@@ -15,7 +15,7 @@ namespace PuzzleSolvers
         /// <summary>Constructor.</summary>
         public ProductConstraint(int product, IEnumerable<int> affectedCells) : base(affectedCells) { Product = product; }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell != null && !AffectedCells.Contains(state.LastPlacedCell.Value))

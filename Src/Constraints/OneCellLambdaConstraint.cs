@@ -14,7 +14,7 @@ namespace PuzzleSolvers
             IsValid = isValid;
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             state.MarkImpossible(AffectedCells[0], value => !IsValid(value));

@@ -31,7 +31,7 @@ namespace PuzzleSolvers
                             yield return cell + dx + gridWidth * dy;
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         protected override IEnumerable<int> getRelatedCells(int cell) => KingsMoves(cell, GridWidth, GridHeight);
     }
 }

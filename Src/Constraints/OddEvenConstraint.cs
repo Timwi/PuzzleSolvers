@@ -17,7 +17,7 @@ namespace PuzzleSolvers
             Type = type;
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             int req;

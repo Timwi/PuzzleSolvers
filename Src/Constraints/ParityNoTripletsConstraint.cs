@@ -16,10 +16,10 @@ namespace PuzzleSolvers
         /// <summary>Combinations of existing values that necessitate a constraint enforcement.</summary>
         private static readonly (int offset, int toEnforce)[] _combinations = new (int offset, int toEnforce)[] { (-2, -1), (-1, -2), (-1, 1), (1, -1), (1, 2), (2, 1) };
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override bool CanReevaluate => true;
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             for (var ix = 0; ix < AffectedCells.Length; ix++)

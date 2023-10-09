@@ -19,10 +19,10 @@ namespace PuzzleSolvers
         /// <summary>Override.</summary>
         public override string ToString() => $"Uniqueness: {AffectedCells.JoinString(", ")}";
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override bool CanReevaluate => true;
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell != null)

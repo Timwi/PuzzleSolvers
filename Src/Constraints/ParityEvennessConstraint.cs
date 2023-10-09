@@ -23,7 +23,7 @@ namespace PuzzleSolvers
 
         private static readonly int[] _parities = new[] { 0, 1 };
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             if (state.LastPlacedCell == null)
