@@ -428,11 +428,15 @@ namespace PuzzleSolvers
 
                         // CALL THE CONSTRAINT
                         processResult = constraint.Process(state);
+                        var isViolation = processResult is ConstraintViolation;
 
                         // If the intended solution was previously possible but not anymore, output the requested debug information
-                        if (wasIntendedSolutionPossible && !intendedSolutionPossible(instr, state))
+                        if (wasIntendedSolutionPossible && (isViolation || !intendedSolutionPossible(instr, state)))
                         {
-                            ConsoleUtil.WriteLine("Constraint {0/Magenta} removed the intended solution:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName));
+                            if (isViolation)
+                                ConsoleUtil.WriteLine("Constraint {0/Magenta} considered this state a violation:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName));
+                            else
+                                ConsoleUtil.WriteLine("Constraint {0/Magenta} removed the intended solution:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName));
                             var numDigits = instr.GetCellName == null ? (GridSize - 1).ToString().Length : Enumerable.Range(0, GridSize).Max(c => instr.GetCellName(c).Length);
                             for (var cell = 0; cell < GridSize; cell++)
                             {
@@ -446,7 +450,7 @@ namespace PuzzleSolvers
                             Console.WriteLine();
                         }
 
-                        if (processResult is ConstraintViolation)
+                        if (isViolation)
                             goto digitBusted;
                     }
 
