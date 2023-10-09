@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
@@ -17,23 +18,33 @@ namespace PuzzleSolvers
             IsValid = isValid;
         }
 
-        /// <summary>Override; see base.</summary>
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
-            if (state.LastPlacedCell == null)
-                return null;
+            var unknown1Ix = AffectedCells.IndexOf(af => state[af] == null);
+            if (unknown1Ix == -1)
+                // All cells are filled in
+                return IsValid(AffectedCells[0], AffectedCells[1], AffectedCells[2]) ? ConstraintResult.Remove : ConstraintResult.Violation;
 
-            var unknowns = AffectedCells.Count(af => state[af] == null);
-            if (unknowns != 1)
-                return null;
-            var unknown = AffectedCells.First(af => state[af] == null);
+            var unknown2Ix = AffectedCells.IndexOf(af => state[af] == null, unknown1Ix + 1);
+            if (unknown2Ix == -1)
+            {
+                // All but one cell are filled in: reduce the last cell to its set of possibilities
+                state.MarkImpossible(AffectedCells[unknown1Ix], value => !IsValid(
+                    state[AffectedCells[0]] ?? value,
+                    state[AffectedCells[1]] ?? value,
+                    state[AffectedCells[2]] ?? value
+                ));
+                return ConstraintResult.Remove;
+            }
 
-            state.MarkImpossible(unknown, value => !IsValid(
-                state[AffectedCells[0]] ?? value,
-                state[AffectedCells[1]] ?? value,
-                state[AffectedCells[2]] ?? value
-            ));
-            return null;
+            var combinations = new List<int?[]>();
+            foreach (var v1 in state.Possible(AffectedCells[0]))
+                foreach (var v2 in state.Possible(AffectedCells[1]))
+                    foreach (var v3 in state.Possible(AffectedCells[2]))
+                        if (IsValid(v1, v2, v3))
+                            combinations.Add(new int?[] { v1, v2, v3 });
+            return new CombinationsConstraint(AffectedCells, combinations);
         }
     }
 }

@@ -38,6 +38,7 @@ namespace PuzzleSolvers.Exotic
             IsValid = isValid;
         }
 
+        /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             HashSet<int> minValid = new(), maxValid = new();
@@ -48,7 +49,7 @@ namespace PuzzleSolvers.Exotic
                 foreach (var a in state.Possible(gr[0]))
                     foreach (var r in state.Possible(gr[1]))
                         foreach (var b in state.Possible(gr[2]))
-                            if (IsValid(gr[0], gr[1], gr[2]))
+                            if (IsValid(a, r, b))
                             {
                                 anyValid = true;
                                 if (!allValid)
