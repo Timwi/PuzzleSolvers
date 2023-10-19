@@ -397,7 +397,7 @@ namespace PuzzleSolvers
                 {
                     Console.CursorLeft = 0;
                     Console.CursorTop = recursionDepth + (instr.ShowContinuousProgressConsoleTop ?? 0);
-                    ConsoleUtil.Write($"Cell {ix.ToString().PadLeft((takens.Length - 1).ToString().Length)}: " + Enumerable.Range(0, takens[ix].Length).Select(i => (i + startAt) % takens[ix].Length).Where(v => !instr.ShowContinuousProgressShortened || !takens[ix][v]).Select(v => (v + MinValue).ToString().Color(
+                    ConsoleUtil.Write($"Cell {(instr.GetCellName == null ? ix.ToString().PadLeft((takens.Length - 1).ToString().Length) : instr.GetCellName(ix))}: " + Enumerable.Range(0, takens[ix].Length).Select(i => (i + startAt) % takens[ix].Length).Where(v => !instr.ShowContinuousProgressShortened || !takens[ix][v]).Select(v => (v + MinValue).ToString().Color(
                         takens[ix][v] ? ConsoleColor.DarkBlue : v == val ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
                         v == val ? ConsoleColor.DarkGreen : ConsoleColor.Black)).JoinColoredString(" "));
                 }

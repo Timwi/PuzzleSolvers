@@ -41,7 +41,7 @@ namespace PuzzleSolvers.Exotic
         /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
-            HashSet<int> minValid = new(), maxValid = new();
+            HashSet<int> minValid = [], maxValid = [];
             for (var grIx = 0; grIx < Triplets.Length; grIx++)
             {
                 var gr = Triplets[grIx];
