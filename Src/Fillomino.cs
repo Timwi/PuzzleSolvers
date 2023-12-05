@@ -5,6 +5,7 @@ using System.Linq;
 using RT.Util;
 using RT.Util.Consoles;
 using RT.Util.ExtensionMethods;
+using RT.Util.ExtensionMethods.Obsolete;
 
 namespace PuzzleSolvers
 {
@@ -212,7 +213,7 @@ namespace PuzzleSolvers
                 while (true)
                 {
                     var prevCount = polyomino.Count;
-                    polyomino.UnionWith(polyomino.SelectMany(c => getAdj(c)).Where(c => grid[c] == grid[cell]).ToHashSet());
+                    polyomino.UnionWith(polyomino.SelectMany(getAdj).Where(c => grid[c] == grid[cell]).ToHashSet());
                     if (polyomino.Count == prevCount)
                         break;
                 }

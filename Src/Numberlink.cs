@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RT.Util;
 using RT.Util.ExtensionMethods;
+using RT.Util.ExtensionMethods.Obsolete;
 
 namespace PuzzleSolvers
 {
