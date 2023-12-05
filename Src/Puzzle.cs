@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -55,7 +55,7 @@ namespace PuzzleSolvers
             GridSize = size;
             MinValue = minValue;
             MaxValue = maxValue;
-            Constraints = new List<Constraint>();
+            Constraints = [];
         }
 
         /// <summary>
@@ -65,14 +65,16 @@ namespace PuzzleSolvers
         ///     The solution to be colored.</param>
         /// <param name="width">
         ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
-        public ConsoleColoredString SolutionToConsole(int?[] solution, int width = 9)
+        /// <param name="getName">
+        ///     An optional function to stringify values differently. Default is to represent them as integers.</param>
+        public ConsoleColoredString SolutionToConsole(int?[] solution, int width = 9, Func<int?, string> getName = null)
         {
-            var digits = solution.Max().ToString().Length + 1;
+            var digits = solution.Max(v => getName == null ? v.ToString().Length.ClipMin(2) : getName(v).Length);
             return solution.Split(width).Select((chunk, row) => chunk.Select((val, col) =>
             {
                 var firstConstraint = Constraints.FirstOrDefault(c => c.AffectedCells != null && c.AffectedCells.Contains(col + width * row) && ConstraintColors.ContainsKey(c));
                 var (foreground, background) = firstConstraint == null ? default : ConstraintColors.Get(firstConstraint, default);
-                return ((val == null ? "?" : val.Value.ToString()).PadLeft(digits)).Color(val == null ? ConsoleColor.DarkGray : foreground, background);
+                return ((getName != null ? getName(val) : val == null ? "?" : val.Value.ToString()).PadLeft(digits)).Color(val == null ? ConsoleColor.DarkGray : foreground, background);
             })
                 .JoinColoredString()).JoinColoredString("\n");
         }
@@ -84,7 +86,10 @@ namespace PuzzleSolvers
         ///     The solution to be colored.</param>
         /// <param name="width">
         ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
-        public ConsoleColoredString SolutionToConsole(int[] solution, int width = 9) => SolutionToConsole(solution.Select(val => val.Nullable()).ToArray(), width);
+        /// <param name="getName">
+        ///     An optional function to stringify values differently. Default is to represent them as integers.</param>
+        public ConsoleColoredString SolutionToConsole(int[] solution, int width = 9, Func<int, string> getName = null) =>
+            SolutionToConsole(solution.Select(val => val.Nullable()).ToArray(), width, v => getName(v.Value));
 
         /// <summary>Adds the specified <paramref name="constraint"/> to the <see cref="Constraints"/> list.</summary>
         public Puzzle AddConstraint(Constraint constraint, ConsoleColor? foreground = null, ConsoleColor? background = null)
@@ -397,7 +402,7 @@ namespace PuzzleSolvers
                 {
                     Console.CursorLeft = 0;
                     Console.CursorTop = recursionDepth + (instr.ShowContinuousProgressConsoleTop ?? 0);
-                    ConsoleUtil.Write($"Cell {(instr.GetCellName == null ? ix.ToString().PadLeft((takens.Length - 1).ToString().Length) : instr.GetCellName(ix))}: " + Enumerable.Range(0, takens[ix].Length).Select(i => (i + startAt) % takens[ix].Length).Where(v => !instr.ShowContinuousProgressShortened || !takens[ix][v]).Select(v => (v + MinValue).ToString().Color(
+                    ConsoleUtil.Write($"Cell {(instr.GetCellName == null ? ix.ToString().PadLeft((takens.Length - 1).ToString().Length) : instr.GetCellName(ix))}: " + Enumerable.Range(0, takens[ix].Length).Select(i => (i + startAt) % takens[ix].Length).Where(v => !instr.ShowContinuousProgressShortened || !takens[ix][v]).Select(v => (instr.GetValueName?.Invoke(v) ?? (v + MinValue).ToString()).Color(
                         takens[ix][v] ? ConsoleColor.DarkBlue : v == val ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
                         v == val ? ConsoleColor.DarkGreen : ConsoleColor.Black)).JoinColoredString(" "));
                 }
@@ -434,9 +439,9 @@ namespace PuzzleSolvers
                         if (wasIntendedSolutionPossible && (isViolation || !intendedSolutionPossible(instr, state)))
                         {
                             if (isViolation)
-                                ConsoleUtil.WriteLine("Constraint {0/Magenta} considered this state a violation:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName));
+                                ConsoleUtil.WriteLine("Constraint {0/Magenta} considered this state a violation at recursion depth {1}:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName, recursionDepth));
                             else
-                                ConsoleUtil.WriteLine("Constraint {0/Magenta} removed the intended solution:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName));
+                                ConsoleUtil.WriteLine("Constraint {0/Magenta} removed the intended solution at recursion depth {1}:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName, recursionDepth));
                             var numDigits = instr.GetCellName == null ? (GridSize - 1).ToString().Length : Enumerable.Range(0, GridSize).Max(c => instr.GetCellName(c).Length);
                             for (var cell = 0; cell < GridSize; cell++)
                             {
@@ -559,8 +564,7 @@ namespace PuzzleSolvers
                 if (!Takens[cell][value - MinVal])
                 {
                     Takens[cell][value - MinVal] = true;
-                    if (TakensChanged == null)
-                        TakensChanged = new (bool changed, Constraint initiator)[GridSize];
+                    TakensChanged ??= new (bool changed, Constraint initiator)[GridSize];
                     if (!TakensChanged[cell].changed)
                         TakensChanged[cell] = (true, CurrentConstraint);
                     else if (TakensChanged[cell].initiator != CurrentConstraint)

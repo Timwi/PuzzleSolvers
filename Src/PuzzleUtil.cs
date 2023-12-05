@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace PuzzleSolvers
 {
@@ -29,6 +28,14 @@ namespace PuzzleSolvers
         /// <returns>
         ///     An array of cell indices.</returns>
         public static IEnumerable<int> TranslateCoordinates(this string str, int gridWidth = 9) => Constraint.TranslateCoordinates(str, gridWidth);
+
+        /// <summary>
+        ///     Expresses the given cell as letter-number coordinates (top-left corner is A1).</summary>
+        /// <param name="cell">
+        ///     The index of the cell to turn into coordinates.</param>
+        /// <param name="gridWidth">
+        ///     The width of the puzzle grid.</param>
+        public static string AsCoordinate(this int cell, int gridWidth = 9) => $"{(char) ('A' + cell % gridWidth)}{cell / gridWidth + 1}";
 
         /// <summary>
         ///     Generates all combinations of <paramref name="numDigits"/> digits, each between <paramref name="minValue"/>
