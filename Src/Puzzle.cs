@@ -520,9 +520,11 @@ namespace PuzzleSolvers
             instr != null && instr.IntendedSolution != null &&
             instr.IntendedSolution.All((v, cell) => state.Grid[cell] == v - MinValue || (state.Grid[cell] == null && !state.Takens[cell][v - MinValue]));
 
-        void __debug_generateSvg(SolverStateImpl state, int recursionDepth = 0, int[] intendedSolution = null, IEnumerable<int> highlightIxs = null, int width = 9, int height = 9, int values = 9, int wrap = 3, bool letters = false)
+        enum __debugSvgLabels { Numbers, Letters, Loop }
+
+        void __debug_generateSvg(SolverStateImpl state, int recursionDepth = 0, int[] intendedSolution = null, IEnumerable<int> highlightIxs = null, int width = 9, int height = 9, int values = 9, int wrap = 3, __debugSvgLabels labels = __debugSvgLabels.Numbers)
         {
-            string cnv(int val) => letters ? ((char) ('A' + val)).ToString() : (val + state.MinVal).ToString();
+            string cnv(int val) => labels == __debugSvgLabels.Letters ? ((char) ('A' + val)).ToString() : labels == __debugSvgLabels.Loop ? Path.ToChar[val].ToString() : (val + state.MinVal).ToString();
             File.WriteAllText(@"D:\temp\temp.svg", $@"
                 <svg viewBox='-.1 -.1 {width + 1.2} {width + .2}' xmlns='http://www.w3.org/2000/svg' text-anchor='middle' font-family='Work Sans'>
                     {Enumerable.Range(0, width * height).Select(cell => $@"
