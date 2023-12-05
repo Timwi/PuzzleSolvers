@@ -75,7 +75,7 @@ namespace PuzzleSolvers
                 if (cells.Count == 0 && isInside == true)
                     throw new ArgumentException($"You cannot place a CastleWall clue with ‘IsInside’ = true at the edge of the grid, or next to other clues at the edge of the grid.");
 
-                newConstraints.Add((new GivenConstraint(x + Width * y, 0), ConsoleColor.White, isInside switch { true => ConsoleColor.Gray, false => ConsoleColor.DarkGray, null => ConsoleColor.DarkGreen }));
+                newConstraints.Add((new GivenConstraint(x + Width * y, 0), isInside == true ? ConsoleColor.Black : ConsoleColor.White, isInside switch { true => ConsoleColor.White, false => ConsoleColor.DarkGray, null => ConsoleColor.DarkGreen }));
                 if (cells.Count == 0 || (number == null && isInside == null))
                     continue;
 

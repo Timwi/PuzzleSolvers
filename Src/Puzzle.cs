@@ -36,7 +36,7 @@ namespace PuzzleSolvers
         /// <summary>Returns the list of constraints used by this puzzle.</summary>
         public List<Constraint> Constraints { get; private set; }
 
-        /// <summary>Contains colors for use by <see cref="SolutionToConsole(int?[], int)"/>.</summary>
+        /// <summary>Contains colors for use by <see cref="SolutionToConsole(int[], int, Func{int, string})"/>.</summary>
         public Dictionary<Constraint, (ConsoleColor? foreground, ConsoleColor? background)> ConstraintColors { get; private set; } = new Dictionary<Constraint, (ConsoleColor? foreground, ConsoleColor? background)>();
 
         /// <summary>
@@ -59,28 +59,53 @@ namespace PuzzleSolvers
         }
 
         /// <summary>
-        ///     Converts a Sudoku solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered by some
-        ///     constraints.</summary>
+        ///     Converts a partial puzzle solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered
+        ///     by some constraints.</summary>
         /// <param name="solution">
-        ///     The solution to be colored.</param>
+        ///     The partial solution to be colored.</param>
         /// <param name="width">
         ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
         /// <param name="getName">
-        ///     An optional function to stringify values differently. Default is to represent them as integers.</param>
-        public ConsoleColoredString SolutionToConsole(int?[] solution, int width = 9, Func<int?, string> getName = null)
+        ///     An optional function to stringify values differently. The function receives the cell value and its index
+        ///     within the puzzle solution. Default is to represent them as integers.</param>
+        public ConsoleColoredString SolutionToConsole(int?[] solution, Func<int?, int, string> getName = null, int width = 9)
         {
-            var digits = solution.Max(v => getName == null ? v.ToString().Length.ClipMin(2) : getName(v).Length);
-            return solution.Split(width).Select((chunk, row) => chunk.Select((val, col) =>
+            var digits = solution.Select((v, ix) => getName == null ? v.ToString().Length.ClipMin(2) : getName(v, ix).Length).Max();
+            return solution.Select((val, ix) =>
             {
-                var firstConstraint = Constraints.FirstOrDefault(c => c.AffectedCells != null && c.AffectedCells.Contains(col + width * row) && ConstraintColors.ContainsKey(c));
+                var firstConstraint = Constraints.FirstOrDefault(c => c.AffectedCells != null && c.AffectedCells.Contains(ix) && ConstraintColors.ContainsKey(c));
                 var (foreground, background) = firstConstraint == null ? default : ConstraintColors.Get(firstConstraint, default);
-                return ((getName != null ? getName(val) : val == null ? "?" : val.Value.ToString()).PadLeft(digits)).Color(val == null ? ConsoleColor.DarkGray : foreground, background);
-            })
-                .JoinColoredString()).JoinColoredString("\n");
+                return ((getName != null ? getName(val, ix) : val == null ? "?" : val.Value.ToString()).PadLeft(digits)).Color(val == null ? ConsoleColor.DarkGray : foreground, background);
+            }).Split(width).Select(row => row.JoinColoredString()).JoinColoredString("\n");
         }
 
         /// <summary>
-        ///     Converts a Sudoku solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered by some
+        ///     Converts a partial puzzle solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered
+        ///     by some constraints.</summary>
+        /// <param name="solution">
+        ///     The partial solution to be colored.</param>
+        /// <param name="width">
+        ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
+        /// <param name="getName">
+        ///     An optional function to stringify values differently. Default is to represent them as integers.</param>
+        public ConsoleColoredString SolutionToConsole(int?[] solution, Func<int?, string> getName, int width = 9) =>
+            SolutionToConsole(solution, (v, ix) => getName(v), width);
+
+        /// <summary>
+        ///     Converts a puzzle solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered by some
+        ///     constraints.</summary>
+        /// <param name="solution">
+        ///     The solution to be colored.</param>
+        /// <param name="width">
+        ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
+        /// <param name="getName">
+        ///     An optional function to stringify values differently. The function receives the cell value and its index
+        ///     within the puzzle solution. Default is to represent them as integers.</param>
+        public ConsoleColoredString SolutionToConsole(int[] solution, Func<int, int, string> getName = null, int width = 9) =>
+            SolutionToConsole(solution.Select(val => val.Nullable()).ToArray(), (v, ix) => getName(v.Value, ix), width);
+
+        /// <summary>
+        ///     Converts a puzzle solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered by some
         ///     constraints.</summary>
         /// <param name="solution">
         ///     The solution to be colored.</param>
@@ -88,8 +113,8 @@ namespace PuzzleSolvers
         ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
         /// <param name="getName">
         ///     An optional function to stringify values differently. Default is to represent them as integers.</param>
-        public ConsoleColoredString SolutionToConsole(int[] solution, int width = 9, Func<int, string> getName = null) =>
-            SolutionToConsole(solution.Select(val => val.Nullable()).ToArray(), width, v => getName(v.Value));
+        public ConsoleColoredString SolutionToConsole(int[] solution, Func<int, string> getName, int width = 9) =>
+            SolutionToConsole(solution.Select(val => val.Nullable()).ToArray(), (v, ix) => getName(v.Value), width);
 
         /// <summary>Adds the specified <paramref name="constraint"/> to the <see cref="Constraints"/> list.</summary>
         public Puzzle AddConstraint(Constraint constraint, ConsoleColor? foreground = null, ConsoleColor? background = null)
