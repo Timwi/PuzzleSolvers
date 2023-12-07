@@ -15,6 +15,10 @@ namespace PuzzleSolvers
         ///     Specifies a tentative priority list of cells to consider first during solve. This is not strictly adhered to
         ///     and only provides a small guidance for some puzzles.</summary>
         public int[] CellPriority;
+        /// <summary>
+        ///     Specified a cell value to prioritize when filling the grid. This has no effect if <see cref="Randomizer"/> is
+        ///     specified.</summary>
+        public int? ValuePriority;
 
         // ** The following are all for debugging only ** //
 

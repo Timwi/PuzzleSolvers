@@ -89,7 +89,7 @@ namespace PuzzleSolvers
         /// <param name="getName">
         ///     An optional function to stringify values differently. Default is to represent them as integers.</param>
         public ConsoleColoredString SolutionToConsole(int?[] solution, Func<int?, string> getName, int width = 9) =>
-            SolutionToConsole(solution, (v, ix) => getName(v), width);
+            SolutionToConsole(solution, getName == null ? null : (v, ix) => getName(v), width);
 
         /// <summary>
         ///     Converts a puzzle solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered by some
@@ -102,7 +102,7 @@ namespace PuzzleSolvers
         ///     An optional function to stringify values differently. The function receives the cell value and its index
         ///     within the puzzle solution. Default is to represent them as integers.</param>
         public ConsoleColoredString SolutionToConsole(int[] solution, Func<int, int, string> getName = null, int width = 9) =>
-            SolutionToConsole(solution.Select(val => val.Nullable()).ToArray(), (v, ix) => getName(v.Value, ix), width);
+            SolutionToConsole(solution.Select(val => val.Nullable()).ToArray(), getName == null ? null : (v, ix) => getName(v.Value, ix), width);
 
         /// <summary>
         ///     Converts a puzzle solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered by some
@@ -114,7 +114,7 @@ namespace PuzzleSolvers
         /// <param name="getName">
         ///     An optional function to stringify values differently. Default is to represent them as integers.</param>
         public ConsoleColoredString SolutionToConsole(int[] solution, Func<int, string> getName, int width = 9) =>
-            SolutionToConsole(solution.Select(val => val.Nullable()).ToArray(), (v, ix) => getName(v.Value), width);
+            SolutionToConsole(solution.Select(val => val.Nullable()).ToArray(), getName == null ? null : (v, ix) => getName(v.Value), width);
 
         /// <summary>Adds the specified <paramref name="constraint"/> to the <see cref="Constraints"/> list.</summary>
         public Puzzle AddConstraint(Constraint constraint, ConsoleColor? foreground = null, ConsoleColor? background = null)
@@ -371,8 +371,10 @@ namespace PuzzleSolvers
             var fewestPossibleValues = int.MaxValue;
             var fewestCombinations = int.MaxValue;
             var ix = -1;
-            foreach (var cell in cellPriority)
+            var startIx = instr?.Randomizer.Next(0, cellPriority.Length) ?? 0;
+            for (var cpIx = 0; cpIx < cellPriority.Length; cpIx++)
             {
+                var cell = cellPriority[(cpIx + startIx) % cellPriority.Length];
                 if (grid[cell] != null)
                     continue;
                 var count = 0;
@@ -410,7 +412,7 @@ namespace PuzzleSolvers
             }
 
             immediate:
-            var startAt = instr?.Randomizer?.Next(0, takens[ix].Length) ?? 0;
+            var startAt = instr?.Randomizer?.Next(0, takens[ix].Length) ?? instr?.ValuePriority ?? 0;
             var state = new SolverStateImpl { Grid = grid, GridSizeVal = GridSize, MinVal = MinValue, MaxVal = MaxValue, Takens = takens };
             var showContinuousProgress = fewestPossibleValues > 1 && instr != null && instr.ShowContinuousProgress != null && recursionDepth < instr.ShowContinuousProgress.Value;
 
@@ -549,7 +551,9 @@ namespace PuzzleSolvers
 
         void __debug_generateSvg(SolverStateImpl state, int recursionDepth = 0, int[] intendedSolution = null, IEnumerable<int> highlightIxs = null, int width = 9, int height = 9, int values = 9, int wrap = 3, __debugSvgLabels labels = __debugSvgLabels.Numbers)
         {
-            string cnv(int val) => labels == __debugSvgLabels.Letters ? ((char) ('A' + val)).ToString() : labels == __debugSvgLabels.Loop ? Path.ToChar[val].ToString() : (val + state.MinVal).ToString();
+            string cnv(int val) =>
+                labels == __debugSvgLabels.Loop && val >= 0 && val <= 6 ? Path.ToChar[val].ToString() :
+                labels == __debugSvgLabels.Letters ? ((char) ('A' + val)).ToString() : (val + state.MinVal).ToString();
             File.WriteAllText(@"D:\temp\temp.svg", $@"
                 <svg viewBox='-.1 -.1 {width + 1.2} {width + .2}' xmlns='http://www.w3.org/2000/svg' text-anchor='middle' font-family='Work Sans'>
                     {Enumerable.Range(0, width * height).Select(cell => $@"

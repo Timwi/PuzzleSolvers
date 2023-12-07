@@ -23,7 +23,7 @@ namespace PuzzleSolvers
         {
             var r = base.Process(state);
 
-            if (state.LastPlacedCell == null || state.LastPlacedValue == 0)
+            if (state.LastPlacedCell == null || state.LastPlacedValue == 0 || state.LastPlacedValue >= 7)
                 return r;
 
             // Ensure there’s only one loop. Follow the line we just placed; if it leads us back to the current cell,
