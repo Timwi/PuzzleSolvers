@@ -187,7 +187,7 @@ namespace PuzzleSolvers
                     foreach (var possCell in poss)
                         newGrid[possCell] = bestPolySize;
                     if (debugOut)
-                        Console.WriteLine($"{new string(' ', new StackTrace().FrameCount)}Trying ({possIx}/{bestPossibleCompletions.Length}): {bestPolySize} at {poss.JoinString("+")}  \r");
+                        Console.WriteLine($"{new string(' ', new StackTrace().FrameCount)}Trying ({possIx}/{bestPossibleCompletions.Length}): {bestPolySize} at {poss.Select(c => PuzzleUtil.AsCoordinate(c, w)).JoinString("+")}  \r");
                     foreach (var result in recurseFillomino(newGrid,
                         polysSoFar: polysSoFar.Insert(polysSoFar.Length, poss),
                         allPolys: allPolys
@@ -227,12 +227,12 @@ namespace PuzzleSolvers
                     var ret = (tup.givenCells, tup.desiredSize, allPossibilities: enumeratePolyominoes(grid, tup.givenCells, tup.desiredSize, new int[0]).ToArray());
                     if (debugOutput)
                         lock (allAreas)
-                            Console.WriteLine($"{tup.desiredSize} at {tup.givenCells.JoinString("+")} has {ret.allPossibilities.Length} possibilities");
+                            Console.WriteLine($"{tup.desiredSize} at {tup.givenCells.Select(c => PuzzleUtil.AsCoordinate(c, w)).JoinString("+")} has {ret.allPossibilities.Length} possibilities");
                     return ret;
                 })
                 .ToList();
 
-            return recurseFillomino(grid.ToArray(), new int[0][], allPolyominoes, debugOutput);
+            return recurseFillomino([.. grid], new int[0][], allPolyominoes, debugOutput);
         }
     }
 }
