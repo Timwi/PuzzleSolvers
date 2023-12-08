@@ -91,5 +91,10 @@ namespace PuzzleSolvers
                         if (yy >= 0 && yy < gridHeight && (xx == x || yy == y) && (xx != x || yy != y))
                             yield return xx + gridWidth * yy;
         }
+
+        /// <summary>Specifies the delta-x for directions Up, Right, Down, Left in order.</summary>
+        public static readonly int[] Dxs = [0, 1, 0, -1];
+        /// <summary>Specifies the delta-y for directions Up, Right, Down, Left in order.</summary>
+        public static readonly int[] Dys = [-1, 0, 1, 0];
     }
 }

@@ -1,29 +1,39 @@
 using System.Linq;
+using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
     /// <summary>
     ///     Represents a constraint in a path puzzle such as <see cref="Masyu"/> that mandates that the path must form a
     ///     single connected loop.</summary>
-    public class SingleLoopConstraint : PathConstraint
+    /// <param name="width">
+    ///     Width of the whole puzzle grid.</param>
+    /// <param name="height">
+    ///     Height of the whole puzzle grid.</param>
+    public class SingleLoopConstraint(int width, int height) : PathConstraint(width, height, false)
     {
-        /// <summary>
-        ///     Constructor.</summary>
-        /// <param name="width">
-        ///     Width of the whole puzzle grid.</param>
-        /// <param name="height">
-        ///     Height of the whole puzzle grid.</param>
-        public SingleLoopConstraint(int width, int height) : base(width, height) { }
-
-        private static readonly int[] dxs = [0, 1, 0, -1];
-        private static readonly int[] dys = [-1, 0, 1, 0];
-
         /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)
         {
             var r = base.Process(state);
 
-            if (state.LastPlacedCell == null || state.LastPlacedValue == 0 || state.LastPlacedValue >= 7)
+            if (state.LastPlacedCell == null)
+            {
+                // Make sure that a line can’t crash into the edge of the grid
+                for (var xx = 0; xx < Width; xx++)
+                {
+                    state.MarkImpossible(xx + 0 * Width, v => v < 7 && (Path.ToBits[v] & 1) != 0);
+                    state.MarkImpossible(xx + (Height - 1) * Width, v => v < 7 && (Path.ToBits[v] & 4) != 0);
+                }
+                for (var yy = 0; yy < Height; yy++)
+                {
+                    state.MarkImpossible(0 + yy * Width, v => v < 7 && (Path.ToBits[v] & 8) != 0);
+                    state.MarkImpossible(Width - 1 + yy * Width, v => v < 7 && (Path.ToBits[v] & 2) != 0);
+                }
+                return r;
+            }
+
+            if (!state.LastPlacedValue.IsBetween(1, 6))
                 return r;
 
             // Ensure there’s only one loop. Follow the line we just placed; if it leads us back to the current cell,
@@ -35,8 +45,8 @@ namespace PuzzleSolvers
             while (true)
             {
                 var newDir = Enumerable.Range(0, 4).First(d => d != dir && (Path.ToBits[state[x + Width * y].Value] & (1 << d)) != 0);
-                x += dxs[newDir];
-                y += dys[newDir];
+                x += PuzzleUtil.Dxs[newDir];
+                y += PuzzleUtil.Dys[newDir];
                 if (state[x + Width * y] == null)
                     break;
                 if (x + Width * y == cell)

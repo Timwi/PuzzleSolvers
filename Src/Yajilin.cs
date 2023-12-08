@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Resources;
-using System.Text;
-using RT.Util;
 using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
@@ -105,26 +101,7 @@ namespace PuzzleSolvers
 
                 Console.WriteLine((clue.X + width * clue.Y).AsCoordinate(width));
                 AddConstraint(new CombinationsConstraint(cells.Select(c => c.x + Width * c.y), getCombinations([], number)));
-                AddConstraint(new MaximumBlockCountConstraint(cells.Select(c => c.x + Width * c.y), number));
-            }
-        }
-
-        private class MaximumBlockCountConstraint(IEnumerable<int> cells, int number) : Constraint(cells)
-        {
-            public int Number { get; private set; } = number;
-
-            public override ConstraintResult Process(SolverState state)
-            {
-                var countAlready = AffectedCells.Count(c => state[c] == Block);
-                if (countAlready > Number)
-                    return ConstraintResult.Violation;
-                if (countAlready == Number)
-                {
-                    for (var ix = 0; ix < AffectedCells.Length; ix++)
-                        state.MarkImpossible(AffectedCells[ix], Block);
-                    return ConstraintResult.Remove;
-                }
-                return null;
+                AddConstraint(new MaximumCountConstraint(cells.Select(c => c.x + Width * c.y), v => v == Block, number));
             }
         }
     }
