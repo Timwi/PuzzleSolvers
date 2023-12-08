@@ -1,11 +1,23 @@
-﻿using System.Linq;
+using System.Linq;
 
 namespace PuzzleSolvers
 {
+    /// <summary>
+    ///     Represents a constraint in a number-placement puzzle that prohibits any of the <paramref name="values"/> from
+    ///     appearing adjacent to one another.</summary>
+    /// <param name="width">
+    ///     The width of the puzzle grid.</param>
+    /// <param name="height">
+    ///     The height of the puzzle grid.</param>
+    /// <param name="values">
+    ///     The set of values that are not allowed to appear adjacent to one another.</param>
     public class NoAdjacentConstraint(int width, int height, params int[] values) : Constraint(null)
     {
+        /// <summary>The width of the puzzle grid.</summary>
         public int Width { get; private set; } = width;
+        /// <summary>The height of the puzzle grid.</summary>
         public int Height { get; private set; } = height;
+        /// <summary>The set of values that are not allowed to appear adjacent to one another.</summary>
         public int[] Values { get; private set; } = values;
 
         /// <inheritdoc/>

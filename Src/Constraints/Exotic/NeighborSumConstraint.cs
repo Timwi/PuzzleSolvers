@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -38,14 +38,16 @@ namespace PuzzleSolvers.Exotic
         ///     The width of the grid (default: 9).</param>
         /// <param name="gridHeight">
         ///     The height of the grid (default: 9).</param>
+        /// <param name="minValue">
+        ///     Specifies the smallest value used in this puzzle.</param>
+        /// <param name="maxValue">
+        ///     Specifies the largest value used in this puzzle.</param>
         public NeighborSumConstraint(bool isCol, int rowCol, int[] clue, IEnumerable<UniquenessConstraint> furtherRestrictions = null, int gridWidth = 9, int gridHeight = 9, int minValue = 1, int maxValue = 9)
             : base(Enumerable.Range(0, gridWidth * gridHeight), generateCombinations(isCol, rowCol, clue, furtherRestrictions, gridWidth, gridHeight, minValue, maxValue))
         {
-            if (clue == null)
-                throw new ArgumentNullException(nameof(clue));
             IsCol = isCol;
             RowCol = rowCol;
-            Clue = clue;
+            Clue = clue ?? throw new ArgumentNullException(nameof(clue));
         }
 
         private static IEnumerable<int?[]> generateCombinations(bool isCol, int rowCol, int[] clue, IEnumerable<UniquenessConstraint> furtherRestrictions, int gridWidth, int gridHeight, int minValue, int maxValue)

@@ -1,30 +1,68 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
+    /// <summary>Represents a Yajilin puzzle.</summary>
     public class Yajilin : Puzzle
     {
+        /// <summary>Represents a block (shaded cell) in a Yajilin solution.</summary>
         public const int Block = 7;
 
+        /// <summary>
+        ///     Encapsulates information about a single Yajilin clue.</summary>
+        /// <param name="x">
+        ///     X-coordinate of the cell containing this clue.</param>
+        /// <param name="y">
+        ///     Y-coordinate of the cell containing this clue.</param>
+        /// <param name="number">
+        ///     The number in the clue, which identifies the number of <see cref="Block"/> values (shaded cells) in the
+        ///     direction of <paramref name="direction"/>.</param>
+        /// <param name="direction">
+        ///     The direction in which this clue is pointing.</param>
         public struct Clue(int x, int y, int number, Direction direction)
         {
+            /// <summary>X-coordinate of the cell containing this clue.</summary>
             public int X { get; private set; } = x;
+            /// <summary>Y-coordinate of the cell containing this clue.</summary>
             public int Y { get; private set; } = y;
+            /// <summary>
+            ///     The number in the clue, which identifies the number of <see cref="Block"/> values (shaded cells) in the
+            ///     direction of <see cref="Direction"/>.</summary>
             public int Number { get; private set; } = number;
+            /// <summary>The direction in which this clue is pointing.</summary>
             public Direction Direction { get; private set; } = direction;
         }
 
+        /// <summary>Specifies the width of the grid.</summary>
         public int Width { get; private set; }
+        /// <summary>Specifies the height of the grid.</summary>
         public int Height { get; private set; }
+        /// <summary>Allows read-only access to the clues in this puzzle.</summary>
         public IEnumerable<Clue> Clues => _clues.AsReadOnly();
 
         private readonly Clue[] _clues;
 
+        /// <summary>
+        ///     Constructor.</summary>
+        /// <param name="width">
+        ///     Specifies the width of the grid.</param>
+        /// <param name="height">
+        ///     Specifies the height of the grid.</param>
+        /// <param name="clues">
+        ///     Specifies the Yajilin clues in this puzzle. See <see cref="Clue"/> for details.</param>
         public Yajilin(int width, int height, params Clue[] clues) : this(width, height, (IEnumerable<Clue>) clues) { }
 
+        /// <summary>
+        ///     Constructor.</summary>
+        /// <param name="width">
+        ///     Specifies the width of the grid.</param>
+        /// <param name="height">
+        ///     Specifies the height of the grid.</param>
+        /// <param name="clues">
+        ///     Specifies the Yajilin clues in this puzzle. See <see cref="Clue"/> for details.</param>
         public Yajilin(int width, int height, IEnumerable<Clue> clues) : base(width * height, 0, 7)
         {
             _clues = clues.ToArray();
@@ -76,7 +114,7 @@ namespace PuzzleSolvers
                 if (cells.Count == 0)
                 {
                     if (number > 0)
-                        throw new ArgumentException($"You cannot place a non-zero Yajilin clue pointing right at the edge of the grid.");
+                        throw new ArgumentException("You cannot place a non-zero Yajilin clue pointing right at the edge of the grid.");
                     continue;
                 }
 
@@ -99,7 +137,6 @@ namespace PuzzleSolvers
                             yield return result;
                 }
 
-                Console.WriteLine((clue.X + width * clue.Y).AsCoordinate(width));
                 AddConstraint(new CombinationsConstraint(cells.Select(c => c.x + Width * c.y), getCombinations([], number)));
                 AddConstraint(new MaximumCountConstraint(cells.Select(c => c.x + Width * c.y), v => v == Block, number));
             }

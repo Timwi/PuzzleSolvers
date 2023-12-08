@@ -36,7 +36,7 @@ namespace PuzzleSolvers
         /// <summary>Returns the list of constraints used by this puzzle.</summary>
         public List<Constraint> Constraints { get; private set; }
 
-        /// <summary>Contains colors for use by <see cref="SolutionToConsole(int[], int, Func{int, string})"/>.</summary>
+        /// <summary>Contains colors for use by <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</summary>
         public Dictionary<Constraint, (ConsoleColor? foreground, ConsoleColor? background)> ConstraintColors { get; private set; } = new Dictionary<Constraint, (ConsoleColor? foreground, ConsoleColor? background)>();
 
         /// <summary>
@@ -182,9 +182,10 @@ namespace PuzzleSolvers
         /// <param name="givens">
         ///     A collection of tuples containing cell indexes and given values.</param>
         /// <param name="foreground">
-        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</param>
         /// <param name="background">
-        ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string},
+        ///     int)"/>.</param>
         public Puzzle AddGivens(IEnumerable<(int cell, int value)> givens, ConsoleColor? foreground = null, ConsoleColor? background = null)
         {
             if (givens == null)
@@ -207,9 +208,10 @@ namespace PuzzleSolvers
         ///     A string such as <c>"3...5...8.9..7.5.....8.41...2.7.....5...28..47.....6...6....8....2...9.1.1.9.5..."</c>.
         ///     Each digit is a given value, while periods (<c>.</c>) indicate no given for that cell.</param>
         /// <param name="foreground">
-        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</param>
         /// <param name="background">
-        ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string},
+        ///     int)"/>.</param>
         public Puzzle AddGivens(string givens, ConsoleColor? foreground = null, ConsoleColor? background = null)
         {
             if (givens == null)
@@ -230,9 +232,10 @@ namespace PuzzleSolvers
         ///     An array containing integers and <c>null</c> values. Each non-<c>null</c> value translates to a given for the
         ///     cell in the same position.</param>
         /// <param name="foreground">
-        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</param>
         /// <param name="background">
-        ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string},
+        ///     int)"/>.</param>
         public Puzzle AddGivens(int?[] givens, ConsoleColor? foreground = null, ConsoleColor? background = null)
         {
             if (givens == null)
@@ -255,9 +258,10 @@ namespace PuzzleSolvers
         /// <param name="affectedCells">
         ///     The set of cells contained in this cage.</param>
         /// <param name="foreground">
-        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</param>
         /// <param name="background">
-        ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string},
+        ///     int)"/>.</param>
         /// <returns>
         ///     A collection containing the two required constraints.</returns>
         public Puzzle AddKillerCage(int sum, IEnumerable<int> affectedCells, ConsoleColor? foreground = null, ConsoleColor? background = null)
@@ -280,9 +284,10 @@ namespace PuzzleSolvers
         /// <param name="gridWidth">
         ///     The width of the puzzle grid.</param>
         /// <param name="foreground">
-        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</param>
         /// <param name="background">
-        ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int?[], int)"/>.</param>
+        ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string},
+        ///     int)"/>.</param>
         /// <returns>
         ///     A collection containing the two required constraints.</returns>
         public Puzzle AddKillerCage(int sum, string affectedCells, int gridWidth = 9, ConsoleColor? foreground = null, ConsoleColor? background = null)

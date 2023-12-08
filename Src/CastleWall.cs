@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RT.Util;
@@ -6,27 +6,60 @@ using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
+    /// <summary>
+    ///     Represents a Castle Wall puzzle, in which the solver must draw a single continuous non-intersecting loop in such a
+    ///     way that certain predefined squares are either inside or outside a loop.</summary>
     public class CastleWall : Puzzle
     {
+        /// <summary>
+        ///     Represents a Castle Wall clue.</summary>
+        /// <param name="x">
+        ///     X-coordinate of the cell containing this clue.</param>
+        /// <param name="y">
+        ///     Y-coordinate of the cell containing this clue.</param>
+        /// <param name="directionalClue">
+        ///     If not <c>null</c>, the clue specifies the number of straight segments parallel to the specified direction
+        ///     that can be seen from the clue.</param>
+        /// <param name="isInside">
+        ///     If not <c>null</c>, the cell containing this clue must be either inside or outside the loop.</param>
         public struct Clue(int x, int y, (int number, Direction direction)? directionalClue, bool? isInside)
         {
+            /// <summary>X-coordinate of the cell containing this clue.</summary>
             public int X { get; private set; } = x;
+            /// <summary>Y-coordinate of the cell containing this clue.</summary>
             public int Y { get; private set; } = y;
+            /// <summary>
+            ///     If not <c>null</c>, the clue specifies the number of straight segments parallel to the specified direction
+            ///     that can be seen from the clue.</summary>
             public (int number, Direction direction)? DirectionalClue { get; private set; } = directionalClue;
+            /// <summary>If not <c>null</c>, the cell containing this clue must be either inside or outside the loop.</summary>
             public bool? IsInside { get; private set; } = isInside;
 
+            /// <summary>Constructor.</summary>
             public Clue(int x, int y) : this(x, y, null, null) { }
+            /// <summary>Constructor.</summary>
             public Clue(int x, int y, int number, Direction direction) : this(x, y, (number, direction), null) { }
+            /// <summary>Constructor.</summary>
             public Clue(int x, int y, bool isInside) : this(x, y, null, isInside) { }
+            /// <summary>Constructor.</summary>
             public Clue(int x, int y, int number, Direction direction, bool isInside) : this(x, y, (number, direction), isInside) { }
         }
 
+        /// <summary>The width of the puzzle grid.</summary>
         public int Width { get; private set; }
+        /// <summary>The height of the puzzle grid.</summary>
         public int Height { get; private set; }
+        /// <summary>Enumerates the set of cells containing Castle Wall clues.</summary>
         public IEnumerable<int> CluedCells => _cluedCells.Select(clue => clue.X + Width * clue.Y);
 
         private List<Clue> _cluedCells = new List<Clue>();
 
+        /// <summary>
+        ///     Constructor.</summary>
+        /// <param name="width">
+        ///     Specifies the width of the puzzle grid.</param>
+        /// <param name="height">
+        ///     Specifies the height of the puzzle grid.</param>
         public CastleWall(int width, int height) : base(width * height, 0, 6)
         {
             AddConstraints(new SingleLoopConstraint(width, height));
@@ -34,10 +67,13 @@ namespace PuzzleSolvers
             Height = height;
         }
 
+        /// <summary>Adds the specified <see cref="Clue"/> to this Castle Wall puzzle.</summary>
         public void AddClue(Clue clue) => AddClues(clue);
 
+        /// <summary>Adds the specified set of <see cref="Clue"/>s to this Castle Wall puzzle.</summary>
         public void AddClues(IEnumerable<Clue> clues) => AddClues(clues.ToArray());
 
+        /// <summary>Adds the specified set of <see cref="Clue"/>s to this Castle Wall puzzle.</summary>
         public void AddClues(params Clue[] clues)
         {
             var newConstraints = new List<(Constraint constraint, ConsoleColor? fore, ConsoleColor? back)>();
