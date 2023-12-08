@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace PuzzleSolvers
+﻿namespace PuzzleSolvers
 {
     /// <summary>Describes a given in a puzzle (a value already pre-filled at the start).</summary>
     public class GivenConstraint : Constraint

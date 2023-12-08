@@ -134,12 +134,12 @@ namespace PuzzleSolvers
 
                     for (var size = 1; size <= maxLength; size++)
                     {
-                        var possibilities = enumeratePolyominoes(thisGrid, new[] { firstEmptyCell }, size, new int[0]).ToArray();
+                        var possibilities = enumeratePolyominoes(thisGrid, [firstEmptyCell], size, new int[0]).ToArray();
                         if (possibilities.Length == 0)
                             continue;
                         var newGrid = thisGrid.ToArray();
                         newGrid[firstEmptyCell] = size;
-                        foreach (var solution in recurseFillomino(newGrid, polysSoFar, new List<(int[] cells, int desiredSize, int[][] allPossibilities)> { (new[] { firstEmptyCell }, size, possibilities) }, false))
+                        foreach (var solution in recurseFillomino(newGrid, polysSoFar, [([firstEmptyCell], size, possibilities)], false))
                             yield return solution;
                     }
                     yield break;

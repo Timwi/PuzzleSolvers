@@ -371,7 +371,7 @@ namespace PuzzleSolvers
             var fewestPossibleValues = int.MaxValue;
             var fewestCombinations = int.MaxValue;
             var ix = -1;
-            var startIx = instr?.Randomizer.Next(0, cellPriority.Length) ?? 0;
+            var startIx = instr?.Randomizer?.Next(0, cellPriority.Length) ?? 0;
             for (var cpIx = 0; cpIx < cellPriority.Length; cpIx++)
             {
                 var cell = cellPriority[(cpIx + startIx) % cellPriority.Length];
@@ -399,7 +399,7 @@ namespace PuzzleSolvers
 
             if (ix == -1)
             {
-                if (instr != null && instr.ShowContinuousProgress != null)
+                if (instr?.ShowContinuousProgress != null)
                 {
                     Console.CursorLeft = 0;
                     Console.CursorTop = Math.Min(recursionDepth, instr.ShowContinuousProgress.Value) + (instr.ShowContinuousProgressConsoleTop ?? 0);
