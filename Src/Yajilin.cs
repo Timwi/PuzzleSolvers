@@ -76,7 +76,7 @@ namespace PuzzleSolvers
             foreach (var clue in clues)
             {
                 if (clue.X < 0 || clue.X >= width || clue.Y < 0 || clue.Y >= height)
-                    throw new InvalidOperationException($"A Yajilin clue cannot be placed outside of the grid.");
+                    throw new ArgumentException("A Yajilin clue cannot be placed outside of the grid.");
                 isClue[clue.X + width * clue.Y] = true;
             }
 
