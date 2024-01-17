@@ -552,17 +552,18 @@ namespace PuzzleSolvers
             instr != null && instr.IntendedSolution != null &&
             instr.IntendedSolution.All((v, cell) => state.Grid[cell] == v - MinValue || (state.Grid[cell] == null && !state.Takens[cell][v - MinValue]));
 
-        enum __debugSvgLabels { Numbers, Letters, Loop }
+        enum __debugSvgLabels { Numbers, Letters, Loop, Shading }
 
         void __debug_generateSvg(SolverStateImpl state, int recursionDepth = 0, int[] intendedSolution = null, IEnumerable<int> highlightIxs = null, int width = 9, int height = 9, int values = 9, int wrap = 3, __debugSvgLabels labels = __debugSvgLabels.Numbers)
         {
             string cnv(int val) =>
+                labels == __debugSvgLabels.Shading && val.IsBetween(0, 1) ? val == 0 ? "·" : "■" :
                 labels == __debugSvgLabels.Loop && val >= 0 && val <= 6 ? Path.ToChar[val].ToString() :
                 labels == __debugSvgLabels.Letters ? ((char) ('A' + val)).ToString() : (val + state.MinVal).ToString();
             File.WriteAllText(@"D:\temp\temp.svg", $@"
                 <svg viewBox='-.1 -.1 {width + 1.2} {width + .2}' xmlns='http://www.w3.org/2000/svg' text-anchor='middle' font-family='Work Sans'>
                     {Enumerable.Range(0, width * height).Select(cell => $@"
-                        <rect x='{cell % width}' y='{cell / width}' width='1' height='1' stroke='black' stroke-width='{(highlightIxs != null && highlightIxs.Contains(cell) ? .05 : .01)}' fill='{(intendedSolution != null && (state.Grid[cell] != null ? (state.Grid[cell].Value != intendedSolution[cell] - state.MinVal) : (state.Takens[cell][intendedSolution[cell] - state.MinVal])) ? "rgba(255, 0, 0, .1)" : "none")}' />
+                        <rect x='{cell % width}' y='{cell / width}' width='1' height='1' stroke='black' stroke-width='{(highlightIxs != null && highlightIxs.Contains(cell) ? .05 : .01)}' fill='{(intendedSolution != null && (state.Grid[cell] != null ? (state.Grid[cell].Value != intendedSolution[cell] - state.MinVal) : (state.Takens[cell][intendedSolution[cell] - state.MinVal])) ? "rgba(255, 0, 0, .1)" : state[cell] != null ? "rgba(0, 192, 0, .1)" : "none")}' />
                         {(state.Grid[cell] != null
                             ? $"<text x='{cell % width + .5}' y='{cell / width + .8}' font-size='.8'>{cnv(state.Grid[cell].Value)}</text>"
                             : Enumerable.Range(0, values).Where(v => !state.Takens[cell][v]).Select(v => $"<text x='{cell % width + 1d / (wrap + 1) * (1 + v % wrap)}' y='{cell / width + 1d / (wrap + 1) * (1 + v / wrap) + .1}' font-size='.2'>{cnv(v)}</text>").JoinString()
@@ -572,6 +573,10 @@ namespace PuzzleSolvers
                 </svg>
             ");
         }
+
+        string __debug_string(SolverStateImpl state, int width, string chars = null) =>
+            Enumerable.Range(0, state.GridSize).Select(ix => state[ix] == null ? "?" : chars == null ? state[ix].Value.ToString() : chars[state[ix].Value].ToString())
+                .Split(width).Select(row => row.JoinString(" ")).JoinString("\n");
 
         sealed class SolverStateImpl : SolverState
         {

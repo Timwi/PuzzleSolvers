@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RT.Util;
@@ -63,6 +64,11 @@ namespace PuzzleSolvers
                 affectedCells: keepIxs.Select(ix => affectedCells[ix]).ToArray(),
                 combinations: combinations.Where(c => Enumerable.Range(0, c.Length).All(i => c[i] == null || keepIxs.Contains(i))).Select(comb => keepIxs.Select(ix => comb[ix].NullOr(c => Path.ToBits.IndexOf(c))).ToArray()).ToArray()));
         }
+        /// <summary>
+        ///     Adds a black pearl constraint to the puzzle.</summary>
+        /// <param name="cell">
+        ///     Specifies the cell within the grid containing the new pearl.</param>
+        public void AddBlackPearl(int cell) => AddBlackPearl(cell % Width, cell / Width);
 
         /// <summary>
         ///     Adds a white pearl constraint to the puzzle.</summary>
@@ -94,5 +100,10 @@ namespace PuzzleSolvers
                 affectedCells: keepIxs.Select(ix => affectedCells[ix]).ToArray(),
                 combinations: combinations.Where(c => Enumerable.Range(0, c.Length).All(i => c[i] == null || keepIxs.Contains(i))).Select(comb => keepIxs.Select(ix => comb[ix].NullOr(c => Path.ToBits.IndexOf(c))).ToArray()).ToArray()));
         }
+        /// <summary>
+        ///     Adds a white pearl constraint to the puzzle.</summary>
+        /// <param name="cell">
+        ///     Specifies the cell within the grid containing the new pearl.</param>
+        public void AddWhitePearl(int cell) => AddWhitePearl(cell % Width, cell / Width);
     }
 }

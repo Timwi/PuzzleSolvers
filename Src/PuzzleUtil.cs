@@ -68,11 +68,15 @@ namespace PuzzleSolvers
             return recurse(new int[numDigits], 0);
         }
 
-        /// <summary>Returns the set of cells adjacent to the specified cell (including diagonals).</summary>
+        /// <summary>
+        ///     Returns the set of cells adjacent to the specified cell (including diagonals).</summary>
+        /// <seealso cref="Diagonal(int, int, int)"/>
+        /// <seealso cref="Orthogonal(int, int, int)"/>
+        /// <seealso cref="IsAdjacent(int, int, int, int)"/>
         public static IEnumerable<int> Adjacent(int cell, int gridWidth = 9, int gridHeight = 9)
         {
             var x = cell % gridWidth;
-            var y = cell / gridHeight;
+            var y = cell / gridWidth;
             for (var xx = x - 1; xx <= x + 1; xx++)
                 if (xx >= 0 && xx < gridWidth)
                     for (var yy = y - 1; yy <= y + 1; yy++)
@@ -80,17 +84,60 @@ namespace PuzzleSolvers
                             yield return xx + gridWidth * yy;
         }
 
-        /// <summary>Returns the set of cells orthogonally adjacent to the specified cell (no diagonals).</summary>
+        /// <summary>
+        ///     Determines if <paramref name="cell1"/> and <paramref name="cell2"/> are adjacent (including diagonally).</summary>
+        /// <seealso cref="IsDiagonal(int, int, int, int)"/>
+        /// <seealso cref="IsOrthogonal(int, int, int, int)"/>
+        /// <seealso cref="Adjacent(int, int, int)"/>
+        public static bool IsAdjacent(this int cell1, int cell2, int gridWidth = 9, int gridHeight = 9) => Adjacent(cell1, gridWidth, gridHeight).Contains(cell2);
+
+        /// <summary>
+        ///     Returns the set of cells orthogonally adjacent to the specified cell (no diagonals).</summary>
+        /// <seealso cref="Adjacent(int, int, int)"/>
+        /// <seealso cref="Diagonal(int, int, int)"/>
+        /// <seealso cref="IsOrthogonal(int, int, int, int)"/>
         public static IEnumerable<int> Orthogonal(int cell, int gridWidth = 9, int gridHeight = 9)
         {
             var x = cell % gridWidth;
-            var y = cell / gridHeight;
+            var y = cell / gridWidth;
             for (var xx = x - 1; xx <= x + 1; xx++)
                 if (xx >= 0 && xx < gridWidth)
                     for (var yy = y - 1; yy <= y + 1; yy++)
                         if (yy >= 0 && yy < gridHeight && (xx == x || yy == y) && (xx != x || yy != y))
                             yield return xx + gridWidth * yy;
         }
+
+        /// <summary>
+        ///     Determines if <paramref name="cell1"/> and <paramref name="cell2"/> are orthogonally adjacent (not including
+        ///     diagonally).</summary>
+        /// <seealso cref="IsAdjacent(int, int, int, int)"/>
+        /// <seealso cref="IsDiagonal(int, int, int, int)"/>
+        /// <seealso cref="Orthogonal(int, int, int)"/>
+        public static bool IsOrthogonal(this int cell1, int cell2, int gridWidth = 9, int gridHeight = 9) => Orthogonal(cell1, gridWidth, gridHeight).Contains(cell2);
+
+        /// <summary>
+        ///     Returns the set of cells diagonal from the specified cell.</summary>
+        /// <seealso cref="Adjacent(int, int, int)"/>
+        /// <seealso cref="Orthogonal(int, int, int)"/>
+        /// <seealso cref="IsDiagonal(int, int, int, int)"/>
+        public static IEnumerable<int> Diagonal(int cell, int gridWidth = 9, int gridHeight = 9)
+        {
+            var x = cell % gridWidth;
+            var y = cell / gridWidth;
+            for (var xx = x - 1; xx <= x + 1; xx += 2)
+                if (xx >= 0 && xx < gridWidth)
+                    for (var yy = y - 1; yy <= y + 1; yy += 2)
+                        if (yy >= 0 && yy < gridHeight)
+                            yield return xx + gridWidth * yy;
+        }
+
+        /// <summary>
+        ///     Determines if <paramref name="cell1"/> and <paramref name="cell2"/> are diagonally adjacent.</summary>
+        /// <seealso cref="IsAdjacent(int, int, int, int)"/>
+        /// <seealso cref="IsOrthogonal(int, int, int, int)"/>
+        /// <seealso cref="Diagonal(int, int, int)"/>
+        public static bool IsDiagonal(this int cell1, int cell2, int gridWidth = 9, int gridHeight = 9) => Diagonal(cell1, gridWidth, gridHeight).Contains(cell2);
+
 
         /// <summary>Specifies the delta-x for directions Up, Right, Down, Left in order.</summary>
         public static readonly int[] Dxs = [0, 1, 0, -1];

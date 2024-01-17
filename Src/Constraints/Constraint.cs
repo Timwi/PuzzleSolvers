@@ -22,12 +22,15 @@ namespace PuzzleSolvers
         }
 
         /// <summary>
-        ///     Constraint implementations must use <see cref="SolverState.MarkImpossible(int, int)"/> to mark values that are
-        ///     known to be impossible given the incomplete grid exposed by <see cref="SolverState.this[int]"/>.</summary>
+        ///     Constraint implementations must use methods such as <see cref="SolverState.MarkImpossible(int, int)"/> or <see
+        ///     cref="SolverState.MustBe(int, int)"/> to mark values that are known to be impossible given the incomplete grid
+        ///     exposed by properties such as <see cref="SolverState.this[int]"/>.</summary>
         /// <returns>
         ///     <para>
         ///         Implementations must return <c>null</c> if the constraint remains valid for the remainder of filling this
-        ///         grid, or a collection of constraints that this constraint shall be replaced with (can be empty).</para>
+        ///         grid, or <see cref="ConstraintReplace"/> with a collection of constraints that this constraint shall be
+        ///         replaced with (can be empty), or <see cref="ConstraintViolation"/> to indicate that this constraint is
+        ///         already violated.</para>
         ///     <para>
         ///         For example, in <see cref="EqualSumsConstraint"/>, since the sum is not initially known, the constraint
         ///         waits until one of its regions is filled and then uses this return value to replace itself with several
