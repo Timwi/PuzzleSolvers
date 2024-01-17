@@ -24,8 +24,8 @@ namespace PuzzleSolvers
         public Akari(int width, int height, string description) : this(width, height,
 
             description == null ? throw new ArgumentNullException(nameof(description)) :
-            description.Length != width * height ? throw new ArgumentException($"The length of the ‘description’ string must be equal to width times height ({width * height}).", nameof(description)) :
-            !description.All(".#0123456789".Contains) ? throw new ArgumentException($"The ‘description’ string must only contain periods (.), hashes (#) and digits (0–9).", nameof(description)) :
+            description.Length != width * height ? throw new ArgumentException($"The length of the ‘{nameof(description)}’ string must be equal to width times height ({width * height}).", nameof(description)) :
+            !description.All(".#0123456789".Contains) ? throw new ArgumentException($"The ‘{nameof(description)}’ string must only contain periods (.), hashes (#) and digits (0–9).", nameof(description)) :
              description.Select(ch => ch != '.').ToArray(),
 
             description.Select(ch => ch >= '0' && ch <= '9' ? (ch - '0').Nullable() : null).ToArray())
@@ -48,11 +48,11 @@ namespace PuzzleSolvers
             if (isBlock == null)
                 throw new ArgumentNullException(nameof(isBlock));
             if (isBlock.Length != width * height)
-                throw new ArgumentException($"The length of the ‘isBlock’ array must be equal to width times height ({width * height}).", nameof(isBlock));
+                throw new ArgumentException($"The length of the ‘{nameof(isBlock)}’ array must be equal to width times height ({width * height}).", nameof(isBlock));
             if (clues == null)
                 throw new ArgumentNullException(nameof(clues));
             if (clues.Length != width * height)
-                throw new ArgumentException($"The length of the ‘clues’ array must be equal to width times height ({width * height}).", nameof(clues));
+                throw new ArgumentException($"The length of the ‘{nameof(clues)}’ array must be equal to width times height ({width * height}).", nameof(clues));
 
             // Each cell that is a block cannot be a light bulb
             for (var cell = 0; cell < isBlock.Length; cell++)
@@ -64,7 +64,7 @@ namespace PuzzleSolvers
                 if (clues[cell] is int clue)
                 {
                     if (!isBlock[cell])
-                        throw new ArgumentException($"Cell {cell} has a numerical clue ({clue}) but is not designated a block. Each non-null value in ‘clues’ must have a true value in ‘isBlock’.", nameof(clues));
+                        throw new ArgumentException($"Cell {cell} has a numerical clue ({clue}) but is not designated a block. Each non-null value in ‘{nameof(clue)}’ must have a true value in ‘{nameof(isBlock)}’.", nameof(clues));
                     AddConstraint(new SumConstraint(clue, PuzzleUtil.Orthogonal(cell, width, height)));
                 }
 
