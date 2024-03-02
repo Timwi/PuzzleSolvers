@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RT.Util.ExtensionMethods;
@@ -37,14 +37,18 @@ namespace PuzzleSolvers
         /// <param name="maxValue">
         ///     The maximum value of numbers in the grid for this puzzle.</param>
         public SandwichUniquenessConstraint(int value1, int value2, int sum, IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9)
-            : base(affectedCells, generateCombinations(minValue, maxValue, value1, value2, sum, affectedCells.Count()))
+            : base(affectedCells, GenerateCombinations(minValue, maxValue, value1, value2, sum, affectedCells.Count()))
         {
             Value1 = value1;
             Value2 = value2;
             Sum = sum;
         }
 
-        private static int?[][] generateCombinations(int minValue, int maxValue, int value1, int value2, int sum, int numAffectedCells)
+        /// <summary>
+        ///     Returns a collection containing all combinations of <paramref name="numAffectedCells"/> cells of values
+        ///     between <paramref name="minValue"/> and <paramref name="maxValue"/> in which the sum of the digits sandwiched
+        ///     between <paramref name="value1"/> and <paramref name="value2"/> is <paramref name="sum"/>.</summary>
+        public static int?[][] GenerateCombinations(int minValue, int maxValue, int value1, int value2, int sum, int numAffectedCells)
         {
             // Function to find all possible sandwiches
             IEnumerable<int?[]> findSandwiches(int?[] sofar, int ix, int remainingSum)

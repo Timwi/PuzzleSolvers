@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RT.Util.Core" Version="2.0.1754" />
+    <PackageReference Include="RT.Util.Core" Version="2.0.1768" />
   </ItemGroup>
 
 </Project>
