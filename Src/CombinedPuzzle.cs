@@ -1,13 +1,27 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RT.Util;
 
 namespace PuzzleSolvers
 {
+    /// <summary>
+    ///     Creates a <see cref="Puzzle"/> that consists of two puzzles to be solved simultaneously.</summary>
+    /// <remarks>
+    ///     An example use-case might be to create a puzzle consisting of two Sudokus which are somehow interlinked. Create
+    ///     the individual Sudokus with their own constraints first, then create a <see cref="CombinedPuzzle"/> from them,
+    ///     then add constraints that span across both Sudokus.</remarks>
     public class CombinedPuzzle : Puzzle
     {
+        /// <summary>
+        ///     Constructor.</summary>
+        /// <param name="subpuzzles">
+        ///     List of smaller puzzles to combine into a larger one.</param>
         public CombinedPuzzle(IEnumerable<Puzzle> subpuzzles) : this(subpuzzles?.ToArray()) { }
+        /// <summary>
+        ///     Constructor.</summary>
+        /// <param name="subpuzzles">
+        ///     List of smaller puzzles to combine into a larger one.</param>
         public CombinedPuzzle(params Puzzle[] subpuzzles) : base(
             (subpuzzles ?? throw new ArgumentNullException(nameof(subpuzzles))).Sum(p => p.GridSize),
             subpuzzles.Min(p => p.MinValue),
