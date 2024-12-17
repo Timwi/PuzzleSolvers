@@ -16,7 +16,7 @@ namespace PuzzleSolvers
         ///     and only provides a small guidance for some puzzles.</summary>
         public int[] CellPriority;
         /// <summary>
-        ///     Specified a cell value to prioritize when filling the grid. This has no effect if <see cref="Randomizer"/> is
+        ///     Specifies a cell value to prioritize when filling the grid. This has no effect if <see cref="Randomizer"/> is
         ///     specified.</summary>
         public int? ValuePriority;
 
@@ -26,6 +26,8 @@ namespace PuzzleSolvers
         public int? ShowContinuousProgress;
         /// <summary>Leaves a number of rows at the top of the console window above the debug display.</summary>
         public int? ShowContinuousProgressConsoleTop;
+        /// <summary>Leaves a number of columns on the left of the console window beside the debug display.</summary>
+        public int? ShowContinuousProgressConsoleLeft;
         /// <summary>
         ///     Only show candidate values for each cell; useful when cells can have many possible values but the majority of
         ///     them are not applicable most of the time.</summary>
@@ -53,5 +55,9 @@ namespace PuzzleSolvers
         ///     If not <c>null</c>, the solver outputs extremely verbose information to this file describing the solving
         ///     process.</summary>
         public string BulkLoggingFile;
+        /// <summary>
+        ///     If not <c>null</c>, the solver will obtain a lock on this object while outputting information to the console
+        ///     (<see cref="ShowContinuousProgress"/>) or a file (<see cref="BulkLoggingFile"/>).</summary>
+        public object LockObject;
     }
 }
