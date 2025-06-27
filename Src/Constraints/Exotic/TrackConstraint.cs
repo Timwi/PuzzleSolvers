@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers.Exotic
 {
     /// <summary>
-    ///     Describes a constraint in a number-placement puzzle. Two cells that are n steps from one another along the track
-    ///     can’t both have the number n. The track is assumed to be a closed loop.</summary>
+    ///     Describes a constraint as used in Ludoku by Brawlbox
+    ///     (https://logic-masters.de/Raetselportal/Raetsel/zeigen.php?id=000CX2). Two cells that are n steps from one another
+    ///     along the track can’t both have the number n. The track is assumed to be a closed loop.</summary>
     public sealed class TrackConstraint : Constraint
     {
         /// <summary>
