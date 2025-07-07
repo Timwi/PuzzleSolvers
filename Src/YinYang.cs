@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RT.Util;
@@ -6,8 +6,26 @@ using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
+    /// <summary>
+    ///     Describes a Yin-Yang puzzle, a type of puzzle where every cell is filled either black or white.</summary>
+    /// <remarks>
+    ///     <para>
+    ///         In a Yin-Yang puzzle, some cells start out black or white (givens). The goal is to color all cells in such a
+    ///         way that:</para>
+    ///     <list type="number">
+    ///         <item>All black cells must form an orthogonally contiguous area.</item>
+    ///         <item>All white cells must form an orthogonally contiguous area.</item>
+    ///         <item>2×2 areas of the same color are not allowed.</item></list></remarks>
     public class YinYang : Puzzle
     {
+        /// <summary>
+        ///     Constructor.</summary>
+        /// <param name="width">
+        ///     Width of the puzzle.</param>
+        /// <param name="height">
+        ///     Height of the puzzle.</param>
+        /// <param name="givens">
+        ///     Givens (pre-filled cells in the puzzle).</param>
         public YinYang(int width, int height, bool?[] givens) : base(width * height, 0, 1)
         {
             if (givens == null)
@@ -24,6 +42,16 @@ namespace PuzzleSolvers
             AddConstraint(new YinYangCheckerboardConstraint(width, height));
         }
 
+        /// <summary>
+        ///     Constructor.</summary>
+        /// <param name="width">
+        ///     Width of the puzzle.</param>
+        /// <param name="height">
+        ///     Height of the puzzle.</param>
+        /// <param name="description">
+        ///     A string representation of the givens (pre-filled cells in the puzzle). Allowed characters are <c>k</c>
+        ///     (black), <c>w</c> (white) and <c>.</c> (no given). The length of the string must equal <paramref
+        ///     name="width"/>×<paramref name="height"/>.</param>
         public YinYang(int width, int height, string description) : this(width, height,
             description == null ? throw new ArgumentNullException(nameof(description)) :
             description.Length != width * height ? throw new ArgumentException($"The length of ‘desccription’ must equal width times height ({width * height}).", nameof(description)) :

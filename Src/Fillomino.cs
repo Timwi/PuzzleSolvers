@@ -134,7 +134,7 @@ namespace PuzzleSolvers
 
                     for (var size = 1; size <= maxLength; size++)
                     {
-                        var possibilities = enumeratePolyominoes(thisGrid, [firstEmptyCell], size, new int[0]).ToArray();
+                        var possibilities = enumeratePolyominoes(thisGrid, [firstEmptyCell], size, []).ToArray();
                         if (possibilities.Length == 0)
                             continue;
                         var newGrid = thisGrid.ToArray();
@@ -224,7 +224,7 @@ namespace PuzzleSolvers
             var allPolyominoes = allAreas
                 .ParallelSelect(Environment.ProcessorCount, tup =>
                 {
-                    var ret = (tup.givenCells, tup.desiredSize, allPossibilities: enumeratePolyominoes(grid, tup.givenCells, tup.desiredSize, new int[0]).ToArray());
+                    var ret = (tup.givenCells, tup.desiredSize, allPossibilities: enumeratePolyominoes(grid, tup.givenCells, tup.desiredSize, []).ToArray());
                     if (debugOutput)
                         lock (allAreas)
                             Console.WriteLine($"{tup.desiredSize} at {tup.givenCells.Select(c => PuzzleUtil.AsCoordinate(c, w)).JoinString("+")} has {ret.allPossibilities.Length} possibilities");
@@ -232,7 +232,7 @@ namespace PuzzleSolvers
                 })
                 .ToList();
 
-            return recurseFillomino([.. grid], new int[0][], allPolyominoes, debugOutput);
+            return recurseFillomino([.. grid], [], allPolyominoes, debugOutput);
         }
     }
 }

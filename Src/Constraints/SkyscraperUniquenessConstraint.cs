@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using RT.Util.ExtensionMethods;
 
@@ -13,29 +13,21 @@ namespace PuzzleSolvers
     ///     with all of the possible number combinations for the specified set of cells. Avoid using this on oversized
     ///     puzzles. (At time of writing, this is only feasible for up to 11 cells, which uses about 2 GB of RAM for each
     ///     constraint.)</remarks>
-    public class SkyscraperUniquenessConstraint : PermutationUniquenessConstraint
+    /// <param name="clue">
+    ///     The number of skyscrapers visible.</param>
+    /// <param name="affectedCells">
+    ///     The set of cells affected by this constraint. This is usually a row or column in a grid, but it can be any subset
+    ///     of grid points.</param>
+    /// <param name="minValue">
+    ///     The minimum value of numbers in the grid for this puzzle.</param>
+    /// <param name="maxValue">
+    ///     The maximum value of numbers in the grid for this puzzle.</param>
+    public class SkyscraperUniquenessConstraint(int clue, IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9) : PermutationUniquenessConstraint(affectedCells, generateCombinations(minValue, maxValue, clue, affectedCells.Count()))
     {
         /// <summary>The number of skyscrapers visible.</summary>
-        public int Clue { get; private set; }
+        public int Clue { get; private set; } = clue;
 
-        /// <summary>
-        ///     Constructor.</summary>
-        /// <param name="clue">
-        ///     The number of skyscrapers visible.</param>
-        /// <param name="affectedCells">
-        ///     The set of cells affected by this constraint. This is usually a row or column in a grid, but it can be any
-        ///     subset of grid points.</param>
-        /// <param name="minValue">
-        ///     The minimum value of numbers in the grid for this puzzle.</param>
-        /// <param name="maxValue">
-        ///     The maximum value of numbers in the grid for this puzzle.</param>
-        public SkyscraperUniquenessConstraint(int clue, IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9)
-            : base(affectedCells, generateCombinations(minValue, maxValue, clue, affectedCells.Count()))
-        {
-            Clue = clue;
-        }
-
-        private static readonly Dictionary<(int minValue, int maxValue, int clue, int numAffectedCells), int[][]> _cache = new();
+        private static readonly Dictionary<(int minValue, int maxValue, int clue, int numAffectedCells), int[][]> _cache = [];
 
         private static int[][] generateCombinations(int minValue, int maxValue, int clue, int numAffectedCells)
         {

@@ -5,15 +5,12 @@ namespace PuzzleSolvers
 {
     /// <summary>
     ///     Describes a constraint in which a specific region of cells must have a specified product (multiplication).</summary>
-    public class ProductConstraint : Constraint
+    public class ProductConstraint(int product, IEnumerable<int> affectedCells) : Constraint(affectedCells)
     {
         /// <summary>The region of cells that must have the product specified by <see cref="Product"/>.</summary>
         public new int[] AffectedCells => base.AffectedCells;
         /// <summary>The desired product.</summary>
-        public int Product { get; private set; }
-
-        /// <summary>Constructor.</summary>
-        public ProductConstraint(int product, IEnumerable<int> affectedCells) : base(affectedCells) { Product = product; }
+        public int Product { get; private set; } = product;
 
         /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)

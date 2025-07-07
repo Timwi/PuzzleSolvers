@@ -14,7 +14,7 @@ namespace PuzzleSolvers
         public static implicit operator ConstraintResult(Constraint seq) => seq == null ? null : new ConstraintReplace(seq);
 
         /// <summary>Easy access to a <see cref="ConstraintReplace"/> that removes a constraint.</summary>
-        public static readonly ConstraintResult Remove = new ConstraintReplace(new Constraint[0]);
+        public static readonly ConstraintResult Remove = new ConstraintReplace([]);
         /// <summary>Easy access to a <see cref="ConstraintViolation"/>.</summary>
         public static readonly ConstraintResult Violation = new ConstraintViolation();
     }

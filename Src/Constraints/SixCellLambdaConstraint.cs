@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace PuzzleSolvers
@@ -8,17 +7,11 @@ namespace PuzzleSolvers
     ///     Constrains six cells to values that satisfy a lambda expression.</summary>
     /// <remarks>
     ///     This constraint is not very efficient as it will only be evaluated once all but one of the cells is filled in.</remarks>
-    public class SixCellLambdaConstraint : Constraint
+    public class SixCellLambdaConstraint(int affectedCell1, int affectedCell2, int affectedCell3, int affectedCell4, int affectedCell5, int affectedCell6, Func<int, int, int, int, int, int, bool> isValid)
+        : Constraint([affectedCell1, affectedCell2, affectedCell3, affectedCell4, affectedCell5, affectedCell6])
     {
         /// <summary>A function that determines whether a set of values is valid in the relevant cells.</summary>
-        public Func<int, int, int, int, int, int, bool> IsValid { get; private set; }
-
-        /// <summary>Constructor.</summary>
-        public SixCellLambdaConstraint(int affectedCell1, int affectedCell2, int affectedCell3, int affectedCell4, int affectedCell5, int affectedCell6, Func<int, int, int, int, int, int, bool> isValid)
-            : base(new[] { affectedCell1, affectedCell2, affectedCell3, affectedCell4, affectedCell5, affectedCell6 })
-        {
-            IsValid = isValid;
-        }
+        public Func<int, int, int, int, int, int, bool> IsValid { get; private set; } = isValid;
 
         /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)

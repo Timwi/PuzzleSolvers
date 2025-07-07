@@ -1,4 +1,3 @@
-﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace PuzzleSolvers
@@ -6,24 +5,20 @@ namespace PuzzleSolvers
     /// <summary>
     ///     Describes a constraint in a number-placement grid puzzle where the values in orthogonally adjacent cells (NOT
     ///     including diagonals) cannot have the same remainder modulo a fixed quotient.</summary>
-    public class NoTouchModuloConstraint : Constraint
+    /// <param name="width">
+    ///     The width of the grid.</param>
+    /// <param name="height">
+    ///     The height of the grid.</param>
+    /// <param name="modulo">
+    ///     The quotient modulo which the constraint is computed.</param>
+    public class NoTouchModuloConstraint(int width, int height, int modulo) : Constraint(Enumerable.Range(0, width * height))
     {
         /// <summary>The width of the grid this constraint applies to.</summary>
-        public int GridWidth { get; private set; }
+        public int GridWidth { get; private set; } = width;
         /// <summary>The height of the grid this constraint applies to.</summary>
-        public int GridHeight { get; private set; }
+        public int GridHeight { get; private set; } = height;
         /// <summary>The quotient modulo which the constraint is computed.</summary>
-        public int Modulo { get; private set; }
-
-        /// <summary>
-        ///     Constructor.</summary>
-        /// <param name="width">
-        ///     The width of the grid.</param>
-        /// <param name="height">
-        ///     The height of the grid.</param>
-        /// <param name="modulo">
-        ///     The quotient modulo which the constraint is computed.</param>
-        public NoTouchModuloConstraint(int width, int height, int modulo) : base(Enumerable.Range(0, width * height)) { GridWidth = width; GridHeight = height; Modulo = modulo; }
+        public int Modulo { get; private set; } = modulo;
 
         /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)

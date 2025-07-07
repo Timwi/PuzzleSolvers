@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PuzzleSolvers
@@ -7,20 +7,13 @@ namespace PuzzleSolvers
     ///     Describes a constraint in which a specific region of cells must sum up to the value in another cell. In a variant
     ///     Sudoku, this is often represented as an arrow coming out of a circle, and hence, the variant is known as “Arrow
     ///     Sudoku”.</summary>
-    public class IndirectSumConstraint : Constraint
+    public class IndirectSumConstraint(int sumCell, IEnumerable<int> region) : Constraint(region.Concat([sumCell]))
     {
         /// <summary>The cell that must contain the desired sum.</summary>
-        public int SumCell { get; private set; }
+        public int SumCell { get; private set; } = sumCell;
 
         /// <summary>The set of cells that must sum up to the value in <see cref="SumCell"/>.</summary>
-        public int[] Region { get; private set; }
-
-        /// <summary>Constructor.</summary>
-        public IndirectSumConstraint(int sumCell, IEnumerable<int> region) : base(region.Concat(new[] { sumCell }))
-        {
-            SumCell = sumCell;
-            Region = region.ToArray();
-        }
+        public int[] Region { get; private set; } = region.ToArray();
 
         /// <inheritdoc/>
         public override bool CanReevaluate => true;

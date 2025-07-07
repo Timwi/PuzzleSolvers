@@ -12,37 +12,28 @@ namespace PuzzleSolvers
     ///     Warning: This constraint is very memory-intensive. It is implemented as a <see cref="CombinationsConstraint"/>
     ///     with all of the possible number combinations for the specified set of cells. Avoid using this on oversized
     ///     puzzles.</remarks>
-    public class SandwichUniquenessConstraint : CombinationsConstraint
+    /// <param name="value1">
+    ///     One of the numbers that form the edges of the sandwich.</param>
+    /// <param name="value2">
+    ///     The other number that forms the edge of the sandwich.</param>
+    /// <param name="sum">
+    ///     The total that the sandwiched numbers must sum up to.</param>
+    /// <param name="affectedCells">
+    ///     The set of cells affected by this constraint. This is usually a row or column in a grid, but it can be any subset
+    ///     of grid points.</param>
+    /// <param name="minValue">
+    ///     The minimum value of numbers in the grid for this puzzle.</param>
+    /// <param name="maxValue">
+    ///     The maximum value of numbers in the grid for this puzzle.</param>
+    public class SandwichUniquenessConstraint(int value1, int value2, int sum, IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9)
+        : CombinationsConstraint(affectedCells, GenerateCombinations(minValue, maxValue, value1, value2, sum, affectedCells.Count()))
     {
         /// <summary>One of the numbers that form the edges of the sandwich (the other is <see cref="Value2"/>).</summary>
-        public int Value1 { get; private set; }
+        public int Value1 { get; private set; } = value1;
         /// <summary>One of the numbers that form the edges of the sandwich (the other is <see cref="Value1"/>).</summary>
-        public int Value2 { get; private set; }
+        public int Value2 { get; private set; } = value2;
         /// <summary>The total that the sandwiched numbers must sum up to.</summary>
-        public int Sum { get; private set; }
-
-        /// <summary>
-        ///     Constructor.</summary>
-        /// <param name="value1">
-        ///     One of the numbers that form the edges of the sandwich.</param>
-        /// <param name="value2">
-        ///     The other number that forms the edge of the sandwich.</param>
-        /// <param name="sum">
-        ///     The total that the sandwiched numbers must sum up to.</param>
-        /// <param name="affectedCells">
-        ///     The set of cells affected by this constraint. This is usually a row or column in a grid, but it can be any
-        ///     subset of grid points.</param>
-        /// <param name="minValue">
-        ///     The minimum value of numbers in the grid for this puzzle.</param>
-        /// <param name="maxValue">
-        ///     The maximum value of numbers in the grid for this puzzle.</param>
-        public SandwichUniquenessConstraint(int value1, int value2, int sum, IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9)
-            : base(affectedCells, GenerateCombinations(minValue, maxValue, value1, value2, sum, affectedCells.Count()))
-        {
-            Value1 = value1;
-            Value2 = value2;
-            Sum = sum;
-        }
+        public int Sum { get; private set; } = sum;
 
         /// <summary>
         ///     Returns a collection containing all combinations of <paramref name="numAffectedCells"/> cells of values

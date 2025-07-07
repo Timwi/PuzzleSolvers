@@ -21,7 +21,7 @@ namespace PuzzleSolvers
                 throw new ArgumentException("ParityEvennessConstraint requires an even number of cells.", nameof(affectedCells));
         }
 
-        private static readonly int[] _parities = new[] { 0, 1 };
+        private static readonly int[] _parities = [0, 1];
 
         /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)

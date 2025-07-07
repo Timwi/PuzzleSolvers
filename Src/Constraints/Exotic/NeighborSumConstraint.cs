@@ -12,43 +12,33 @@ namespace PuzzleSolvers.Exotic
     /// <remarks>
     ///     This is implemented as a <see cref="CombinationsConstraint"/>, which may make it very memory-intensive on
     ///     oversized puzzles.</remarks>
-    public class NeighborSumConstraint : CombinationsConstraint
+    /// <param name="isCol">
+    ///     If <c>true</c>, the constraint applies to a column; otherwise a row.</param>
+    /// <param name="rowCol">
+    ///     The row or column (depending on <paramref name="isCol"/>).</param>
+    /// <param name="clue">
+    ///     The set of neighbor sums. Currently only 1 or 2 numbers are supported.</param>
+    /// <param name="furtherRestrictions">
+    ///     Pass in a <see cref="UniquenessConstraint"/> collection to restrict the number of combinations generated. This can
+    ///     yield profound improvements in the speed of finding solutions. For example, you can construct a <see
+    ///     cref="Sudoku"/> instance, then construct this <see cref="NeighborSumConstraint"/> by passing in
+    ///     <c>sudoku.Constraints.OfType&lt;UniquenessConstraint&gt;()</c>.</param>
+    /// <param name="gridWidth">
+    ///     The width of the grid (default: 9).</param>
+    /// <param name="gridHeight">
+    ///     The height of the grid (default: 9).</param>
+    /// <param name="minValue">
+    ///     Specifies the smallest value used in this puzzle.</param>
+    /// <param name="maxValue">
+    ///     Specifies the largest value used in this puzzle.</param>
+    public class NeighborSumConstraint(bool isCol, int rowCol, int[] clue, IEnumerable<UniquenessConstraint> furtherRestrictions = null, int gridWidth = 9, int gridHeight = 9, int minValue = 1, int maxValue = 9) : CombinationsConstraint(Enumerable.Range(0, gridWidth * gridHeight), generateCombinations(isCol, rowCol, clue, furtherRestrictions, gridWidth, gridHeight, minValue, maxValue))
     {
         /// <summary>Specifies whether the constraint applies to a column (<c>true</c>) or row (<c>false</c>).</summary>
-        public bool IsCol { get; private set; }
+        public bool IsCol { get; private set; } = isCol;
         /// <summary>Specifies the affected row or column (depending on <see cref="IsCol"/>).</summary>
-        public int RowCol { get; private set; }
+        public int RowCol { get; private set; } = rowCol;
         /// <summary>Specifies the set of neighbor sums. Currently only 1 or 2 numbers are supported.</summary>
-        public int[] Clue { get; private set; }
-
-        /// <summary>
-        ///     Constructor.</summary>
-        /// <param name="isCol">
-        ///     If <c>true</c>, the constraint applies to a column; otherwise a row.</param>
-        /// <param name="rowCol">
-        ///     The row or column (depending on <paramref name="isCol"/>).</param>
-        /// <param name="clue">
-        ///     The set of neighbor sums. Currently only 1 or 2 numbers are supported.</param>
-        /// <param name="furtherRestrictions">
-        ///     Pass in a <see cref="UniquenessConstraint"/> collection to restrict the number of combinations generated. This
-        ///     can yield profound improvements in the speed of finding solutions. For example, you can construct a <see
-        ///     cref="Sudoku"/> instance, then construct this <see cref="NeighborSumConstraint"/> by passing in
-        ///     <c>sudoku.Constraints.OfType&lt;UniquenessConstraint&gt;()</c>.</param>
-        /// <param name="gridWidth">
-        ///     The width of the grid (default: 9).</param>
-        /// <param name="gridHeight">
-        ///     The height of the grid (default: 9).</param>
-        /// <param name="minValue">
-        ///     Specifies the smallest value used in this puzzle.</param>
-        /// <param name="maxValue">
-        ///     Specifies the largest value used in this puzzle.</param>
-        public NeighborSumConstraint(bool isCol, int rowCol, int[] clue, IEnumerable<UniquenessConstraint> furtherRestrictions = null, int gridWidth = 9, int gridHeight = 9, int minValue = 1, int maxValue = 9)
-            : base(Enumerable.Range(0, gridWidth * gridHeight), generateCombinations(isCol, rowCol, clue, furtherRestrictions, gridWidth, gridHeight, minValue, maxValue))
-        {
-            IsCol = isCol;
-            RowCol = rowCol;
-            Clue = clue ?? throw new ArgumentNullException(nameof(clue));
-        }
+        public int[] Clue { get; private set; } = clue ?? throw new ArgumentNullException(nameof(clue));
 
         private static IEnumerable<int?[]> generateCombinations(bool isCol, int rowCol, int[] clue, IEnumerable<UniquenessConstraint> furtherRestrictions, int gridWidth, int gridHeight, int minValue, int maxValue)
         {
@@ -73,7 +63,7 @@ namespace PuzzleSolvers.Exotic
             switch (clue.Length)
             {
                 case 0:
-                    return Enumerable.Empty<int?[]>();
+                    return [];
 
                 case 1:
                 {

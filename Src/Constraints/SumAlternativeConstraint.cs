@@ -48,16 +48,12 @@ namespace PuzzleSolvers
                 var region = Regions[i];
                 int min, max;
                 if ((min = region.Sum(state.MinPossible)) > Sum || (max = region.Sum(state.MaxPossible)) < Sum)
-                {
-                    if (newRegions == null)
-                        newRegions = new List<int[]>(Regions.Take(i));
-                }
+                    newRegions ??= Regions.Take(i).ToList();
                 else
                 {
                     if (min == Sum && max == Sum)   // The constraint is already satisfied
                         return ConstraintResult.Remove;
-                    if (newRegions != null)
-                        newRegions.Add(region);
+                    newRegions?.Add(region);
                 }
             }
             if (newRegions != null)

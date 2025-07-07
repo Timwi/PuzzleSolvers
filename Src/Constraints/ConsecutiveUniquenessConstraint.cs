@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using RT.Util.ExtensionMethods;
 
@@ -11,20 +11,16 @@ namespace PuzzleSolvers
     ///     Warning: This constraint is very memory-intensive. It is implemented as a <see cref="CombinationsConstraint"/>
     ///     with all of the possible number combinations for the specified set of cells. Avoid using this on oversized
     ///     puzzles.</remarks>
-    public class ConsecutiveUniquenessConstraint : CombinationsConstraint
+    /// <param name="affectedCells">
+    ///     The set of cells affected by this constraint (the “cage”).</param>
+    /// <param name="minValue">
+    ///     The minimum value of numbers in the grid for this puzzle.</param>
+    /// <param name="maxValue">
+    ///     The maximum value of numbers in the grid for this puzzle.</param>
+    public class ConsecutiveUniquenessConstraint(IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9)
+        : CombinationsConstraint(affectedCells, generateCombinations(minValue, maxValue, affectedCells.Count()))
     {
-        /// <summary>
-        ///     Constructor.</summary>
-        /// <param name="affectedCells">
-        ///     The set of cells affected by this constraint (the “cage”).</param>
-        /// <param name="minValue">
-        ///     The minimum value of numbers in the grid for this puzzle.</param>
-        /// <param name="maxValue">
-        ///     The maximum value of numbers in the grid for this puzzle.</param>
-        public ConsecutiveUniquenessConstraint(IEnumerable<int> affectedCells, int minValue = 1, int maxValue = 9)
-            : base(affectedCells, generateCombinations(minValue, maxValue, affectedCells.Count())) { }
-
-        private static readonly Dictionary<(int minValue, int maxValue, int numAffectedCells), int[][]> _cache = new Dictionary<(int minValue, int maxValue, int numAffectedCells), int[][]>();
+        private static readonly Dictionary<(int minValue, int maxValue, int numAffectedCells), int[][]> _cache = [];
 
         private static int[][] generateCombinations(int minValue, int maxValue, int numAffectedCells)
         {
@@ -48,7 +44,7 @@ namespace PuzzleSolvers
                                 yield return s;
                 }
 
-                result = findCombinations(new int[0]).ToArray();
+                result = findCombinations([]).ToArray();
                 _cache[(minValue, maxValue, numAffectedCells)] = result;
                 return result;
             }

@@ -5,21 +5,16 @@ namespace PuzzleSolvers;
 /// <summary>
 ///     Describes a constraint in a number placement puzzle where no adjacent cells (including diagonals) can have the same
 ///     value.</summary>
-public class AntiKingConstraint : AntiChessConstraint
+/// <param name="gridWidth">
+///     See <see cref="AntiChessConstraint.GridWidth"/>.</param>
+/// <param name="gridHeight">
+///     See <see cref="AntiChessConstraint.GridHeight"/>.</param>
+/// <param name="affectedValues">
+///     See <see cref="AntiChessConstraint.AffectedValues"/>.</param>
+/// <param name="enforcedCells">
+///     See <see cref="AntiChessConstraint.EnforcedCells"/>. If <c>null</c>, the default is to enforce the entire grid.</param>
+public class AntiKingConstraint(int gridWidth, int gridHeight, int[] affectedValues = null, IEnumerable<int> enforcedCells = null) : AntiChessConstraint(gridWidth, gridHeight, affectedValues, enforcedCells)
 {
-    /// <summary>
-    ///     Constructor.</summary>
-    /// <param name="gridWidth">
-    ///     See <see cref="AntiChessConstraint.GridWidth"/>.</param>
-    /// <param name="gridHeight">
-    ///     See <see cref="AntiChessConstraint.GridHeight"/>.</param>
-    /// <param name="affectedValues">
-    ///     See <see cref="AntiChessConstraint.AffectedValues"/>.</param>
-    /// <param name="enforcedCells">
-    ///     See <see cref="AntiChessConstraint.EnforcedCells"/>. If <c>null</c>, the default is to enforce the entire grid.</param>
-    public AntiKingConstraint(int gridWidth, int gridHeight, int[] affectedValues = null, IEnumerable<int> enforcedCells = null)
-        : base(gridWidth, gridHeight, affectedValues, enforcedCells) { }
-
     /// <summary>Returns all cells reachable from the specified cell by a king’s move in chess.</summary>
     public static IEnumerable<int> KingsMoves(int cell, int gridWidth, int gridHeight)
     {

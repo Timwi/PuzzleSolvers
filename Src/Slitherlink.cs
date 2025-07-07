@@ -25,12 +25,10 @@ namespace PuzzleSolvers
         ///     Maximum number of loops allowed in the solution.</param>
         /// <returns>
         ///     A boolean array for each solution. The array specifies which cells are inside of the loop.</returns>
-        public static IEnumerable<bool[]> Solve(int width, int height, int?[] clues = null, Random randomizer = null, int minNumLoops = 1, int maxNumLoops = 1)
-        {
-            if (minNumLoops > maxNumLoops)
-                throw new ArgumentException("‘minNumLoops must be less than or equal to ‘maxNumLoops’.", nameof(maxNumLoops));
-            return slitherlinkRecurse(width, height, clues, new bool?[width * height], new List<(int ix1, int ix2)>(), 0, 0, randomizer, minNumLoops, maxNumLoops);
-        }
+        public static IEnumerable<bool[]> Solve(int width, int height, int?[] clues = null, Random randomizer = null, int minNumLoops = 1, int maxNumLoops = 1) =>
+            minNumLoops > maxNumLoops
+                ? throw new ArgumentException("‘minNumLoops must be less than or equal to ‘maxNumLoops’.", nameof(maxNumLoops))
+                : slitherlinkRecurse(width, height, clues, new bool?[width * height], [], 0, 0, randomizer, minNumLoops, maxNumLoops);
 
         private static IEnumerable<bool[]> slitherlinkRecurse(int w, int h, int?[] clues, bool?[] sofar, List<(int ix1, int ix2)> segments, int closedLoops, int depth, Random randomizer, int minNumLoops, int maxNumLoops)
         {

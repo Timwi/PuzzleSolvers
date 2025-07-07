@@ -1,21 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
     /// <summary>Describes a constraint in which a group of cells can be only all evens or all odds.</summary>
-    public class OddEvenConstraint : Constraint
+    public class OddEvenConstraint(OddEvenType type, IEnumerable<int> affectedCells) : Constraint(affectedCells)
     {
         /// <summary>Specifies the specific flavor of this constraint.</summary>
-        public OddEvenType Type { get; private set; }
-
-        /// <summary>Constructor.</summary>
-        public OddEvenConstraint(OddEvenType type, IEnumerable<int> affectedCells) : base(affectedCells)
-        {
-            Type = type;
-        }
+        public OddEvenType Type { get; private set; } = type;
 
         /// <inheritdoc/>
         public override ConstraintResult Process(SolverState state)

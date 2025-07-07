@@ -30,7 +30,7 @@ namespace PuzzleSolvers
         ///     The cell containing the other cap of the between line.</param>
         /// <param name="innerCells">
         ///     The set of cells along the between line.</param>
-        public BetweenLineConstraint(int cap1, int cap2, int[] innerCells) : base(innerCells.Concat(new[] { cap1, cap2 }))
+        public BetweenLineConstraint(int cap1, int cap2, int[] innerCells) : base(innerCells.Concat([cap1, cap2]))
         {
             if (cap1 == cap2)
                 throw new ArgumentException("cap1 and cap2 can’t be equal.", nameof(cap2));

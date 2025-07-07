@@ -8,8 +8,18 @@ using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
-    /// <summary>Describes a puzzle.</summary>
-    public class Puzzle
+    /// <summary>
+    ///     Describes a puzzle.</summary>
+    /// <param name="size">
+    ///     The number of cells in this puzzle. See <see cref="GridSize"/> for more information.</param>
+    /// <param name="minValue">
+    ///     See <see cref="MinValue"/>.</param>
+    /// <param name="maxValue">
+    ///     See <see cref="MaxValue"/>.</param>
+    /// <remarks>
+    ///     When using this constructor, be sure to populate <see cref="Constraints"/> before running <see
+    ///     cref="Solve(SolverInstructions)"/>.</remarks>
+    public class Puzzle(int size, int minValue, int maxValue)
     {
         /// <summary>
         ///     The number of cells to be filled in this puzzle.</summary>
@@ -17,7 +27,7 @@ namespace PuzzleSolvers
         ///     Note that for puzzles in which the solver must draw lines across gridlines, the “cells” are actually the
         ///     gridlines, not the squares of the grid. If a puzzle requires both gridlines as well as squares of the grid to
         ///     be filled, these must be considered separate cells, so this value must be the sum of all of them.</remarks>
-        public int GridSize { get; private set; }
+        public int GridSize { get; private set; } = size;
 
         /// <summary>
         ///     The minimum value to be placed in a cell.</summary>
@@ -25,38 +35,19 @@ namespace PuzzleSolvers
         ///     This is really only useful for number-placement puzzles in which the numerical values can be affected by
         ///     constraints (e.g. sums). For other puzzles, use integer values that represent the abstract values to be filled
         ///     in.</remarks>
-        public int MinValue { get; private set; }
+        public int MinValue { get; private set; } = minValue;
 
         /// <summary>
         ///     The maximum value to be placed in a cell.</summary>
         /// <remarks>
         ///     In conjunction with <see cref="MinValue"/>, this defines how many possible values can be in a cell.</remarks>
-        public int MaxValue { get; private set; }
+        public int MaxValue { get; private set; } = maxValue;
 
         /// <summary>Returns the list of constraints used by this puzzle.</summary>
-        public List<Constraint> Constraints { get; private set; }
+        public List<Constraint> Constraints { get; private set; } = [];
 
         /// <summary>Contains colors for use by <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</summary>
-        public Dictionary<Constraint, (ConsoleColor? foreground, ConsoleColor? background)> ConstraintColors { get; private set; } = new Dictionary<Constraint, (ConsoleColor? foreground, ConsoleColor? background)>();
-
-        /// <summary>
-        ///     Constructor.</summary>
-        /// <param name="size">
-        ///     The number of cells in this puzzle. See <see cref="GridSize"/> for more information.</param>
-        /// <param name="minValue">
-        ///     See <see cref="MinValue"/>.</param>
-        /// <param name="maxValue">
-        ///     See <see cref="MaxValue"/>.</param>
-        /// <remarks>
-        ///     When using this constructor, be sure to populate <see cref="Constraints"/> before running <see
-        ///     cref="Solve(SolverInstructions)"/>.</remarks>
-        public Puzzle(int size, int minValue, int maxValue)
-        {
-            GridSize = size;
-            MinValue = minValue;
-            MaxValue = maxValue;
-            Constraints = [];
-        }
+        public Dictionary<Constraint, (ConsoleColor? foreground, ConsoleColor? background)> ConstraintColors { get; private set; } = [];
 
         /// <summary>
         ///     Converts a partial puzzle solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered
@@ -330,12 +321,11 @@ namespace PuzzleSolvers
                 var cs = constraint.Process(state);
                 if (cs is ConstraintReplace repl)
                 {
-                    if (newConstraints == null)
-                        newConstraints = new List<Constraint>(constraintsUse.Take(cIx));
+                    newConstraints ??= constraintsUse.Take(cIx).ToList();
                     newConstraints.AddRange(repl.NewConstraints);
                 }
-                else if (newConstraints != null)
-                    newConstraints.Add(constraint);
+                else
+                    newConstraints?.Add(constraint);
             }
             if (newConstraints != null)
             {
@@ -372,7 +362,7 @@ namespace PuzzleSolvers
             return solve(grid, takens, constraintsUse, cellPriority, solverInstructions).Select(solution => solution.Select(val => val + MinValue).ToArray());
         }
 
-        private object _fallbackLockObject = new object();
+        private readonly object _fallbackLockObject = new();
 
         private IEnumerable<int[]> solve(int?[] grid, bool[][] takens, List<Constraint> constraints, int[] cellPriority, SolverInstructions instr, int recursionDepth = 0)
         {
@@ -504,16 +494,15 @@ namespace PuzzleSolvers
                         // A constraint changed. That means we definitely need a new list of constraints for the recursive call.
                         if (newConstraintsUse == null)
                         {
-                            newConstraintsUse = new List<Constraint>(constraintsUse.Take(i));
-                            if (newMustReevaluate == null)
-                                newMustReevaluate = new List<Constraint>();
+                            newConstraintsUse = constraintsUse.Take(i).ToList();
+                            newMustReevaluate ??= [];
                         }
                         var cIx = newConstraintsUse.Count;
                         newConstraintsUse.AddRange(repl.NewConstraints);
                         newMustReevaluate.AddRange(newConstraintsUse.Skip(cIx));
                     }
-                    else if (newConstraintsUse != null)
-                        newConstraintsUse.Add(constraint);
+                    else
+                        newConstraintsUse?.Add(constraint);
                 }
 
                 // Check if any reevaluatable constraints affect a cell that changed
@@ -523,8 +512,7 @@ namespace PuzzleSolvers
                             ? state.TakensChanged.Any(tup => tup.changed && tup.initiator != constraint)
                             : constraint.AffectedCells.Any(c => state.TakensChanged[c].changed && state.TakensChanged[c].initiator != constraint)))
                         {
-                            if (newMustReevaluate == null)
-                                newMustReevaluate = new List<Constraint>();
+                            newMustReevaluate ??= [];
                             newMustReevaluate.Add(constraint);
                         }
 

@@ -46,14 +46,10 @@ namespace PuzzleSolvers
                         canBeRuledOut = true;
 
                 if (canBeRuledOut)
-                {
-                    if (newComb == null)
-                        newComb = new List<List<int>>(Combinations.Take(cmbIx));
-                }
+                    newComb ??= [.. Combinations.Take(cmbIx)];
                 else
                 {
-                    if (newComb != null)
-                        newComb.Add(Combinations[cmbIx]);
+                    newComb?.Add(Combinations[cmbIx]);
 
                     // Remember the remaining possible values
                     for (var i = 0; i < copy.Count; i++)

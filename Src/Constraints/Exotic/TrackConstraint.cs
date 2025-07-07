@@ -7,16 +7,10 @@ namespace PuzzleSolvers.Exotic;
 ///     Describes a constraint as used in Ludoku by Brawlbox
 ///     (https://logic-masters.de/Raetselportal/Raetsel/zeigen.php?id=000CX2). Two cells that are n steps from one another
 ///     along the track can’t both have the number n. The track is assumed to be a closed loop.</summary>
-public sealed class TrackConstraint : Constraint
+/// <param name="affectedCells">
+///     Describes the track. The order of the cells is significant, and the track is assumed to loop back on itself.</param>
+public sealed class TrackConstraint(IEnumerable<int> affectedCells) : Constraint(affectedCells)
 {
-    /// <summary>
-    ///     Constructor.</summary>
-    /// <param name="affectedCells">
-    ///     Describes the track. The order of the cells is significant, and the track is assumed to loop back on itself.</param>
-    public TrackConstraint(IEnumerable<int> affectedCells) : base(affectedCells)
-    {
-    }
-
     /// <inheritdoc/>
     public override ConstraintResult Process(SolverState state)
     {

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace PuzzleSolvers
 {
@@ -8,13 +8,10 @@ namespace PuzzleSolvers
     /// <remarks>
     ///     This constraint enforces a single row or column. For a full Binairo puzzle, you will need instances of this
     ///     constraint for every row and every column.</remarks>
-    public class ParityNoTripletsConstraint : Constraint
+    public class ParityNoTripletsConstraint(IEnumerable<int> affectedCells) : Constraint(affectedCells)
     {
-        /// <summary>Constructor.</summary>
-        public ParityNoTripletsConstraint(IEnumerable<int> affectedCells) : base(affectedCells) { }
-
         /// <summary>Combinations of existing values that necessitate a constraint enforcement.</summary>
-        private static readonly (int offset, int toEnforce)[] _combinations = new (int offset, int toEnforce)[] { (-2, -1), (-1, -2), (-1, 1), (1, -1), (1, 2), (2, 1) };
+        private static readonly (int offset, int toEnforce)[] _combinations = [(-2, -1), (-1, -2), (-1, 1), (1, -1), (1, 2), (2, 1)];
 
         /// <inheritdoc/>
         public override bool CanReevaluate => true;

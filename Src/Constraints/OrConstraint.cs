@@ -71,12 +71,9 @@ namespace PuzzleSolvers
                 if (result is ConstraintReplace)
                     throw new NotImplementedException("The OrConstraint does not support subconstraints that replace themselves with new constraints.");
                 else if (result is ConstraintViolation)
-                {
-                    if (newSubconstraints == null)
-                        newSubconstraints = new List<Constraint>(Subconstraints.Take(sc));
-                }
-                else if (newSubconstraints != null)
-                    newSubconstraints.Add(Subconstraints[sc]);
+                    newSubconstraints ??= Subconstraints.Take(sc).ToList();
+                else
+                    newSubconstraints?.Add(Subconstraints[sc]);
             }
 
             foreach (var cell in AffectedCells)

@@ -43,7 +43,7 @@ public class CombinationsConstraint : Constraint
         {
             // Can this combination be ruled out?
             if (AffectedCells.Any((cellIx, lstIx) => Combinations[i][lstIx] != null && (state[cellIx] == null ? state.IsImpossible(cellIx, Combinations[i][lstIx].Value) : (state[cellIx].Value != Combinations[i][lstIx].Value))))
-                newComb ??= new List<int?[]>(Combinations.Take(i));
+                newComb ??= Combinations.Take(i).ToList();
             else
             {
                 newComb?.Add(Combinations[i]);

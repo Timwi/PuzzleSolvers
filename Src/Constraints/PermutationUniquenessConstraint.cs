@@ -26,7 +26,7 @@ public class PermutationUniquenessConstraint : CombinationsConstraint
     {
     }
 
-    private static readonly Dictionary<(int minValue, int maxValue, int numAffectedCells), int[][]> _cachePermutations = new Dictionary<(int minValue, int maxValue, int numAffectedCells), int[][]>();
+    private static readonly Dictionary<(int minValue, int maxValue, int numAffectedCells), int[][]> _cachePermutations = [];
 
     /// <summary>
     ///     Helper method to generate all permutations of numbers within a specified number of affected cells. The array

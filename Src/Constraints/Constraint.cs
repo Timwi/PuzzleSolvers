@@ -6,20 +6,14 @@ using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers;
 
-/// <summary>Abstract base class for all constraints in a puzzle.</summary>
-public abstract class Constraint
+/// <summary>
+///     Abstract base class for all constraints in a puzzle.</summary>
+/// <param name="affectedCells">
+///     The set of cells affected by this constraint, or <c>null</c> if it affects all of them.</param>
+public abstract class Constraint(IEnumerable<int> affectedCells)
 {
     /// <summary>The group of cells affected by this constraint, or <c>null</c> if it affects all of them.</summary>
-    public int[] AffectedCells { get; protected set; }
-
-    /// <summary>
-    ///     Constructor for derived types.</summary>
-    /// <param name="affectedCells">
-    ///     The set of cells affected by this constraint, or <c>null</c> if it affects all of them.</param>
-    protected Constraint(IEnumerable<int> affectedCells)
-    {
-        AffectedCells = affectedCells?.ToArray();
-    }
+    public int[] AffectedCells { get; protected set; } = affectedCells?.ToArray();
 
     /// <summary>
     ///     Constraint implementations must use methods such as <see cref="SolverState.MarkImpossible(int, int)"/> or <see

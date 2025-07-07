@@ -52,7 +52,7 @@ namespace PuzzleSolvers
         /// <summary>Enumerates the set of cells containing Castle Wall clues.</summary>
         public IEnumerable<int> CluedCells => _cluedCells.Select(clue => clue.X + Width * clue.Y);
 
-        private List<Clue> _cluedCells = new List<Clue>();
+        private readonly List<Clue> _cluedCells = [];
 
         /// <summary>
         ///     Constructor.</summary>

@@ -45,7 +45,7 @@ public class UniquenessConstraint(IEnumerable<int> affectedCells) : Constraint(a
                     if (!state.IsImpossible(cell, v))
                     {
                         if (cells[v - state.MinValue] == null)
-                            cells[v - state.MinValue] = new List<int>();
+                            cells[v - state.MinValue] = [];
                         cells[v - state.MinValue].Add(cell);
                     }
 
