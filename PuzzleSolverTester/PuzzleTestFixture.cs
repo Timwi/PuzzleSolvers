@@ -7,7 +7,7 @@ namespace PuzzleSolverTester
 {
     public abstract class PuzzleTestFixture
     {
-        protected void assertUniqueSolution(Puzzle puzzle, params int[] expectedSolution)
+        protected void AssertUniqueSolution(Puzzle puzzle, params int[] expectedSolution)
         {
             var solutions = puzzle.Solve().Take(2).ToArray();
             Assert.IsNotNull(solutions);

@@ -1,26 +1,39 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29418.71
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36310.24 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PuzzleSolvers", "Src\PuzzleSolvers.csproj", "{FCC3622F-14E7-4BAA-9A15-B72EC86E5B44}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PuzzleSolverTester", "PuzzleSolverTester\PuzzleSolverTester.csproj", "{4FB1F580-4490-4D0B-BD74-0E0A899077F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RT.Util.Core", "..\RT.Util\RT.Util.Core\RT.Util.Core.csproj", "{45112116-A549-97E2-5AB1-8CDC7AE4B250}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
+		Debug-locallibs|Any CPU = Debug-locallibs|Any CPU
+		Debug-Nuget|Any CPU = Debug-Nuget|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FCC3622F-14E7-4BAA-9A15-B72EC86E5B44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FCC3622F-14E7-4BAA-9A15-B72EC86E5B44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCC3622F-14E7-4BAA-9A15-B72EC86E5B44}.Debug-locallibs|Any CPU.ActiveCfg = Debug-locallibs|Any CPU
+		{FCC3622F-14E7-4BAA-9A15-B72EC86E5B44}.Debug-locallibs|Any CPU.Build.0 = Debug-locallibs|Any CPU
+		{FCC3622F-14E7-4BAA-9A15-B72EC86E5B44}.Debug-Nuget|Any CPU.ActiveCfg = Debug-Nuget|Any CPU
+		{FCC3622F-14E7-4BAA-9A15-B72EC86E5B44}.Debug-Nuget|Any CPU.Build.0 = Debug-Nuget|Any CPU
 		{FCC3622F-14E7-4BAA-9A15-B72EC86E5B44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FCC3622F-14E7-4BAA-9A15-B72EC86E5B44}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4FB1F580-4490-4D0B-BD74-0E0A899077F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4FB1F580-4490-4D0B-BD74-0E0A899077F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FB1F580-4490-4D0B-BD74-0E0A899077F8}.Debug-locallibs|Any CPU.ActiveCfg = Debug-locallibs|Any CPU
+		{4FB1F580-4490-4D0B-BD74-0E0A899077F8}.Debug-locallibs|Any CPU.Build.0 = Debug-locallibs|Any CPU
+		{4FB1F580-4490-4D0B-BD74-0E0A899077F8}.Debug-Nuget|Any CPU.ActiveCfg = Debug-Nuget|Any CPU
+		{4FB1F580-4490-4D0B-BD74-0E0A899077F8}.Debug-Nuget|Any CPU.Build.0 = Debug-Nuget|Any CPU
 		{4FB1F580-4490-4D0B-BD74-0E0A899077F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FB1F580-4490-4D0B-BD74-0E0A899077F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45112116-A549-97E2-5AB1-8CDC7AE4B250}.Debug-locallibs|Any CPU.ActiveCfg = Debug|Any CPU
+		{45112116-A549-97E2-5AB1-8CDC7AE4B250}.Debug-locallibs|Any CPU.Build.0 = Debug|Any CPU
+		{45112116-A549-97E2-5AB1-8CDC7AE4B250}.Debug-Nuget|Any CPU.ActiveCfg = Debug|Any CPU
+		{45112116-A549-97E2-5AB1-8CDC7AE4B250}.Debug-Nuget|Any CPU.Build.0 = Debug|Any CPU
+		{45112116-A549-97E2-5AB1-8CDC7AE4B250}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45112116-A549-97E2-5AB1-8CDC7AE4B250}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
