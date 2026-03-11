@@ -28,7 +28,7 @@ namespace PuzzleSolvers
             !description.All(".#0123456789".Contains) ? throw new ArgumentException($"The ‘{nameof(description)}’ string must only contain periods (.), hashes (#) and digits (0–9).", nameof(description)) :
              description.Select(ch => ch != '.').ToArray(),
 
-            description.Select(ch => ch >= '0' && ch <= '9' ? (ch - '0').Nullable() : null).ToArray())
+            description.Select(ch => ch is >= '0' and <= '9' ? (ch - '0').Nullable() : null).ToArray())
         {
         }
 

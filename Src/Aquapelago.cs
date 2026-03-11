@@ -40,7 +40,7 @@ namespace PuzzleSolvers
             {
                 if (description[cell] == '#')
                     AddConstraint(new GivenConstraint(cell, 1));
-                else if (description[cell] >= '1' && description[cell] <= '9')
+                else if (description[cell] is >= '1' and <= '9')
                     AddConstraint(new CombinationsConstraint(Enumerable.Range(0, width * height), genAquapelagoRegion([cell], [], description[cell] - '0')));
                 else if (description[cell] != '.')
                     throw new ArgumentException($"‘{nameof(description)}’ may only contain ‘.’, ‘#’, or digits 1–9.");

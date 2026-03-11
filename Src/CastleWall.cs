@@ -104,7 +104,7 @@ namespace PuzzleSolvers
                     return ((int) dir, cells);
                 }
 
-                (int dir, List<(int x, int y)> cells) = direction == null
+                (var dir, var cells) = direction == null
                     ? EnumStrong.GetValues<Direction>().Select(dir => getCells(x, y, dir)).MinElement(tup => tup.cells.Count)
                     : getCells(x, y, direction.Value);
 

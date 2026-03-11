@@ -78,7 +78,7 @@ namespace PuzzleSolvers
                 }
 
                 var used = new List<int>(usedCells);
-                foreach (var adj in incompletePolyomino.SelectMany(cell => getAdj(cell)).Distinct().Where(cell => !usedCells.Contains(cell) && !incompletePolyomino.Contains(cell) && (thisGrid[cell] == null || thisGrid[cell] == desiredSize)))
+                foreach (var adj in incompletePolyomino.SelectMany(getAdj).Distinct().Where(cell => !usedCells.Contains(cell) && !incompletePolyomino.Contains(cell) && (thisGrid[cell] == null || thisGrid[cell] == desiredSize)))
                 {
                     used.Add(adj);
                     foreach (var poly in enumeratePolyominoes(thisGrid, incompletePolyomino.Insert(incompletePolyomino.Length, adj), desiredSize, used.ToArray()))
@@ -148,7 +148,7 @@ namespace PuzzleSolvers
                 int[] bestPolyomino = null;
                 var bestPolySize = 0;
                 int[][] bestPossibleCompletions = null;
-                int bestIx = -1;
+                var bestIx = -1;
 
                 for (var polyIx = 0; polyIx < allPolys.Count; polyIx++)
                 {

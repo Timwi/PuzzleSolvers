@@ -45,7 +45,7 @@ public abstract class AntiChessConstraint : Constraint
     protected abstract IEnumerable<int> getRelatedCells(int cell);
 
     /// <inheritdoc/>
-    public override sealed ConstraintResult Process(SolverState state)
+    public sealed override ConstraintResult Process(SolverState state)
     {
         for (var cellIx = 0; cellIx < (state.LastPlacedCell != null ? 1 : AffectedCells != null ? AffectedCells.Length : state.GridSize); cellIx++)
         {

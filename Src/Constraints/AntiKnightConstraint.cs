@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
@@ -47,7 +45,7 @@ namespace PuzzleSolvers
             var y = cell / gridWidth;
             foreach (var dx in _dxs)
                 if (toroidal || (x + dx >= 0 && x + dx < gridWidth))
-                    foreach (var dy in (dx == 1 || dx == -1) ? _dys1 : _dys2)
+                    foreach (var dy in (dx is 1 or (-1)) ? _dys1 : _dys2)
                         if (toroidal || (y + dy >= 0 && y + dy < gridHeight))
                             yield return (x + dx + gridWidth) % gridWidth + gridWidth * ((y + dy + gridHeight) % gridHeight);
         }

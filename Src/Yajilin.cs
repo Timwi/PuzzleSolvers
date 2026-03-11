@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RT.Util.Consoles;
 using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
@@ -141,5 +142,22 @@ namespace PuzzleSolvers
                 AddConstraint(new MaximumCountConstraint(cells.Select(c => c.x + Width * c.y), v => v == Block, number));
             }
         }
+
+        /// <summary>
+        ///     Converts a cell value to a string for visualization purposes.</summary>
+        /// <param name="value">
+        ///     Value to visualize.</param>
+        /// <param name="index">
+        ///     Optional index of the cell. If not specified, clue squares will not show up.</param>
+        public string ValueToString(int? value, int? index) => value switch
+        {
+            null => "? ",
+            Block => "■ ",
+            int v => index is { } ix && Clues.FirstOrNull(c => c.X + Width * c.Y == ix) is { } clue ? $"{clue.Number}{"↑→↓←"[(int) clue.Direction]}" : Path.ToStr[v]
+        };
+
+        /// <inheritdoc/>
+        public override ConsoleColoredString SolutionToConsole(int?[] solution, Func<int?, int, string> getName = null, int? width = null) =>
+            base.SolutionToConsole(solution, (v, ix) => ValueToString(v, ix), width ?? Width);
     }
 }

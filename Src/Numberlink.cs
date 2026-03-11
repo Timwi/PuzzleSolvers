@@ -41,7 +41,7 @@ namespace PuzzleSolvers
                 // The entire grid must be filled
                 var cellGroup = cellGroups.IndexOf(cg => cg.Contains(cell));
                 if (cellGroup == -1)
-                    AddConstraint(new OneCellLambdaConstraint(cell, v => v >= 1 && v <= 6));
+                    AddConstraint(new OneCellLambdaConstraint(cell, v => v is >= 1 and <= 6));
                 else
                     AddConstraint(new GivenConstraint(cell, 7 + cellGroup), ConsoleColor.White, (ConsoleColor) (cellGroup % 14 + 1));
 
@@ -64,10 +64,7 @@ namespace PuzzleSolvers
         /// <summary>
         ///     Adds a constraint to the Numberlink puzzle that prohibits paths from taking U-turns, that is, two 90° turns in
         ///     immediate succession. (However, two 90° turns making an S-curve are still permitted.)</summary>
-        public void AddNoUTurnConstraint()
-        {
-            AddConstraint(new NoUTurnConstraint(Width, Height));
-        }
+        public void AddNoUTurnConstraint() => AddConstraint(new NoUTurnConstraint(Width, Height));
 
         private class NoUTurnConstraint(int width, int height) : Constraint(null)
         {

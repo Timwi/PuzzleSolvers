@@ -27,7 +27,7 @@ namespace PuzzleSolvers
                 if (topLeft % Width < Width - 1 && topLeft / Width < Height - 1)
                 {
                     var cells = new[] { topLeft, topLeft + 1, topLeft + Width, topLeft + Width + 1 };
-                    var still = cells.Where(c => !state.AllSame(c, Values.Contains, out bool b) || !b).ToArray();
+                    var still = cells.Where(c => !state.AllSame(c, Values.Contains, out var b) || !b).ToArray();
                     if (still.Length == 0)
                         return ConstraintResult.Violation;
                     if (still.Length > 1)

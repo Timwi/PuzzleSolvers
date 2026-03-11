@@ -41,7 +41,7 @@ namespace PuzzleSolvers
             }
 
             public override int? this[int cell] => Parent[cell];
-            public override void MarkImpossible(int cell, int value) { Takens[cell][value - Parent.MinValue] = true; }
+            public override void MarkImpossible(int cell, int value) => Takens[cell][value - Parent.MinValue] = true;
             public override bool IsImpossible(int cell, int value) => Takens[cell][value - Parent.MinValue] || Parent.IsImpossible(cell, value);
             public override int? LastPlacedCell => Parent.LastPlacedCell;
             public override int MinValue => Parent.MinValue;

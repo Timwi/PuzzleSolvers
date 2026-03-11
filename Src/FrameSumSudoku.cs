@@ -32,7 +32,7 @@ namespace PuzzleSolvers
         public FrameSumSudoku(int minLength, int maxLength, int[] cluesClockwiseFromTopLeft, int minValue = 1)
             : base(minValue)
         {
-            if (minLength < 1 || minLength > 9)
+            if (minLength is < 1 or > 9)
                 throw new ArgumentException(@"‘minLength’ must be in the range 1–9.", nameof(minLength));
             if (maxLength < minLength || maxLength > 9)
                 throw new ArgumentException(@"‘maxLength’ must be in the range minLength–9.", nameof(maxLength));

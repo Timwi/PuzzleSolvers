@@ -30,7 +30,7 @@ namespace PuzzleSolvers
         {
             if (field == null)
                 throw new ArgumentNullException(nameof(field));
-            if (field.Any(ch => (ch < 'A' || ch > 'Z') && ch != '.'))
+            if (field.Any(ch => ch is (< 'A' or > 'Z') and not '.'))
                 throw new ArgumentException("‘field’ must contain only letters A-Z or periods (.).", nameof(field));
             if (field.Length != 81)
                 throw new ArgumentException("‘field’ must have exactly 81 characters. Use the period (.) character to indicate cells not occupied by a Killer cage.", nameof(field));

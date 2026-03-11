@@ -46,7 +46,7 @@ namespace PuzzleSolvers
         /// <summary>Returns the list of constraints used by this puzzle.</summary>
         public List<Constraint> Constraints { get; private set; } = [];
 
-        /// <summary>Contains colors for use by <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</summary>
+        /// <summary>Contains colors for use by <see cref="SolutionToConsole(int[], Func{int, string}, int?)"/>.</summary>
         public Dictionary<Constraint, (ConsoleColor? foreground, ConsoleColor? background)> ConstraintColors { get; private set; } = [];
 
         /// <summary>
@@ -59,28 +59,18 @@ namespace PuzzleSolvers
         /// <param name="getName">
         ///     An optional function to stringify values differently. The function receives the cell value and its index
         ///     within the puzzle solution. Default is to represent them as integers.</param>
-        public ConsoleColoredString SolutionToConsole(int?[] solution, Func<int?, int, string> getName = null, int width = 9)
+        public virtual ConsoleColoredString SolutionToConsole(int?[] solution, Func<int?, int, string> getName = null, int? width = null)
         {
-            var digits = solution.Select((v, ix) => getName == null ? v.ToString().Length.ClipMin(2) : getName(v, ix).Length).Max();
+            var rWidth = width ?? 9;
+            getName ??= (v, ix) => v == null ? "?" : v.Value.ToString();
+            var digits = solution.Select((v, ix) => getName(v, ix).Length).Max().ClipMin(2);
             return solution.Select((val, ix) =>
             {
                 var firstConstraint = Constraints.FirstOrDefault(c => c.AffectedCells != null && c.AffectedCells.Contains(ix) && ConstraintColors.ContainsKey(c));
                 var (foreground, background) = firstConstraint == null ? default : ConstraintColors.Get(firstConstraint, default);
-                return ((getName != null ? getName(val, ix) : val == null ? "?" : val.Value.ToString()).PadLeft(digits)).Color(val == null ? ConsoleColor.DarkGray : foreground, background);
-            }).Split(width).Select(row => row.JoinColoredString()).JoinColoredString("\n");
+                return getName(val, ix).PadLeft(digits).Color(val == null ? ConsoleColor.DarkGray : foreground, background);
+            }).Split(rWidth).Select(row => row.JoinColoredString()).JoinColoredString("\n");
         }
-
-        /// <summary>
-        ///     Converts a partial puzzle solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered
-        ///     by some constraints.</summary>
-        /// <param name="solution">
-        ///     The partial solution to be colored.</param>
-        /// <param name="width">
-        ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
-        /// <param name="getName">
-        ///     An optional function to stringify values differently. Default is to represent them as integers.</param>
-        public ConsoleColoredString SolutionToConsole(int?[] solution, Func<int?, string> getName, int width = 9) =>
-            SolutionToConsole(solution, getName == null ? null : (v, ix) => getName(v), width);
 
         /// <summary>
         ///     Converts a puzzle solution to a <see cref="ConsoleColoredString"/> that includes the coloring offered by some
@@ -92,7 +82,7 @@ namespace PuzzleSolvers
         /// <param name="getName">
         ///     An optional function to stringify values differently. The function receives the cell value and its index
         ///     within the puzzle solution. Default is to represent them as integers.</param>
-        public ConsoleColoredString SolutionToConsole(int[] solution, Func<int, int, string> getName = null, int width = 9) =>
+        public ConsoleColoredString SolutionToConsole(int[] solution, Func<int, int, string> getName = null, int? width = null) =>
             SolutionToConsole(solution.Select(val => val.Nullable()).ToArray(), getName == null ? null : (v, ix) => getName(v.Value, ix), width);
 
         /// <summary>
@@ -104,7 +94,7 @@ namespace PuzzleSolvers
         ///     The width of the puzzle grid. For a standard Sudoku, this is 9.</param>
         /// <param name="getName">
         ///     An optional function to stringify values differently. Default is to represent them as integers.</param>
-        public ConsoleColoredString SolutionToConsole(int[] solution, Func<int, string> getName, int width = 9) =>
+        public ConsoleColoredString SolutionToConsole(int[] solution, Func<int, string> getName, int? width = null) =>
             SolutionToConsole(solution.Select(val => val.Nullable()).ToArray(), getName == null ? null : (v, ix) => getName(v.Value), width);
 
         /// <summary>Adds the specified <paramref name="constraint"/> to the <see cref="Constraints"/> list.</summary>
@@ -173,10 +163,10 @@ namespace PuzzleSolvers
         /// <param name="givens">
         ///     A collection of tuples containing cell indexes and given values.</param>
         /// <param name="foreground">
-        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</param>
+        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int?)"/>.</param>
         /// <param name="background">
         ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string},
-        ///     int)"/>.</param>
+        ///     int?)"/>.</param>
         public Puzzle AddGivens(IEnumerable<(int cell, int value)> givens, ConsoleColor? foreground = null, ConsoleColor? background = null)
         {
             if (givens == null)
@@ -199,17 +189,17 @@ namespace PuzzleSolvers
         ///     A string such as <c>"3...5...8.9..7.5.....8.41...2.7.....5...28..47.....6...6....8....2...9.1.1.9.5..."</c>.
         ///     Each digit is a given value, while periods (<c>.</c>) indicate no given for that cell.</param>
         /// <param name="foreground">
-        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</param>
+        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int?)"/>.</param>
         /// <param name="background">
         ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string},
-        ///     int)"/>.</param>
+        ///     int?)"/>.</param>
         public Puzzle AddGivens(string givens, ConsoleColor? foreground = null, ConsoleColor? background = null)
         {
             if (givens == null)
                 throw new ArgumentNullException(nameof(givens));
             if (givens.Length > GridSize)
                 throw new ArgumentException("The length of ‘givens’ cannot be greater than the size of the puzzle.", nameof(givens));
-            if (!givens.All(ch => ch == '.' || (ch >= '0' && ch <= '9')))
+            if (!givens.All(ch => ch is '.' or >= '0' and <= '9'))
                 throw new ArgumentException("‘givens’ must contain only digits 0–9 and periods (.) for cells with no given.", "givens");
             for (var i = 0; i < givens.Length; i++)
                 if (givens[i] != '.')
@@ -223,10 +213,10 @@ namespace PuzzleSolvers
         ///     An array containing integers and <c>null</c> values. Each non-<c>null</c> value translates to a given for the
         ///     cell in the same position.</param>
         /// <param name="foreground">
-        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</param>
+        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int?)"/>.</param>
         /// <param name="background">
         ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string},
-        ///     int)"/>.</param>
+        ///     int?)"/>.</param>
         public Puzzle AddGivens(int?[] givens, ConsoleColor? foreground = null, ConsoleColor? background = null)
         {
             if (givens == null)
@@ -249,10 +239,10 @@ namespace PuzzleSolvers
         /// <param name="affectedCells">
         ///     The set of cells contained in this cage.</param>
         /// <param name="foreground">
-        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</param>
+        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int?)"/>.</param>
         /// <param name="background">
         ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string},
-        ///     int)"/>.</param>
+        ///     int?)"/>.</param>
         /// <returns>
         ///     A collection containing the two required constraints.</returns>
         public Puzzle AddKillerCage(int sum, IEnumerable<int> affectedCells, ConsoleColor? foreground = null, ConsoleColor? background = null)
@@ -275,10 +265,10 @@ namespace PuzzleSolvers
         /// <param name="gridWidth">
         ///     The width of the puzzle grid.</param>
         /// <param name="foreground">
-        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int)"/>.</param>
+        ///     Color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string}, int?)"/>.</param>
         /// <param name="background">
         ///     Background color to use when outputting a solution with <see cref="SolutionToConsole(int[], Func{int, string},
-        ///     int)"/>.</param>
+        ///     int?)"/>.</param>
         /// <returns>
         ///     A collection containing the two required constraints.</returns>
         public Puzzle AddKillerCage(int sum, string affectedCells, int gridWidth = 9, ConsoleColor? foreground = null, ConsoleColor? background = null)
@@ -440,7 +430,7 @@ namespace PuzzleSolvers
                 state.LastPlacedIx = ix;
                 state.Takens = takens.Select(arr => arr.ToArray()).ToArray();
 
-                List<Constraint> constraintsUse = constraints;
+                var constraintsUse = constraints;
                 List<Constraint> mustReevaluate = null;
 
                 reevaluate:
@@ -544,13 +534,14 @@ namespace PuzzleSolvers
                 }
         }
 
-        bool intendedSolutionPossible(SolverInstructions instr, SolverStateImpl state) =>
+        private bool intendedSolutionPossible(SolverInstructions instr, SolverStateImpl state) =>
             instr != null && instr.IntendedSolution != null &&
             instr.IntendedSolution.All((v, cell) => state.Grid[cell] == v - MinValue || (state.Grid[cell] == null && !state.Takens[cell][v - MinValue]));
 
-        enum __debugSvgLabels { Numbers, Letters, Loop, Shading }
+        private enum __debugSvgLabels
+        { Numbers, Letters, Loop, Shading }
 
-        void __debug_generateSvg(SolverStateImpl state, int recursionDepth = 0, int[] intendedSolution = null, IEnumerable<int> highlightIxs = null, int width = 9, int height = 9, int values = 9, int wrap = 3, __debugSvgLabels labels = __debugSvgLabels.Numbers)
+        private void __debug_generateSvg(SolverStateImpl state, int recursionDepth = 0, int[] intendedSolution = null, IEnumerable<int> highlightIxs = null, int width = 9, int height = 9, int values = 9, int wrap = 3, __debugSvgLabels labels = __debugSvgLabels.Numbers)
         {
             string cnv(int val) =>
                 labels == __debugSvgLabels.Shading && val.IsBetween(0, 1) ? val == 0 ? "·" : "■" :
@@ -570,11 +561,11 @@ namespace PuzzleSolvers
             ");
         }
 
-        string __debug_string(SolverStateImpl state, int width, string chars = null) =>
+        private string __debug_string(SolverStateImpl state, int width, string chars = null) =>
             Enumerable.Range(0, state.GridSize).Select(ix => state[ix] == null ? "?" : chars == null ? state[ix].Value.ToString() : chars[state[ix].Value].ToString())
                 .Split(width).Select(row => row.JoinString(" ")).JoinString("\n");
 
-        sealed class SolverStateImpl : SolverState
+        private sealed class SolverStateImpl : SolverState
         {
             internal int GridSizeVal;
             internal int?[] Grid;

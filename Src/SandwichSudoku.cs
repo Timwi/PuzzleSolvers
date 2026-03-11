@@ -68,12 +68,12 @@ namespace PuzzleSolvers
                 if (columnClues[col] != null)
                     AddConstraint(wraparound
                         ? new SandwichWraparoundUniquenessConstraint(crust1, crust2, columnClues[col].Value, Enumerable.Range(0, 9).Select(row => row * 9 + col), minValue, minValue + 8)
-                        : (Constraint) new SandwichUniquenessConstraint(crust1, crust2, columnClues[col].Value, Enumerable.Range(0, 9).Select(row => row * 9 + col), minValue, minValue + 8));
+                        : new SandwichUniquenessConstraint(crust1, crust2, columnClues[col].Value, Enumerable.Range(0, 9).Select(row => row * 9 + col), minValue, minValue + 8));
             for (var row = 0; row < 9; row++)
                 if (rowClues[row] != null)
                     AddConstraint(wraparound
                         ? new SandwichWraparoundUniquenessConstraint(crust1, crust2, rowClues[row].Value, Enumerable.Range(0, 9).Select(col => row * 9 + col), minValue, minValue + 8)
-                        : (Constraint) new SandwichUniquenessConstraint(crust1, crust2, rowClues[row].Value, Enumerable.Range(0, 9).Select(col => row * 9 + col), minValue, minValue + 8));
+                        : new SandwichUniquenessConstraint(crust1, crust2, rowClues[row].Value, Enumerable.Range(0, 9).Select(col => row * 9 + col), minValue, minValue + 8));
         }
     }
 }
