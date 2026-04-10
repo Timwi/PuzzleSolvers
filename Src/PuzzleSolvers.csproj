@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' != 'Debug-locallibs'">
-    <PackageReference Include="RT.Util.Core" Version="2.0.1813"/>
+    <PackageReference Include="RT.Util.Core" Version="2.0.1826"/>
   </ItemGroup>
 
   <ItemGroup>
