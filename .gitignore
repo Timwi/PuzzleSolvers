@@ -1,6 +1,4 @@
-.vs/
-Builds/
-*/bin/
-*/obj/
-packages/
-*.csproj.user
+.vs
+bin
+obj
+*.user
