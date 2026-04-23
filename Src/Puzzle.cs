@@ -398,8 +398,9 @@ namespace PuzzleSolvers
             immediate:
             var startAt = instr?.Randomizer?.Next(0, takens[ix].Length) ?? instr?.ValuePriority ?? 0;
             var state = new SolverStateImpl { Grid = grid, GridSizeVal = GridSize, MinVal = MinValue, MaxVal = MaxValue, Takens = takens };
-            var showContinuousProgress = fewestPossibleValues > 1 && instr != null && instr.ShowContinuousProgress != null && recursionDepth < instr.ShowContinuousProgress.Value;
-            var showContinuousProgressLineLen = 0;
+            var progressVisualization = fewestPossibleValues > 1 && instr != null && instr.ProgressVisualizer != null && instr.ProgressVisualizer.IsActive(recursionDepth)
+                ? new ProgressVisualizerData(GridSize, MinValue, MaxValue, recursionDepth, grid, takens) : null;
+            object progressVisualizationObject = null;
 
             for (var tVal = 0; tVal < takens[ix].Length; tVal++)
             {
@@ -411,24 +412,13 @@ namespace PuzzleSolvers
                     lock (instr?.LockObject ?? _fallbackLockObject)
                         File.AppendAllText(instr.BulkLoggingFile, $"{new string(' ', recursionDepth)}Cell {ix} trying {val}\n");
 
-                if (showContinuousProgress)
-                {
-                    var output = new ConsoleColoredString($"Cell {(instr.GetCellName == null ? ix.ToString().PadLeft((takens.Length - 1).ToString().Length) : instr.GetCellName(ix))}: " + Enumerable.Range(0, takens[ix].Length).Select(i => (i + startAt) % takens[ix].Length).Where(v => !instr.ShowContinuousProgressShortened || !takens[ix][v]).Select(v => (instr.GetValueName?.Invoke(v) ?? (v + MinValue).ToString()).Color(
-                        takens[ix][v] ? ConsoleColor.DarkBlue : v == val ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
-                        v == val ? ConsoleColor.DarkGreen : ConsoleColor.Black)).JoinColoredString(" "));
-                    showContinuousProgressLineLen = Math.Max(showContinuousProgressLineLen, output.Length);
-                    lock (instr?.LockObject ?? _fallbackLockObject)
-                    {
-                        Console.CursorLeft = instr.ShowContinuousProgressConsoleLeft ?? 0;
-                        Console.CursorTop = recursionDepth + (instr.ShowContinuousProgressConsoleTop ?? 0);
-                        ConsoleUtil.Write(output);
-                    }
-                }
-
                 // Attempt to put the value into this cell
                 grid[ix] = val;
                 state.LastPlacedIx = ix;
                 state.Takens = takens.Select(arr => arr.ToArray()).ToArray();
+
+                if (progressVisualization != null)
+                    progressVisualizationObject = instr.ProgressVisualizer.VisualizeProgress(progressVisualization, ix, val, startAt, progressVisualizationObject);
 
                 var constraintsUse = constraints;
                 List<Constraint> mustReevaluate = null;
@@ -457,21 +447,10 @@ namespace PuzzleSolvers
                         if (wasIntendedSolutionPossible && (isViolation || !intendedSolutionPossible(instr, state)))
                             lock (instr?.LockObject ?? _fallbackLockObject)
                             {
-                                if (isViolation)
-                                    ConsoleUtil.WriteLine("Constraint {0/Magenta} considered this state a violation at recursion depth {1}:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName, recursionDepth));
-                                else
-                                    ConsoleUtil.WriteLine("Constraint {0/Magenta} removed the intended solution at recursion depth {1}:".Color(ConsoleColor.White).Fmt(constraint.GetType().FullName, recursionDepth));
-                                var numDigits = instr.GetCellName == null ? (GridSize - 1).ToString().Length : Enumerable.Range(0, GridSize).Max(c => instr.GetCellName(c).Length);
-                                for (var cell = 0; cell < GridSize; cell++)
-                                {
-                                    string valueId(int v) => instr.GetValueName != null ? instr.GetValueName(v + MinValue) : (v + MinValue).ToString();
-                                    var cellLine = Enumerable.Range(0, MaxValue - MinValue + 1)
-                                        .Select(v => valueId(v).Color(takensDebugCopy[cell][v] != state.Takens[cell][v] ? ConsoleColor.Red : state.Takens[cell][v] ? ConsoleColor.DarkGray : ConsoleColor.Yellow))
-                                        .JoinColoredString(" ");
-                                    var cellStr = (instr.GetCellName != null ? instr.GetCellName(cell) : cell.ToString()).PadLeft(numDigits, ' ') + ". ";
-                                    ConsoleUtil.WriteLine($"{cellStr.Color(cell == ix ? ConsoleColor.Cyan : ConsoleColor.DarkCyan)}{cellLine}   {(grid[cell] == null ? "?".Color(ConsoleColor.DarkGreen) : valueId(grid[cell].Value).Color(ConsoleColor.Green))}", null);
-                                }
-                                Console.WriteLine();
+                                ConsoleUtil.WriteLineFmt($"Constraint {constraint.GetType().FullName:M} {(isViolation ? "considered this state a violation" : "removed the intended solution")} at recursion depth {recursionDepth:G}:", ConsoleColor.White);
+                                progressVisualization.prevTakens = takensDebugCopy;
+                                (instr?.ProgressVisualizer ?? new ProgressVisualizer(0)).VisualizeIntendedSolutionBug(progressVisualization, ix);
+                                progressVisualization.prevTakens = null;
                             }
 
                         if (isViolation)
@@ -525,13 +504,8 @@ namespace PuzzleSolvers
             }
             grid[ix] = null;
 
-            if (showContinuousProgress)
-                lock (instr?.LockObject ?? _fallbackLockObject)
-                {
-                    Console.CursorLeft = instr.ShowContinuousProgressConsoleLeft ?? 0;
-                    Console.CursorTop = recursionDepth + (instr.ShowContinuousProgressConsoleTop ?? 0);
-                    Console.WriteLine(new string(' ', showContinuousProgressLineLen));
-                }
+            if (progressVisualization != null)
+                instr.ProgressVisualizer.EraseProgress(progressVisualization, ix, progressVisualizationObject);
         }
 
         private bool intendedSolutionPossible(SolverInstructions instr, SolverStateImpl state) =>

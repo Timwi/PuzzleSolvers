@@ -22,18 +22,12 @@ namespace PuzzleSolvers
 
         // ** The following are all for debugging only ** //
 
-        /// <summary>Shows the first n cells of the solver’s recursive process on the console.</summary>
-        public int? ShowContinuousProgress;
-        /// <summary>Leaves a number of rows at the top of the console window above the debug display.</summary>
-        public int? ShowContinuousProgressConsoleTop;
-        /// <summary>Leaves a number of columns on the left of the console window beside the debug display.</summary>
-        public int? ShowContinuousProgressConsoleLeft;
         /// <summary>
-        ///     Only show candidate values for each cell; useful when cells can have many possible values but the majority of
-        ///     them are not applicable most of the time.</summary>
-        public bool ShowContinuousProgressShortened;
+        ///     Displays progress during the puzzle solve process. <see cref="PuzzleSolvers.ProgressVisualizer"/> is provided
+        ///     as a default implementation.</summary>
+        public IProgressVisualizer ProgressVisualizer;
         /// <summary>
-        ///     When this is not <c>null</c>, the solver determines at which point during the solve process one of these
+        ///     When this is not <c>null</c>, the solver determines at which point during the solve process one of the
         ///     constraints eliminates the intended solution. This is for debugging constraints that rule out solutions when
         ///     they shouldn’t.</summary>
         public int[] IntendedSolution;
@@ -42,22 +36,12 @@ namespace PuzzleSolvers
         ///     This may be necessary for speed reasons.</summary>
         public Func<Constraint, bool> ExamineConstraint;
         /// <summary>
-        ///     Only applies when <see cref="IntendedSolution"/> is not <c>null</c>. Specifies how the debug output should
-        ///     identify the cells in a puzzle (locations where digits are entered). When not specified, the cells are
-        ///     numbered from 0.</summary>
-        public Func<int, string> GetCellName;
-        /// <summary>
-        ///     Only applies when <see cref="IntendedSolution"/> is not <c>null</c>. Specifies how the debug output should
-        ///     identify the values in a puzzle (the digits that are being entered into the cells). When not specified, the
-        ///     values are numbered from <see cref="Puzzle.MinValue"/>.</summary>
-        public Func<int, string> GetValueName;
-        /// <summary>
         ///     If not <c>null</c>, the solver outputs extremely verbose information to this file describing the solving
         ///     process.</summary>
         public string BulkLoggingFile;
         /// <summary>
-        ///     If not <c>null</c>, the solver will obtain a lock on this object while outputting information to the console
-        ///     (<see cref="ShowContinuousProgress"/>) or a file (<see cref="BulkLoggingFile"/>).</summary>
+        ///     If not <c>null</c>, the solver will obtain a lock on this object while outputting information to the (<see
+        ///     cref="BulkLoggingFile"/>).</summary>
         public object LockObject;
     }
 }
