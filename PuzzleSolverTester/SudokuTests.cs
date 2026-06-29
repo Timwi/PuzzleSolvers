@@ -118,9 +118,9 @@ namespace PuzzleSolverTester
             Assert.AreEqual(2, solutions.Length);
 
             // Solution where the constrained cells are all even
-            Assert.IsTrue(solutions.Any(s => s.SequenceEqual(new[] { 3, 1, 2, 6, 4, 7, 5, 9, 8, 7, 4, 8, 5, 2, 9, 1, 3, 6, 5, 6, 9, 1, 3, 8, 7, 4, 2, 4, 3, 5, 7, 9, 2, 8, 6, 1, 1, 8, 7, 3, 6, 4, 9, 2, 5, 9, 2, 6, 8, 1, 5, 3, 7, 4, 6, 5, 3, 2, 7, 1, 4, 8, 9, 2, 9, 1, 4, 8, 3, 6, 5, 7, 8, 7, 4, 9, 5, 6, 2, 1, 3 })));
+            Assert.IsTrue(solutions.Any(s => s.SequenceEqual([3, 1, 2, 6, 4, 7, 5, 9, 8, 7, 4, 8, 5, 2, 9, 1, 3, 6, 5, 6, 9, 1, 3, 8, 7, 4, 2, 4, 3, 5, 7, 9, 2, 8, 6, 1, 1, 8, 7, 3, 6, 4, 9, 2, 5, 9, 2, 6, 8, 1, 5, 3, 7, 4, 6, 5, 3, 2, 7, 1, 4, 8, 9, 2, 9, 1, 4, 8, 3, 6, 5, 7, 8, 7, 4, 9, 5, 6, 2, 1, 3])));
             // Solution where the constrained cells are all odd
-            Assert.IsTrue(solutions.Any(s => s.SequenceEqual(new[] { 7, 6, 2, 5, 4, 8, 3, 9, 1, 4, 3, 1, 2, 7, 9, 5, 8, 6, 8, 5, 9, 6, 1, 3, 7, 2, 4, 3, 4, 5, 7, 8, 2, 1, 6, 9, 1, 9, 8, 3, 6, 4, 2, 7, 5, 6, 2, 7, 1, 9, 5, 8, 4, 3, 5, 8, 3, 9, 2, 6, 4, 1, 7, 2, 1, 6, 4, 3, 7, 9, 5, 8, 9, 7, 4, 8, 5, 1, 6, 3, 2 })));
+            Assert.IsTrue(solutions.Any(s => s.SequenceEqual([7, 6, 2, 5, 4, 8, 3, 9, 1, 4, 3, 1, 2, 7, 9, 5, 8, 6, 8, 5, 9, 6, 1, 3, 7, 2, 4, 3, 4, 5, 7, 8, 2, 1, 6, 9, 1, 9, 8, 3, 6, 4, 2, 7, 5, 6, 2, 7, 1, 9, 5, 8, 4, 3, 5, 8, 3, 9, 2, 6, 4, 1, 7, 2, 1, 6, 4, 3, 7, 9, 5, 8, 9, 7, 4, 8, 5, 1, 6, 3, 2])));
         }
 
         [TestMethod]
@@ -157,7 +157,7 @@ namespace PuzzleSolverTester
         {
             // Tests SandwichUniquenessConstraint with sums sandwiched between 1 and 9 (the typical variant).
             // Taken from Cracking the Cryptic: https://www.youtube.com/watch?v=qUZnq5nP0zI
-            AssertUniqueSolution(new SandwichSudoku(columnClues: new[] { 15, 9, 26, 8, 8, 12, 0, 12, 6 }, rowClues: new[] { 7, 14, 20, 2, 8, 26, 10, 31, 16 })
+            AssertUniqueSolution(new SandwichSudoku(columnClues: [15, 9, 26, 8, 8, 12, 0, 12, 6], rowClues: [7, 14, 20, 2, 8, 26, 10, 31, 16])
                 .AddGivens(@"............9......1............9...............8............5......5............"),
                 3, 8, 9, 2, 5, 1, 4, 7, 6, 4, 5, 7, 9, 6, 8, 1, 2, 3, 2, 1, 6, 3, 7, 4, 9, 8, 5, 6, 4, 8, 5, 3, 9, 2, 1, 7, 9, 3, 5, 1, 2, 7, 6, 4, 8, 7, 2, 1, 8, 4, 6, 5, 3, 9, 8, 9, 4, 6, 1, 3, 7, 5, 2, 1, 6, 2, 7, 8, 5, 3, 9, 4, 5, 7, 3, 4, 9, 2, 8, 6, 1);
         }
@@ -167,7 +167,7 @@ namespace PuzzleSolverTester
         {
             // Tests SandwichUniquenessConstraint with sums sandwiched between 4 and 6.
             // Taken from Cracking the Cryptic: https://www.youtube.com/watch?v=ZzH2_tjQAHE
-            AssertUniqueSolution(new SandwichSudoku(crust1: 4, crust2: 6, columnClues: new[] { 26, 22, 11, 3, 2, 8, 18, 6, 12 }, rowClues: new[] { 35, 16, 10, 14, 6, 2, 1, 25, 7 })
+            AssertUniqueSolution(new SandwichSudoku(crust1: 4, crust2: 6, columnClues: [26, 22, 11, 3, 2, 8, 18, 6, 12], rowClues: [35, 16, 10, 14, 6, 2, 1, 25, 7])
                 .AddGivens((66, 1), (77, 4)),
                 4, 1, 3, 5, 8, 2, 9, 7, 6, 2, 5, 8, 6, 9, 7, 4, 3, 1, 9, 6, 7, 3, 4, 1, 5, 8, 2, 8, 3, 1, 4, 2, 5, 7, 6, 9, 7, 9, 5, 8, 6, 3, 2, 1, 4, 6, 2, 4, 7, 1, 9, 3, 5, 8, 5, 8, 2, 9, 3, 6, 1, 4, 7, 3, 4, 9, 1, 7, 8, 6, 2, 5, 1, 7, 6, 2, 5, 4, 8, 9, 3);
         }
@@ -177,7 +177,7 @@ namespace PuzzleSolverTester
         {
             // Tests SandwichWraparoundUniquenessConstraint — the one where the Sudoku grid behaves like a torus.
             // Taken from Cracking the Cryptic: https://www.youtube.com/watch?v=L7KTfeKsxS4
-            AssertUniqueSolution(new SandwichSudoku(wraparound: true, columnClues: new[] { 21, 26, 25, 21, 9, 17, 4, 3, 9 }, rowClues: new[] { 13, 0, 29, 22, 18, 18, 35, 9, 35 })
+            AssertUniqueSolution(new SandwichSudoku(wraparound: true, columnClues: [21, 26, 25, 21, 9, 17, 4, 3, 9], rowClues: [13, 0, 29, 22, 18, 18, 35, 9, 35])
                 .AddGivens((11, 9), (34, 3)),
                 6, 3, 2, 1, 8, 5, 9, 4, 7, 7, 1, 9, 6, 4, 2, 3, 8, 5, 8, 5, 4, 7, 3, 9, 6, 1, 2, 9, 2, 6, 5, 1, 8, 7, 3, 4, 5, 4, 1, 3, 7, 6, 2, 9, 8, 3, 8, 7, 9, 2, 4, 5, 6, 1, 2, 7, 3, 4, 9, 1, 8, 5, 6, 4, 9, 5, 8, 6, 7, 1, 2, 3, 1, 6, 8, 2, 5, 3, 4, 7, 9);
         }

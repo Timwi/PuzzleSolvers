@@ -13,7 +13,7 @@ namespace PuzzleSolvers
         ///     The length of one side of the (square) grid.</param>
         public Binairo(int sideLength) : base(sideLength * sideLength, 0, 1)
         {
-            AddConstraints(GetConstraints(sideLength));
+            AddConstraints(GetConstraints(sideLength), avoidColors: true);
         }
 
         /// <summary>

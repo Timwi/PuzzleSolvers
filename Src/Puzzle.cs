@@ -284,8 +284,6 @@ namespace PuzzleSolvers
 
         // Implementation of the solver
 
-        private int _numVals;
-
         /// <summary>Returns a lazy sequence containing the solutions for this puzzle.</summary>
         public IEnumerable<int[]> Solve(SolverInstructions solverInstructions = null)
         {
@@ -294,218 +292,209 @@ namespace PuzzleSolvers
             if (solverInstructions != null && solverInstructions.IntendedSolution != null && solverInstructions.IntendedSolution.Length != GridSize)
                 throw new InvalidOperationException(@"solverInstructions.IntendedSolution must have the same length as the size of the puzzle.");
 
-            _numVals = MaxValue - MinValue + 1;
-            var grid = new int?[GridSize];
-            var takens = new bool[GridSize][];
-            for (var i = 0; i < GridSize; i++)
-                takens[i] = new bool[_numVals];
-
-            var constraintsUse = Constraints;
-            var state = new SolverStateImpl { Takens = takens, Grid = grid, GridSizeVal = GridSize, LastPlacedIx = null, MinVal = MinValue, MaxVal = MaxValue };
-            reevaluate:
-            List<Constraint> newConstraints = null;
-            for (var cIx = 0; cIx < constraintsUse.Count; cIx++)
+            var cellPriority = (solverInstructions?.CellOrderStrategy ?? CellOrderStrategy.Default) switch
             {
-                var constraint = constraintsUse[cIx];
-                state.CurrentConstraint = constraint;
-                var cs = constraint.Process(state);
-                if (cs is ConstraintReplace repl)
-                {
-                    newConstraints ??= constraintsUse.Take(cIx).ToList();
-                    newConstraints.AddRange(repl.NewConstraints);
-                }
-                else
-                    newConstraints?.Add(constraint);
-            }
-            if (newConstraints != null)
-            {
-                constraintsUse = newConstraints;
-                goto reevaluate;
-            }
-
-            var cellPriorities = Enumerable.Range(0, GridSize).Select(cell =>
-            {
-                var applicableConstraints = constraintsUse.Where(c => c.AffectedCells == null || c.AffectedCells.Contains(cell)).ToArray();
-                return (cell, priority: applicableConstraints.OfType<CombinationsConstraint>().MinOrDefault(c => c.Combinations.Length, 0) - applicableConstraints.Length);
-            }).ToArray();
-            Array.Sort(cellPriorities, (a, b) =>
-            {
-                if (solverInstructions != null && solverInstructions.CellPriority != null)
-                {
-                    var p1 = Array.IndexOf(solverInstructions.CellPriority, a.cell);
-                    var p2 = Array.IndexOf(solverInstructions.CellPriority, b.cell);
-                    if (p1 != -1 && p2 != -1)
-                        return p1 < p2 ? -1 : 1;
-                    if (p1 != -1)
-                        return -1;
-                    if (p2 != -1)
-                        return 1;
-                }
-                return a.priority < b.priority ? -1 : a.priority > b.priority ? 1 : 0;
-            });
-            var cellPriority = cellPriorities.Select(tup => tup.cell).ToArray();
-
-            if (solverInstructions?.BulkLoggingFile != null)
-                lock (solverInstructions?.LockObject ?? _fallbackLockObject)
-                    File.WriteAllText(solverInstructions.BulkLoggingFile, "");
-
-            return solve(grid, takens, constraintsUse, cellPriority, solverInstructions).Select(solution => solution.Select(val => val + MinValue).ToArray());
+                CellOrderStrategy.Default => Enumerable.Range(0, GridSize)
+                    .OrderBy(cell => Constraints.Count(c => c.AffectedCells?.Contains(cell) ?? false))
+                    .Apply(cp => solverInstructions?.CellPriority is { } givenPrio1 ? cp.ThenBy(cell => givenPrio1.IndexOf(cell)) : cp)
+                    .ToArray(),
+                _ => (solverInstructions?.CellPriority is { } givenPrio2 ? givenPrio2.Concat(Enumerable.Range(0, GridSize).Except(givenPrio2)) : Enumerable.Range(0, GridSize)).ToArray()
+            };
+            return solve(cellPriority, solverInstructions);
         }
 
         private readonly object _fallbackLockObject = new();
 
-        private IEnumerable<int[]> solve(int?[] grid, bool[][] takens, List<Constraint> constraints, int[] cellPriority, SolverInstructions instr, int recursionDepth = 0)
+        private IEnumerable<int[]> solve(int[] cellPriority, SolverInstructions instr)
         {
-            var fewestPossibleValues = int.MaxValue;
-            var fewestCombinations = int.MaxValue;
-            var ix = -1;
-            var startIx = instr?.Randomizer?.Next(0, cellPriority.Length) ?? 0;
-            for (var cpIx = 0; cpIx < cellPriority.Length; cpIx++)
-            {
-                var cell = cellPriority[(cpIx + startIx) % cellPriority.Length];
-                if (grid[cell] != null)
-                    continue;
-                var count = 0;
-                for (var v = 0; v < takens[cell].Length; v++)
-                    if (!takens[cell][v])
-                        count++;
-                if (count == 0)
-                    yield break;
+            var grid = new int?[GridSize];
+            var stack = new Stack<SolverStateImpl>();
+            var state = new SolverStateImpl { Puzzle = this, Grid = grid, Takens = Ut.NewArray(GridSize, _ => new bool[MaxValue - MinValue + 1]), Constraints = Constraints };
+            var firstIteration = true;
 
-                if (count > fewestPossibleValues)
-                    continue;
-                var numComb = constraints.Where(c => c.NumCombinations != null && (c.AffectedCells == null || c.AffectedCells.Contains(cell))).MinOrNull(c => c.NumCombinations.Value);
-                if (count < fewestPossibleValues || (numComb != null && numComb.Value < fewestCombinations))
+            newIteration:
+            List<Constraint> mustReevaluate = null;
+
+            //** PART 1: Allow all the constraints to restrict the possible values in their cells
+            reevaluate:
+            List<Constraint> newConstraintsUse = null;
+            List<Constraint> newMustReevaluate = null;
+
+            for (var i = 0; i < state.Constraints.Count; i++)
+            {
+                var constraint = state.Constraints[i];
+                state.CurrentConstraint = constraint;
+
+                ConstraintResult processResult = null;
+                if (firstIteration || (state.LastPlacedIx != null && (constraint.AffectedCells == null || constraint.AffectedCells.Contains(state.LastPlacedIx.Value))) || (mustReevaluate != null && mustReevaluate.Contains(constraint)))
                 {
-                    ix = cell;
-                    fewestPossibleValues = count;
-                    fewestCombinations = numComb != null ? numComb.Value : count < fewestPossibleValues ? int.MaxValue : fewestCombinations;
-                    if (count == 1)
-                        goto immediate;
+                    var doExamine = instr != null && (instr.ExamineConstraint == null || instr.ExamineConstraint(constraint));
+                    var wasIntendedSolutionPossible = doExamine && intendedSolutionPossible(instr, state);
+                    var takensDebugCopy = wasIntendedSolutionPossible ? state.Takens.Select(b => (bool[]) b.Clone()).ToArray() : null;
+
+                    // CALL THE CONSTRAINT
+                    processResult = constraint.Process(state);
+                    var isViolation = processResult is ConstraintViolation;
+
+                    // If the intended solution was previously possible but not anymore, output the requested debug information
+                    if (wasIntendedSolutionPossible && (isViolation || !intendedSolutionPossible(instr, state)))
+                        lock (instr?.LockObject ?? _fallbackLockObject)
+                        {
+                            state.prevTakens = takensDebugCopy;
+                            (instr?.ProgressVisualizer ?? new ProgressVisualizer(0)).VisualizeIntendedSolutionBug(state);
+                        }
+
+                    if (isViolation)
+                        goto violation;
                 }
+
+                // This code MUST be kept outside of the “if” above. This is because its “else” clause needs to run even if the above “if” didn’t.
+                if (processResult is ConstraintReplace repl)
+                {
+                    // A constraint changed. That means we definitely need a new list of constraints for the recursive call.
+                    if (newConstraintsUse == null)
+                    {
+                        newConstraintsUse = state.Constraints.Take(i).ToList();
+                        newMustReevaluate ??= [];
+                    }
+                    var cIx = newConstraintsUse.Count;
+                    newConstraintsUse.AddRange(repl.NewConstraints);
+                    newMustReevaluate.AddRange(newConstraintsUse.Skip(cIx));
+                }
+                else
+                    newConstraintsUse?.Add(constraint);
             }
 
-            if (ix == -1)
+            firstIteration = false;
+
+            // Check if any reevaluatable constraints affect a cell that changed
+            if (state.TakensChanged != null)
+                foreach (var constraint in state.Constraints)
+                    if (constraint.CanReevaluate && (constraint.AffectedCells == null
+                        ? state.TakensChanged.Any(tup => tup.changed && tup.initiator != constraint)
+                        : constraint.AffectedCells.Any(c => state.TakensChanged[c].changed && state.TakensChanged[c].initiator != constraint)))
+                        (newMustReevaluate ??= []).Add(constraint);
+
+            if (newConstraintsUse != null || newMustReevaluate != null)
             {
-                var solutionArr = grid.Select(val => val.Value).ToArray();
+                state.Constraints = newConstraintsUse ?? state.Constraints;
+                mustReevaluate = newMustReevaluate;
+                state.LastPlacedIx = null;
+                state.ClearTakensChanged();
+                goto reevaluate;
+            }
+
+
+            //** PART 2: Find the next cell where we will perform trial and error
+
+            var curCell = -1;
+
+            switch (instr?.CellOrderStrategy ?? CellOrderStrategy.Default)
+            {
+                default:
+                    var fewestPossibleValues = int.MaxValue;
+                    for (var cell = 0; cell < cellPriority.Length; cell++)
+                    {
+                        if (grid[cell] != null)
+                            continue;
+                        var count = 0;
+                        for (var v = 0; v < state.Takens[cell].Length; v++)
+                            if (!state.Takens[cell][v])
+                                count++;
+                        if (count == 0)
+                            goto violation;
+
+                        if (count > fewestPossibleValues)
+                            continue;
+                        if (count < fewestPossibleValues)
+                        {
+                            curCell = cell;
+                            fewestPossibleValues = count;
+                            if (count == 1)
+                            {
+                                state.StartAt = 0;
+                                state.IsSingularValue = true;
+                                goto immediate;
+                            }
+                        }
+                    }
+                    break;
+
+                case CellOrderStrategy.GivenOrder:
+                    if (state.Takens.IndexOf((t, ix) => grid[ix] == null && t.Count(b => !b) == 0) is not -1)
+                        goto violation;
+                    if (state.Takens.IndexOf((t, ix) => grid[ix] == null && t.Count(b => !b) == 1) is { } t and not -1)
+                    {
+                        curCell = t;
+                        fewestPossibleValues = 1;
+                        state.IsSingularValue = true;
+                        goto immediate;
+                    }
+                    curCell = grid.IndexOf((int?) null);
+                    break;
+            }
+
+            if (curCell == -1)
+            {
+                // Grid is fully filled in — return it as a solution
+                var solutionArr = grid.Select(val => val.Value + MinValue).ToArray();
                 if (instr?.BulkLoggingFile != null)
                     lock (instr?.LockObject ?? _fallbackLockObject)
-                        File.AppendAllText(instr.BulkLoggingFile, $"{new string(' ', recursionDepth)}Solution found: {solutionArr.JoinString()}\n");
+                        File.AppendAllText(instr.BulkLoggingFile, $"{new string(' ', state.RecursionDepth)}Solution found: {solutionArr.JoinString()}\n");
                 yield return solutionArr;
-                yield break;
+                goto violation;
             }
+
+            state.StartAt = instr?.Randomizer?.Next(0, state.Takens[curCell].Length) ?? instr?.ValuePriority ?? 0;
 
             immediate:
-            var startAt = instr?.Randomizer?.Next(0, takens[ix].Length) ?? instr?.ValuePriority ?? 0;
-            var state = new SolverStateImpl { Grid = grid, GridSizeVal = GridSize, MinVal = MinValue, MaxVal = MaxValue, Takens = takens };
-            var progressVisualization = fewestPossibleValues > 1 && instr != null && instr.ProgressVisualizer != null && instr.ProgressVisualizer.IsActive(recursionDepth)
-                ? new ProgressVisualizerData(GridSize, MinValue, MaxValue, recursionDepth, grid, takens) : null;
-            object progressVisualizationObject = null;
+            state.LastPlacedIx = curCell;
+            state.VisualizingProgress = !state.IsSingularValue && instr?.ProgressVisualizer?.IsActive(state.RecursionDepth) == true;
 
-            for (var tVal = 0; tVal < takens[ix].Length; tVal++)
+            // Loop to go through possible values for the current cell
+            state.CurrentTValue = -1;
+            nextTVal:
+            curCell = state.LastPlacedIx.Value;
+            state.CurrentTValue++;
+            if (state.CurrentTValue >= state.Takens[curCell].Length)
             {
-                var val = (tVal + startAt) % takens[ix].Length;
-                if (takens[ix][val])
-                    continue;
-
-                if (instr?.BulkLoggingFile != null)
-                    lock (instr?.LockObject ?? _fallbackLockObject)
-                        File.AppendAllText(instr.BulkLoggingFile, $"{new string(' ', recursionDepth)}Cell {ix} trying {val}\n");
-
-                // Attempt to put the value into this cell
-                grid[ix] = val;
-                state.LastPlacedIx = ix;
-                state.Takens = takens.Select(arr => arr.ToArray()).ToArray();
-
-                if (progressVisualization != null)
-                    progressVisualizationObject = instr.ProgressVisualizer.VisualizeProgress(progressVisualization, ix, val, startAt, progressVisualizationObject);
-
-                var constraintsUse = constraints;
-                List<Constraint> mustReevaluate = null;
-
-                reevaluate:
-                List<Constraint> newConstraintsUse = null;
-                List<Constraint> newMustReevaluate = null;
-
-                for (var i = 0; i < constraintsUse.Count; i++)
-                {
-                    var constraint = constraintsUse[i];
-                    state.CurrentConstraint = constraint;
-
-                    ConstraintResult processResult = null;
-                    if ((state.LastPlacedIx != null && (constraint.AffectedCells == null || constraint.AffectedCells.Contains(ix))) || (mustReevaluate != null && mustReevaluate.Contains(constraint)))
-                    {
-                        var doExamine = instr != null && (instr.ExamineConstraint == null || instr.ExamineConstraint(constraint));
-                        var wasIntendedSolutionPossible = doExamine && intendedSolutionPossible(instr, state);
-                        var takensDebugCopy = wasIntendedSolutionPossible ? state.Takens.Select(b => (bool[]) b.Clone()).ToArray() : null;
-
-                        // CALL THE CONSTRAINT
-                        processResult = constraint.Process(state);
-                        var isViolation = processResult is ConstraintViolation;
-
-                        // If the intended solution was previously possible but not anymore, output the requested debug information
-                        if (wasIntendedSolutionPossible && (isViolation || !intendedSolutionPossible(instr, state)))
-                            lock (instr?.LockObject ?? _fallbackLockObject)
-                            {
-                                ConsoleUtil.WriteLineFmt($"Constraint {constraint.GetType().FullName:M} {(isViolation ? "considered this state a violation" : "removed the intended solution")} at recursion depth {recursionDepth:G}:", ConsoleColor.White);
-                                progressVisualization.prevTakens = takensDebugCopy;
-                                (instr?.ProgressVisualizer ?? new ProgressVisualizer(0)).VisualizeIntendedSolutionBug(progressVisualization, ix);
-                                progressVisualization.prevTakens = null;
-                            }
-
-                        if (isViolation)
-                            goto digitBusted;
-                    }
-
-                    // This code MUST be kept outside of the “if” above. This is because its “else” clause needs to run even if the above “if” didn’t.
-                    if (processResult is ConstraintReplace repl)
-                    {
-                        // A constraint changed. That means we definitely need a new list of constraints for the recursive call.
-                        if (newConstraintsUse == null)
-                        {
-                            newConstraintsUse = constraintsUse.Take(i).ToList();
-                            newMustReevaluate ??= [];
-                        }
-                        var cIx = newConstraintsUse.Count;
-                        newConstraintsUse.AddRange(repl.NewConstraints);
-                        newMustReevaluate.AddRange(newConstraintsUse.Skip(cIx));
-                    }
-                    else
-                        newConstraintsUse?.Add(constraint);
-                }
-
-                // Check if any reevaluatable constraints affect a cell that changed
-                if (state.TakensChanged != null)
-                    foreach (var constraint in constraintsUse)
-                        if (constraint.CanReevaluate && (constraint.AffectedCells == null
-                            ? state.TakensChanged.Any(tup => tup.changed && tup.initiator != constraint)
-                            : constraint.AffectedCells.Any(c => state.TakensChanged[c].changed && state.TakensChanged[c].initiator != constraint)))
-                        {
-                            newMustReevaluate ??= [];
-                            newMustReevaluate.Add(constraint);
-                        }
-
-                if (newConstraintsUse != null || newMustReevaluate != null)
-                {
-                    constraintsUse = newConstraintsUse ?? constraintsUse;
-                    mustReevaluate = newMustReevaluate;
-                    state.LastPlacedIx = null;
-                    state.ClearTakensChanged();
-                    goto reevaluate;
-                }
-
-                // Allow this list to be garbage-collected
-                mustReevaluate = null;
-
-                foreach (var solution in solve(grid, state.Takens, constraintsUse, cellPriority, instr, fewestPossibleValues == 1 ? recursionDepth : recursionDepth + 1))
-                    yield return solution;
-
-                digitBusted:;
+                grid[curCell] = null;
+                goto violation;
             }
-            grid[ix] = null;
 
-            if (progressVisualization != null)
-                instr.ProgressVisualizer.EraseProgress(progressVisualization, ix, progressVisualizationObject);
+            var val = (state.CurrentTValue + state.StartAt) % state.Takens[curCell].Length;
+            if (state.Takens[curCell][val])
+                goto nextTVal;
+
+            if (instr?.BulkLoggingFile != null)
+                lock (instr?.LockObject ?? _fallbackLockObject)
+                    File.AppendAllText(instr.BulkLoggingFile, $"{new string(' ', state.RecursionDepth)}Cell {curCell} trying {val + MinValue}\n");
+
+            // Attempt to put the value into this cell
+            grid[curCell] = val;
+
+            if (state.VisualizingProgress)
+                state.ProgressVisualizationObject = instr.ProgressVisualizer.VisualizeProgress(state);
+
+            stack.Push(state);
+            state = new SolverStateImpl
+            {
+                Puzzle = this,
+                Grid = grid,
+                Takens = state.Takens.Select(arr => arr.ToArray()).ToArray(),
+                LastPlacedIx = curCell,
+                RecursionDepth = state.IsSingularValue ? state.RecursionDepth : state.RecursionDepth + 1,
+                Constraints = state.Constraints
+            };
+            goto newIteration;
+
+            violation:
+            if (state.VisualizingProgress)
+                instr.ProgressVisualizer.EraseProgress(state);
+            if (stack.Count == 0)
+                yield break;
+            state = stack.Pop();
+            goto nextTVal;
         }
 
         private bool intendedSolutionPossible(SolverInstructions instr, SolverStateImpl state) =>
@@ -520,11 +509,11 @@ namespace PuzzleSolvers
             string cnv(int val) =>
                 labels == __debugSvgLabels.Shading && val.IsBetween(0, 1) ? val == 0 ? "·" : "■" :
                 labels == __debugSvgLabels.Loop && val >= 0 && val <= 6 ? Path.ToChar[val].ToString() :
-                labels == __debugSvgLabels.Letters ? ((char) ('A' + val)).ToString() : (val + state.MinVal).ToString();
+                labels == __debugSvgLabels.Letters ? ((char) ('A' + val)).ToString() : (val + state.MinValue).ToString();
             File.WriteAllText(@"D:\temp\temp.svg", $@"
                 <svg viewBox='-.1 -.1 {width + 1.2} {width + .2}' xmlns='http://www.w3.org/2000/svg' text-anchor='middle' font-family='Work Sans'>
                     {Enumerable.Range(0, width * height).Select(cell => $@"
-                        <rect x='{cell % width}' y='{cell / width}' width='1' height='1' stroke='black' stroke-width='{(highlightIxs != null && highlightIxs.Contains(cell) ? .05 : .01)}' fill='{(intendedSolution != null && (state.Grid[cell] != null ? (state.Grid[cell].Value != intendedSolution[cell] - state.MinVal) : (state.Takens[cell][intendedSolution[cell] - state.MinVal])) ? "rgba(255, 0, 0, .1)" : state[cell] != null ? "rgba(0, 192, 0, .1)" : "none")}' />
+                        <rect x='{cell % width}' y='{cell / width}' width='1' height='1' stroke='black' stroke-width='{(highlightIxs != null && highlightIxs.Contains(cell) ? .05 : .01)}' fill='{(intendedSolution != null && (state.Grid[cell] != null ? (state.Grid[cell].Value != intendedSolution[cell] - state.MinValue) : state.Takens[cell][intendedSolution[cell] - state.MinValue]) ? "rgba(255, 0, 0, .1)" : state[cell] != null ? "rgba(0, 192, 0, .1)" : "none")}' />
                         {(state.Grid[cell] != null
                             ? $"<text x='{cell % width + .5}' y='{cell / width + .8}' font-size='.8'>{cnv(state.Grid[cell].Value)}</text>"
                             : Enumerable.Range(0, values).Where(v => !state.Takens[cell][v]).Select(v => $"<text x='{cell % width + 1d / (wrap + 1) * (1 + v % wrap)}' y='{cell / width + 1d / (wrap + 1) * (1 + v / wrap) + .1}' font-size='.2'>{cnv(v)}</text>").JoinString()
@@ -539,23 +528,27 @@ namespace PuzzleSolvers
             Enumerable.Range(0, state.GridSize).Select(ix => state[ix] == null ? "?" : chars == null ? state[ix].Value.ToString() : chars[state[ix].Value].ToString())
                 .Split(width).Select(row => row.JoinString(" ")).JoinString("\n");
 
-        private sealed class SolverStateImpl : SolverState
+        private sealed class SolverStateImpl : SolverState, IProgressVisualizerData
         {
-            internal int GridSizeVal;
+            internal Puzzle Puzzle;
             internal int?[] Grid;
             internal bool[][] Takens;
             internal int? LastPlacedIx;
-            internal int MinVal;
-            internal int MaxVal;
             internal (bool changed, Constraint initiator)[] TakensChanged;
             internal Constraint CurrentConstraint;
 
+            internal int RecursionDepth;
+            internal List<Constraint> Constraints;
+            internal bool VisualizingProgress;
+            internal object ProgressVisualizationObject;
+            internal int StartAt;
+            internal int CurrentTValue;
+            internal bool IsSingularValue;
+
             internal void ClearTakensChanged()
             {
-                if (TakensChanged == null)
-                    TakensChanged = new (bool changed, Constraint initiator)[GridSizeVal];
-                else
-                    for (var i = 0; i < GridSizeVal; i++)
+                if (TakensChanged != null)
+                    for (var i = 0; i < Puzzle.GridSize; i++)
                         TakensChanged[i] = default;
             }
 
@@ -563,9 +556,9 @@ namespace PuzzleSolvers
             {
                 if (Grid[cell] != null)
                     return;
-                if (!Takens[cell][value - MinVal])
+                if (!Takens[cell][value - Puzzle.MinValue])
                 {
-                    Takens[cell][value - MinVal] = true;
+                    Takens[cell][value - Puzzle.MinValue] = true;
                     TakensChanged ??= new (bool changed, Constraint initiator)[GridSize];
                     if (!TakensChanged[cell].changed)
                         TakensChanged[cell] = (true, CurrentConstraint);
@@ -578,8 +571,8 @@ namespace PuzzleSolvers
             {
                 if (Grid[cell] != null)
                     return;
-                for (var value = MinVal; value <= MaxVal; value++)
-                    if (!Takens[cell][value - MinVal] && isImpossible(value))
+                for (var value = Puzzle.MinValue; value <= Puzzle.MaxValue; value++)
+                    if (!Takens[cell][value - Puzzle.MinValue] && isImpossible(value))
                         MarkImpossible(cell, value);
             }
 
@@ -587,11 +580,11 @@ namespace PuzzleSolvers
             {
                 if (Grid[cell] != null)
                 {
-                    if (Grid[cell].Value + MinVal != value)
+                    if (Grid[cell].Value + Puzzle.MinValue != value)
                         throw new InvalidOperationException("A constraint attempted to set a cell to a value that is already set to a different value.");
                     return;
                 }
-                for (var otherValue = MinVal; otherValue <= MaxVal; otherValue++)
+                for (var otherValue = Puzzle.MinValue; otherValue <= Puzzle.MaxValue; otherValue++)
                     if (otherValue != value)
                         MarkImpossible(cell, otherValue);
             }
@@ -600,13 +593,13 @@ namespace PuzzleSolvers
             {
                 if (Grid[cell] != null)
                 {
-                    result = selector(Grid[cell].Value + MinVal);
+                    result = selector(Grid[cell].Value + Puzzle.MinValue);
                     return true;
                 }
                 T tmpResult = default;
                 var found = false;
-                for (var value = MinVal; value <= MaxVal; value++)
-                    if (!Takens[cell][value - MinVal])
+                for (var value = Puzzle.MinValue; value <= Puzzle.MaxValue; value++)
+                    if (!Takens[cell][value - Puzzle.MinValue])
                     {
                         var mapped = selector(value);
                         if (!found)
@@ -624,12 +617,22 @@ namespace PuzzleSolvers
                 return found;
             }
 
-            public override int? this[int cell] => Grid[cell] == null ? null : Grid[cell].Value + MinVal;
-            public override bool IsImpossible(int cell, int value) => value < MinVal || value > MaxVal || (Grid[cell] != null && Grid[cell].Value != value - MinVal) || Takens[cell][value - MinVal];
+            public override int? this[int cell] => Grid[cell] == null ? null : Grid[cell].Value + Puzzle.MinValue;
+            public override bool IsImpossible(int cell, int value) => value < Puzzle.MinValue || value > Puzzle.MaxValue || (Grid[cell] != null && Grid[cell].Value != value - Puzzle.MinValue) || Takens[cell][value - Puzzle.MinValue];
             public override int? LastPlacedCell => LastPlacedIx;
-            public override int MinValue => MinVal;
-            public override int MaxValue => MaxVal;
-            public override int GridSize => GridSizeVal;
+            public override int MinValue => Puzzle.MinValue;
+            public override int MaxValue => Puzzle.MaxValue;
+            public override int GridSize => Puzzle.GridSize;
+
+            int? IProgressVisualizerData.GetValue(int cell) => Grid[cell] + MinValue;
+            bool IProgressVisualizerData.IsTaken(int cell, int value) => Takens[cell][value - MinValue];
+            internal bool[][] prevTakens = null;
+
+            bool IProgressVisualizerData.WasTaken(int cell, int value) => prevTakens[cell][value - MinValue];
+            int IProgressVisualizerData.Depth => RecursionDepth;
+            int? IProgressVisualizerData.CurrentCell => LastPlacedIx;
+            int IProgressVisualizerData.StartAt => StartAt;
+            object IProgressVisualizerData.ProgressVisualizationObject => ProgressVisualizationObject;
         }
     }
 }

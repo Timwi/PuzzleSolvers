@@ -11,9 +11,11 @@ namespace PuzzleSolvers
         ///     Uses a specific RNG to randomize the solver. When “solving” a puzzle with multiple solutions, this allows the
         ///     solver to pick one at random.</summary>
         public Random Randomizer;
+        /// <summary>Determines the order in which cells are considered during trial and error.</summary>
+        public CellOrderStrategy CellOrderStrategy;
         /// <summary>
-        ///     Specifies a tentative priority list of cells to consider first during solve. This is not strictly adhered to
-        ///     and only provides a small guidance for some puzzles.</summary>
+        ///     Specifies a priority list of cells to consider during trial and error. Depending on the value of <see
+        ///     cref="CellOrderStrategy"/>, this may not be strictly adhered to.</summary>
         public int[] CellPriority;
         /// <summary>
         ///     Specifies a cell value to prioritize when filling the grid. This has no effect if <see cref="Randomizer"/> is

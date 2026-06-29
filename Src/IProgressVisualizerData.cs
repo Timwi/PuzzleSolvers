@@ -13,6 +13,15 @@ namespace PuzzleSolvers
         public int MaxValue { get; }
         /// <summary>Current recursion depth.</summary>
         public int Depth { get; }
+
+        /// <summary>
+        ///     The current cell under examination.</summary>
+        /// <remarks>
+        ///     During <see cref="IProgressVisualizer.VisualizeIntendedSolutionBug(IProgressVisualizerData)"/>, this may be
+        ///     <c>null</c>. During <see cref="IProgressVisualizer.VisualizeProgress(IProgressVisualizerData)"/>, this is
+        ///     guaranteed non-<c>null</c>.</remarks>
+        public int? CurrentCell { get; }
+
         /// <summary>
         ///     Returns the value of a particular cell in the puzzle, or <c>null</c> if that cell is not currently under
         ///     examination.</summary>
@@ -37,5 +46,16 @@ namespace PuzzleSolvers
         /// <param name="value">
         ///     The value.</param>
         public bool WasTaken(int cell, int value);
+
+        /// <summary>
+        ///     This is <c>0</c> (zero) unless <see cref="SolverInstructions.Randomizer"/> is specified, in which case this
+        ///     indicates at which value the solver starts to examine possible values for the cell.</summary>
+        public int StartAt { get; }
+        /// <summary>
+        ///     During calls to <see cref="IProgressVisualizer.VisualizeProgress(IProgressVisualizerData)"/>, when examining a
+        ///     new cell, this is <c>null</c>. When examining a different value in the same cell, or during calls to <see
+        ///     cref="IProgressVisualizer.EraseProgress(IProgressVisualizerData)"/>, contains the object previously returned
+        ///     by <see cref="IProgressVisualizer.VisualizeProgress(IProgressVisualizerData)"/>.</summary>
+        public object ProgressVisualizationObject { get; }
     }
 }

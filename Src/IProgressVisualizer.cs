@@ -16,38 +16,21 @@ namespace PuzzleSolvers
         ///     point in order to show the information necessary to debug the constraint.</summary>
         /// <param name="data">
         ///     An <see cref="IProgressVisualizerData"/> object containing information about the puzzle and solver state.</param>
-        /// <param name="curCell">
-        ///     The current cell under examination at which the bug occurred.</param>
-        void VisualizeIntendedSolutionBug(IProgressVisualizerData data, int curCell);
+        void VisualizeIntendedSolutionBug(IProgressVisualizerData data);
         /// <summary>
         ///     Visualizes the progress during the puzzle solving process.</summary>
         /// <param name="data">
         ///     An <see cref="IProgressVisualizerData"/> object containing information about the puzzle and solver state.</param>
-        /// <param name="curCell">
-        ///     The current cell under examination.</param>
-        /// <param name="curValue">
-        ///     The current value being placed into the cell.</param>
-        /// <param name="startAt">
-        ///     This is <c>0</c> (zero) unless <see cref="SolverInstructions.Randomizer"/> is specified, in which case this
-        ///     indicates at which value the solver starts to examine possible values for the cell.</param>
-        /// <param name="prev">
-        ///     When examining a new cell, this is <c>null</c>. When examining a different value in the same cell, the object
-        ///     previously returned by <see cref="VisualizeProgress(IProgressVisualizerData, int, int, int, object)"/> is
-        ///     passed in.</param>
         /// <returns>
-        ///     An object to be passed to the next invocation of <see cref="VisualizeProgress(IProgressVisualizerData, int,
-        ///     int, int, object)"/> or <see cref="EraseProgress(IProgressVisualizerData, int, object)"/> for the same cell.</returns>
-        object VisualizeProgress(IProgressVisualizerData data, int curCell, int curValue, int startAt, object prev);
+        ///     An arbitrary object. During the next invocation of <see cref="VisualizeProgress(IProgressVisualizerData)"/>
+        ///     for the same cell, this object can be retrieved from <see
+        ///     cref="IProgressVisualizerData.ProgressVisualizationObject"/>.</returns>
+        object VisualizeProgress(IProgressVisualizerData data);
         /// <summary>
         ///     Removes the visualization of the progress for the current cell when the solver has exhausted all possibilities
         ///     for that cell and prepares to backtrack.</summary>
         /// <param name="data">
         ///     An <see cref="IProgressVisualizerData"/> object containing information about the puzzle and solver state.</param>
-        /// <param name="curCell">
-        ///     The cell no longer under examination.</param>
-        /// <param name="prev">
-        ///     The object last returned by <see cref="VisualizeProgress(IProgressVisualizerData, int, int, int, object)"/>
-        ///     for this cell.</param>
-        void EraseProgress(IProgressVisualizerData data, int curCell, object prev);
+        void EraseProgress(IProgressVisualizerData data);
     }
 }

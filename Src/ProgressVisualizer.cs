@@ -43,37 +43,36 @@ namespace PuzzleSolvers
         /// <summary>If not <c>null</c>, obtains a lock on this object while outputting information to the console.</summary>
         public object LockObject = null;
 
-        /// <summary>Implements <see cref="IProgressVisualizer.VisualizeIntendedSolutionBug(IProgressVisualizerData, int)"/>.</summary>
-        void IProgressVisualizer.VisualizeIntendedSolutionBug(IProgressVisualizerData data, int curCell)
+        /// <summary>Implements <see cref="IProgressVisualizer.VisualizeIntendedSolutionBug(IProgressVisualizerData)"/>.</summary>
+        void IProgressVisualizer.VisualizeIntendedSolutionBug(IProgressVisualizerData data)
         {
             lock (LockObject ?? DefaultLockObject)
             {
                 var numDigits = GetCellName == null ? (data.GridSize - 1).ToString().Length : Enumerable.Range(0, data.GridSize).Max(c => GetCellName(c).Length);
                 for (var cell = 0; cell < data.GridSize; cell++)
                 {
-                    string valueId(int v) => GetValueName != null ? GetValueName(v + data.MinValue) : (v + data.MinValue).ToString();
-                    var cellLine = Enumerable.Range(0, data.MaxValue - data.MinValue + 1)
+                    string valueId(int v) => GetValueName != null ? GetValueName(v) : v.ToString();
+                    var cellLine = Enumerable.Range(data.MinValue, data.MaxValue - data.MinValue + 1)
                         .Select(v => valueId(v).Color(data.WasTaken(cell, v) != data.IsTaken(cell, v) ? ConsoleColor.Red : data.IsTaken(cell, v) ? ConsoleColor.DarkGray : ConsoleColor.Yellow))
                         .JoinColoredString(" ");
                     var cellStr = (GetCellName != null ? GetCellName(cell) : cell.ToString()).PadLeft(numDigits, ' ') + ". ";
-                    ConsoleUtil.WriteLine($"{cellStr.Color(cell == curCell ? ConsoleColor.Cyan : ConsoleColor.DarkCyan)}{cellLine}   {(data.GetValue(cell) is { } value ? valueId(value).Color(ConsoleColor.Green) : "?".Color(ConsoleColor.DarkGreen))}", null);
+                    ConsoleUtil.WriteLine($"{cellStr.Color(cell == data.CurrentCell ? ConsoleColor.Cyan : ConsoleColor.DarkCyan)}{cellLine}   {(data.GetValue(cell) is { } value ? valueId(value).Color(ConsoleColor.Green) : "?".Color(ConsoleColor.DarkGreen))}", null);
                 }
                 Console.WriteLine();
             }
         }
 
-        /// <summary>
-        ///     Implements <see cref="IProgressVisualizer.VisualizeProgress(IProgressVisualizerData, int, int, int,
-        ///     object)"/>.</summary>
-        object IProgressVisualizer.VisualizeProgress(IProgressVisualizerData data, int curCell, int curValue, int startAt, object prev)
+        /// <summary>Implements <see cref="IProgressVisualizer.VisualizeProgress(IProgressVisualizerData)"/>.</summary>
+        object IProgressVisualizer.VisualizeProgress(IProgressVisualizerData data)
         {
-            var cellName = GetCellName == null ? curCell.ToString().PadLeft((data.GridSize - 1).ToString().Length) : GetCellName(curCell);
+            var curValue = data.GetValue(data.CurrentCell.Value);
+            var cellName = GetCellName == null ? data.CurrentCell.Value.ToString().PadLeft((data.GridSize - 1).ToString().Length) : GetCellName(data.CurrentCell.Value);
             var numValues = data.MaxValue - data.MinValue + 1;
             var output = new ConsoleColoredString($"Cell {cellName}: " + Enumerable.Range(0, numValues)
-                .Select(i => (i + startAt) % numValues + data.MinValue)
-                .Where(v => !Shortened || !data.IsTaken(curCell, v))
+                .Select(i => (i + data.StartAt) % numValues + data.MinValue)
+                .Where(v => !Shortened || !data.IsTaken(data.CurrentCell.Value, v))
                 .Select(v => (GetValueName?.Invoke(v) ?? v.ToString()).Color(
-                    data.IsTaken(curCell, v) ? ConsoleColor.DarkBlue : v == curValue ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
+                    data.IsTaken(data.CurrentCell.Value, v) ? ConsoleColor.DarkBlue : v == curValue ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
                     v == curValue ? ConsoleColor.DarkGreen : ConsoleColor.Black)).JoinColoredString(" "));
             lock (LockObject ?? DefaultLockObject)
             {
@@ -81,13 +80,13 @@ namespace PuzzleSolvers
                 Console.CursorTop = ConsoleTop + data.Depth;
                 ConsoleUtil.Write(output);
             }
-            return Math.Max(prev is int prevLineLen ? prevLineLen : 0, output.Length);
+            return Math.Max(data.ProgressVisualizationObject is int prevLineLen ? prevLineLen : 0, output.Length);
         }
 
-        /// <summary>Implements <see cref="IProgressVisualizer.EraseProgress(IProgressVisualizerData, int, object)"/>.</summary>
-        void IProgressVisualizer.EraseProgress(IProgressVisualizerData data, int curCell, object prev)
+        /// <summary>Implements <see cref="IProgressVisualizer.EraseProgress(IProgressVisualizerData)"/>.</summary>
+        void IProgressVisualizer.EraseProgress(IProgressVisualizerData data)
         {
-            if (prev is int lineLen)
+            if (data.ProgressVisualizationObject is int lineLen)
                 lock (LockObject ?? DefaultLockObject)
                 {
                     Console.CursorLeft = ConsoleLeft;

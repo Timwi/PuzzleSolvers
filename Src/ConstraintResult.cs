@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using RT.Util.ExtensionMethods;
 
 namespace PuzzleSolvers
 {
@@ -38,6 +39,9 @@ namespace PuzzleSolvers
         {
             NewConstraints = newConstraints ?? throw new ArgumentNullException(nameof(newConstraints));
         }
+
+        /// <inheritdoc/>
+        public override string ToString() => $"REPLACE: {NewConstraints.JoinString(", ")}";
     }
 
     /// <summary>
@@ -47,5 +51,9 @@ namespace PuzzleSolvers
     ///     It is advisable to use this sparingly. Ideally, <see cref="Constraint.Process(SolverState)"/> should rule out
     ///     possibilities before the algorithm places them. Only use this in cases where the violation is a subtle result of
     ///     interaction between multiple constraints.</remarks>
-    public class ConstraintViolation : ConstraintResult { }
+    public class ConstraintViolation : ConstraintResult
+    {
+        /// <inheritdoc/>
+        public override string ToString() => "VIOLATION";
+    }
 }

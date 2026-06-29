@@ -43,40 +43,39 @@ public class UniquenessConstraint(IEnumerable<int> affectedCells) : Constraint(a
             foreach (var cell in AffectedCells)
                 for (var v = state.MinValue; v <= state.MaxValue; v++)
                     if (!state.IsImpossible(cell, v))
-                    {
-                        if (cells[v - state.MinValue] == null)
-                            cells[v - state.MinValue] = [];
-                        cells[v - state.MinValue].Add(cell);
-                    }
+                        (cells[v - state.MinValue] ??= []).Add(cell);
 
             for (var v1 = 0; v1 <= state.MaxValue - state.MinValue; v1++)
-            {
-                // Detect if a value can only be in one place
-                if (cells[v1]?.Count == 1)
-                    state.MustBe(cells[v1][0], v1 + state.MinValue);
-
-                for (var v2 = v1 + 1; v2 <= state.MaxValue - state.MinValue; v2++)
+                if (cells[v1] is { } c1)
                 {
-                    // Detect if two values can only be in two places (“pair”)
-                    if (cells[v1]?.Count == 2 && cells[v2]?.Count == 2 && cells[v1].All(cells[v2].Contains))
-                        foreach (var c in cells[v1])
-                            state.MarkImpossible(c, v => v != v1 + state.MinValue && v != v2 + state.MinValue);
+                    // Detect if a value can only be in one place
+                    if (c1.Count == 1)
+                        state.MustBe(c1[0], v1 + state.MinValue);
 
-                    for (var v3 = v2 + 1; v3 <= state.MaxValue - state.MinValue; v3++)
-                    {
-                        // Detect if three values can only be in three places (“triplet”)
-                        if (cells[v1]?.Count <= 3 && cells[v2]?.Count <= 3 && cells[v3]?.Count <= 3)
+                    for (var v2 = v1 + 1; v2 <= state.MaxValue - state.MinValue; v2++)
+                        if (cells[v2] is { } c2)
                         {
-                            var hashSet = new HashSet<int>(cells[v1]);
-                            hashSet.AddRange(cells[v2]);
-                            hashSet.AddRange(cells[v3]);
-                            if (hashSet.Count <= 3)
-                                foreach (var c in hashSet)
-                                    state.MarkImpossible(c, v => v != v1 + state.MinValue && v != v2 + state.MinValue && v != v3 + state.MinValue);
+                            // Detect if two values can only be in two places (“pair”)
+                            if (c1.Count == 2 && c1.SequenceEqual(c2))
+                                foreach (var c in c1)
+                                    state.MarkImpossible(c, v => v != v1 + state.MinValue && v != v2 + state.MinValue);
+
+                            for (var v3 = v2 + 1; v3 <= state.MaxValue - state.MinValue; v3++)
+                                if (cells[v3] is { } c3)
+                                {
+                                    // Detect if three values can only be in three places (“triplet”)
+                                    if (c1.Count <= 3 && c2.Count <= 3 && c3.Count <= 3)
+                                    {
+                                        var hashSet = new HashSet<int>(c1);
+                                        hashSet.AddRange(c2);
+                                        hashSet.AddRange(c3);
+                                        if (hashSet.Count <= 3)
+                                            foreach (var c in hashSet)
+                                                state.MarkImpossible(c, v => v != v1 + state.MinValue && v != v2 + state.MinValue && v != v3 + state.MinValue);
+                                    }
+                                }
                         }
-                    }
                 }
-            }
         }
         return null;
     }
