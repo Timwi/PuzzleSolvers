@@ -24,25 +24,24 @@ namespace PuzzleSolvers
         private sealed class SolverStateImpl : SolverState
         {
             public SolverState Parent;
-            public bool[][] Takens;
+            public List<int>[] Available;
 
             public override void MarkImpossible(int cell, Func<int, bool> isImpossible)
             {
-                for (var value = Parent.MinValue; value <= Parent.MaxValue; value++)
-                    if (isImpossible(value))
-                        Takens[cell][value - Parent.MinValue] = true;
+                Available[cell].RemoveAll(v => isImpossible(v));
             }
 
             public override void MustBe(int cell, int value)
             {
-                for (var otherValue = Parent.MinValue; otherValue <= Parent.MaxValue; otherValue++)
-                    if (otherValue != value)
-                        Takens[cell][otherValue - Parent.MinValue] = true;
+                var wasThere = Available[cell].Contains(value);
+                Available[cell].Clear();
+                if (wasThere)
+                    Available[cell].Add(value);
             }
 
             public override int? this[int cell] => Parent[cell];
-            public override void MarkImpossible(int cell, int value) => Takens[cell][value - Parent.MinValue] = true;
-            public override bool IsImpossible(int cell, int value) => Takens[cell][value - Parent.MinValue] || Parent.IsImpossible(cell, value);
+            public override void MarkImpossible(int cell, int value) => Available[cell].Remove(value);
+            public override bool IsImpossible(int cell, int value) => !Available[cell].Contains(value) || Parent.IsImpossible(cell, value);
             public override int? LastPlacedCell => Parent.LastPlacedCell;
             public override int MinValue => Parent.MinValue;
             public override int MaxValue => Parent.MaxValue;
@@ -60,13 +59,13 @@ namespace PuzzleSolvers
             if (state.LastPlacedCell != null && !AffectedCells.Contains(state.LastPlacedCell.Value))
                 return null;
 
-            var innerTakens = new bool[Subconstraints.Length][][];
+            var innerAvailables = new List<int>[Subconstraints.Length][];
             List<Constraint> newSubconstraints = null;
             for (var sc = 0; sc < Subconstraints.Length; sc++)
             {
-                var substate = new SolverStateImpl { Parent = state, Takens = Ut.NewArray<bool>(state.GridSize, state.MaxValue - state.MinValue + 1) };
+                var substate = new SolverStateImpl { Parent = state, Available = Ut.NewArray(state.GridSize, cell => state.Possible(cell).ToList()) };
                 var result = Subconstraints[sc].Process(substate);
-                innerTakens[sc] = substate.Takens;
+                innerAvailables[sc] = substate.Available;
 
                 if (result is ConstraintReplace)
                     throw new NotImplementedException("The OrConstraint does not support subconstraints that replace themselves with new constraints.");
@@ -77,7 +76,7 @@ namespace PuzzleSolvers
             }
 
             foreach (var cell in AffectedCells)
-                state.MarkImpossible(cell, value => innerTakens.All(taken => taken == null || taken[cell][value - state.MinValue]));
+                state.MarkImpossible(cell, value => innerAvailables.All(av => av == null || !av[cell].Contains(value)));
 
             if (newSubconstraints != null)
                 return new OrConstraint(newSubconstraints);

@@ -48,8 +48,9 @@ namespace PuzzleSolvers
         public bool WasTaken(int cell, int value);
 
         /// <summary>
-        ///     This is <c>0</c> (zero) unless <see cref="SolverInstructions.Randomizer"/> is specified, in which case this
-        ///     indicates at which value the solver starts to examine possible values for the cell.</summary>
+        ///     This is <c>0</c> (zero) unless <see cref="SolverInstructions.Randomizer"/> or <see
+        ///     cref="SolverInstructions.ValuePriority"/> is specified, in which case this indicates at which value the solver
+        ///     starts to examine possible values for the cell.</summary>
         public int StartAt { get; }
         /// <summary>
         ///     During calls to <see cref="IProgressVisualizer.VisualizeProgress(IProgressVisualizerData)"/>, when examining a
