@@ -35,7 +35,7 @@ namespace PuzzleSolvers
         ///     The index of a cell in the puzzle.</param>
         /// <param name="value">
         ///     The value.</param>
-        public bool IsTaken(int cell, int value);
+        public bool IsImpossible(int cell, int value);
         /// <summary>
         ///     This method is only called if <see cref="SolverInstructions.IntendedSolution"/> was specified and the solver
         ///     encountered a constraint that ruled out the intended solution. Determines whether a specific value was already
@@ -45,7 +45,7 @@ namespace PuzzleSolvers
         ///     The index of a cell in the puzzle.</param>
         /// <param name="value">
         ///     The value.</param>
-        public bool WasTaken(int cell, int value);
+        public bool WasImpossible(int cell, int value);
 
         /// <summary>
         ///     This is <c>0</c> (zero) unless <see cref="SolverInstructions.Randomizer"/> or <see

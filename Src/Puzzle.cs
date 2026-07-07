@@ -292,24 +292,21 @@ namespace PuzzleSolvers
             if (solverInstructions != null && solverInstructions.IntendedSolution != null && solverInstructions.IntendedSolution.Length != GridSize)
                 throw new InvalidOperationException(@"solverInstructions.IntendedSolution must have the same length as the size of the puzzle.");
 
-            var cellPriority = (solverInstructions?.CellOrderStrategy ?? CellOrderStrategy.Default) switch
+            var cellPriority = (solverInstructions?.CellPriority is { } givenPrio ? givenPrio.Concat(Enumerable.Range(0, GridSize).Except(givenPrio)) : Enumerable.Range(0, GridSize)).ToArray();
+            if (MaxValue - MinValue + 1 <= 64)
             {
-                CellOrderStrategy.Default => Enumerable.Range(0, GridSize)
-                    .OrderBy(cell => Constraints.Count(c => c.AffectedCells?.Contains(cell) ?? false))
-                    .Apply(cp => solverInstructions?.CellPriority is { } givenPrio1 ? cp.ThenBy(cell => givenPrio1.IndexOf(cell)) : cp)
-                    .ToArray(),
-                _ => (solverInstructions?.CellPriority is { } givenPrio2 ? givenPrio2.Concat(Enumerable.Range(0, GridSize).Except(givenPrio2)) : Enumerable.Range(0, GridSize)).ToArray()
-            };
-            return solve(cellPriority, solverInstructions);
+                var fullMask = MaxValue - MinValue + 1 == 64 ? ulong.MaxValue : (1UL << (MaxValue - MinValue + 1)) - 1;
+                return solve(cellPriority, solverInstructions, new SolverStateImplEfficient(this, new int?[GridSize], Ut.NewArray(GridSize, _ => fullMask), Constraints));
+            }
+            else
+                return solve(cellPriority, solverInstructions, new SolverStateImplInefficient(this, new int?[GridSize], Ut.NewArray(GridSize, _ => Enumerable.Range(MinValue, MaxValue - MinValue + 1).ToList()), Constraints));
         }
 
         private readonly object _fallbackLockObject = new();
 
-        private IEnumerable<int[]> solve(int[] cellPriority, SolverInstructions instr)
+        private IEnumerable<int[]> solve(int[] cellPriority, SolverInstructions instr, SolverStateImplBase state)
         {
-            var grid = new int?[GridSize];
-            var stack = new Stack<SolverStateImpl>();
-            var state = new SolverStateImpl { Puzzle = this, Grid = grid, Available = Ut.NewArray(GridSize, _ => Enumerable.Range(MinValue, MaxValue - MinValue + 1).ToList()), Constraints = Constraints };
+            var stack = new Stack<SolverStateImplBase>();
             var firstIteration = true;
 
             newIteration:
@@ -329,27 +326,23 @@ namespace PuzzleSolvers
                 if (firstIteration || (state.LastPlacedIx != null && (constraint.AffectedCells == null || constraint.AffectedCells.Contains(state.LastPlacedIx.Value))) || (mustReevaluate != null && mustReevaluate.Contains(constraint)))
                 {
                     var doExamine = instr != null && (instr.ExamineConstraint == null || instr.ExamineConstraint(constraint));
-                    var wasIntendedSolutionPossible = doExamine && intendedSolutionPossible(instr, state);
-                    var availablesDebugCopy = wasIntendedSolutionPossible ? state.Available.Select(b => b.ToList()).ToArray() : null;
+                    state.SetPrevAvailableIf(doExamine && instr?.IntendedSolution is { } intSol && state.IntendedSolutionPossible(intSol));
 
                     // CALL THE CONSTRAINT
                     processResult = constraint.Process(state);
                     var isViolation = processResult is ConstraintViolation;
 
                     // If the intended solution was previously possible but not anymore, output the requested debug information
-                    if (wasIntendedSolutionPossible && (isViolation || !intendedSolutionPossible(instr, state)))
+                    if (state.WasIntendedSolutionPossible() && (isViolation || !state.IntendedSolutionPossible(instr.IntendedSolution)))
                         lock (instr?.LockObject ?? _fallbackLockObject)
-                        {
-                            state.prevAvailable = availablesDebugCopy;
                             (instr?.ProgressVisualizer ?? new ProgressVisualizer(0)).VisualizeIntendedSolutionBug(state);
-                        }
 
                     if (isViolation)
                         goto violation;
                 }
 
                 // This code MUST be kept outside of the “if” above. This is because its “else” clause needs to run even if the above “if” didn’t.
-                if (processResult is ConstraintReplace repl)
+                if (processResult is ConstraintReplace { NewConstraints: { } newConstraints })
                 {
                     // A constraint changed. That means we definitely need a new list of constraints for the recursive call.
                     if (newConstraintsUse == null)
@@ -358,7 +351,7 @@ namespace PuzzleSolvers
                         newMustReevaluate ??= [];
                     }
                     var cIx = newConstraintsUse.Count;
-                    newConstraintsUse.AddRange(repl.NewConstraints);
+                    newConstraintsUse.AddRange(newConstraints);
                     newMustReevaluate.AddRange(newConstraintsUse.Skip(cIx));
                 }
                 else
@@ -370,10 +363,25 @@ namespace PuzzleSolvers
             // Check if any reevaluatable constraints affect a cell that changed
             if (state.AvailablesChanged != null)
                 foreach (var constraint in state.Constraints)
-                    if (constraint.CanReevaluate && (constraint.AffectedCells == null
-                        ? state.AvailablesChanged.Any(tup => tup.changed && tup.initiator != constraint)
-                        : constraint.AffectedCells.Any(c => state.AvailablesChanged[c].changed && state.AvailablesChanged[c].initiator != constraint)))
+                    if (constraint.CanReevaluate)
+                    {
+                        if (constraint.AffectedCells == null)
+                        {
+                            foreach (var (changed, initiator) in state.AvailablesChanged)
+                                if (changed && initiator != constraint)
+                                    goto hasChanged;
+                        }
+                        else
+                        {
+                            foreach (var cell in constraint.AffectedCells)
+                                if (state.AvailablesChanged[cell] is { } tup && tup.changed && tup.initiator != constraint)
+                                    goto hasChanged;
+                        }
+
+                        continue;
+                        hasChanged:
                         (newMustReevaluate ??= []).Add(constraint);
+                    }
 
             if (newConstraintsUse != null || newMustReevaluate != null)
             {
@@ -384,6 +392,10 @@ namespace PuzzleSolvers
                 goto reevaluate;
             }
 
+            // Clean up a bit for the benefit of the garbage collector
+            state.CurrentConstraint = null;
+            state.AvailablesChanged = null;
+
 
             //** PART 2: Find the next cell where we will perform trial and error
 
@@ -392,49 +404,55 @@ namespace PuzzleSolvers
             switch (instr?.CellOrderStrategy ?? CellOrderStrategy.Default)
             {
                 default:
+                {
                     var fewestPossibleValues = int.MaxValue;
-                    for (var cell = 0; cell < cellPriority.Length; cell++)
+                    for (var cIx = 0; cIx < cellPriority.Length; cIx++)
                     {
-                        if (grid[cell] != null)
+                        var cell = cellPriority[cIx];
+                        if (state.Grid[cell] != null)
                             continue;
-                        var count = state.Available[cell].Count;
+                        var count = state.AvailableCount(cell);
                         if (count == 0)
                             goto violation;
-
-                        if (count > fewestPossibleValues)
-                            continue;
                         if (count < fewestPossibleValues)
                         {
                             curCell = cell;
                             fewestPossibleValues = count;
                             if (count == 1)
                             {
-                                state.StartAt = 0;
                                 state.IsSingularValue = true;
                                 goto immediate;
                             }
                         }
                     }
                     break;
+                }
 
                 case CellOrderStrategy.GivenOrder:
-                    if (state.Available.IndexOf((av, ix) => grid[ix] == null && av.Count == 0) is not -1)
-                        goto violation;
-                    if (state.Available.IndexOf((av, ix) => grid[ix] == null && av.Count == 1) is { } cellIx and not -1)
-                    {
-                        curCell = cellIx;
-                        fewestPossibleValues = 1;
-                        state.IsSingularValue = true;
-                        goto immediate;
-                    }
-                    curCell = grid.IndexOf((int?) null);
+                {
+                    for (var cell = 0; cell < GridSize; cell++)
+                        if (state.Grid[cell] == null)
+                        {
+                            if (curCell < 0)
+                                curCell = cell;
+                            var count = state.AvailableCount(cell);
+                            if (count == 0)
+                                goto violation;
+                            if (count == 1)
+                            {
+                                curCell = cell;
+                                state.IsSingularValue = true;
+                                goto immediate;
+                            }
+                        }
                     break;
+                }
             }
 
             if (curCell == -1)
             {
                 // Grid is fully filled in — return it as a solution
-                var solutionArr = grid.Select(val => val.Value).ToArray();
+                var solutionArr = state.Grid.Select(val => val.Value).ToArray();
                 if (instr?.BulkLoggingFile != null)
                     lock (instr?.LockObject ?? _fallbackLockObject)
                         File.AppendAllText(instr.BulkLoggingFile, $"{new string(' ', state.RecursionDepth)}Solution found: {solutionArr.JoinString()}\n");
@@ -442,46 +460,37 @@ namespace PuzzleSolvers
                 goto violation;
             }
 
-            state.StartAt = instr?.Randomizer?.Next(0, state.Available[curCell].Count) ??
-                (instr?.ValuePriority is { } v && state.Available[curCell].IndexOf(v) is { } vIx and not -1 ? vIx : 0);
+            state.SetStartAt(curCell, instr?.Randomizer, instr?.ValuePriority);
 
             immediate:
             state.LastPlacedIx = curCell;
             state.VisualizingProgress = !state.IsSingularValue && instr?.ProgressVisualizer?.IsActive(state.RecursionDepth) == true;
 
             // Loop to go through possible values for the current cell
-            state.CurrentTValue = -1;
-            nextTVal:
+            state.SetCandidates();
+            nextCandidate:
             curCell = state.LastPlacedIx.Value;
-            state.CurrentTValue++;
-            if (state.CurrentTValue >= state.Available[curCell].Count)
+            if (!state.GetNextCandidate(out var val))
             {
-                grid[curCell] = null;
+                state.Grid[curCell] = null;
                 goto violation;
             }
 
-            var val = state.Available[curCell][(state.CurrentTValue + state.StartAt) % state.Available[curCell].Count];
-
             if (instr?.BulkLoggingFile != null)
                 lock (instr?.LockObject ?? _fallbackLockObject)
-                    File.AppendAllText(instr.BulkLoggingFile, $"{new string(' ', state.RecursionDepth)}Cell {curCell} trying {val + MinValue}\n");
+                    File.AppendAllText(instr.BulkLoggingFile, $"{new string(' ', state.RecursionDepth)}Cell {curCell} trying {val}\n");
 
             // Attempt to put the value into this cell
-            grid[curCell] = val;
+            state.Grid[curCell] = val;
 
             if (state.VisualizingProgress)
                 state.ProgressVisualizationObject = instr.ProgressVisualizer.VisualizeProgress(state);
 
             stack.Push(state);
-            state = new SolverStateImpl
-            {
-                Puzzle = this,
-                Grid = grid,
-                Available = Ut.NewArray(GridSize, ix => grid[ix] == null ? state.Available[ix].ToList() : null),
-                LastPlacedIx = curCell,
-                RecursionDepth = state.IsSingularValue ? state.RecursionDepth : state.RecursionDepth + 1,
-                Constraints = state.Constraints
-            };
+            var newState = state.CloneForNextIteration(curCell);
+            newState.LastPlacedIx = curCell;
+            newState.RecursionDepth = state.IsSingularValue ? state.RecursionDepth : state.RecursionDepth + 1;
+            state = newState;
             goto newIteration;
 
             violation:
@@ -490,17 +499,13 @@ namespace PuzzleSolvers
             if (stack.Count == 0)
                 yield break;
             state = stack.Pop();
-            goto nextTVal;
+            goto nextCandidate;
         }
-
-        private bool intendedSolutionPossible(SolverInstructions instr, SolverStateImpl state) =>
-            instr != null && instr.IntendedSolution != null &&
-            instr.IntendedSolution.All((v, cell) => state.Grid[cell] == v || (state.Grid[cell] == null && state.Available[cell].Contains(v)));
 
         private enum __debugSvgLabels
         { Numbers, Letters, Loop, Shading }
 
-        private void __debug_generateSvg(SolverStateImpl state, int recursionDepth = 0, int[] intendedSolution = null, IEnumerable<int> highlightIxs = null, int width = 9, int height = 9, int values = 9, int wrap = 3, __debugSvgLabels labels = __debugSvgLabels.Numbers)
+        private void __debug_generateSvg(SolverStateImplBase state, int recursionDepth = 0, int[] intendedSolution = null, IEnumerable<int> highlightIxs = null, int width = 9, int height = 9, int values = 9, int wrap = 3, __debugSvgLabels labels = __debugSvgLabels.Numbers)
         {
             string cnv(int val) =>
                 labels == __debugSvgLabels.Shading && val.IsBetween(0, 1) ? val == 0 ? "·" : "■" :
@@ -509,10 +514,10 @@ namespace PuzzleSolvers
             File.WriteAllText(@"D:\temp\temp.svg", $@"
                 <svg viewBox='-.1 -.1 {width + 1.2} {width + .2}' xmlns='http://www.w3.org/2000/svg' text-anchor='middle' font-family='Work Sans'>
                     {Enumerable.Range(0, width * height).Select(cell => $@"
-                        <rect x='{cell % width}' y='{cell / width}' width='1' height='1' stroke='black' stroke-width='{(highlightIxs != null && highlightIxs.Contains(cell) ? .05 : .01)}' fill='{(intendedSolution != null && (state.Grid[cell] != null ? (state.Grid[cell].Value != intendedSolution[cell]) : state.Available[cell].Contains(intendedSolution[cell])) ? "rgba(255, 0, 0, .1)" : state[cell] != null ? "rgba(0, 192, 0, .1)" : "none")}' />
+                        <rect x='{cell % width}' y='{cell / width}' width='1' height='1' stroke='black' stroke-width='{(highlightIxs != null && highlightIxs.Contains(cell) ? .05 : .01)}' fill='{(intendedSolution != null && (state.Grid[cell] != null ? (state.Grid[cell].Value != intendedSolution[cell]) : !state.IsImpossible(cell, intendedSolution[cell])) ? "rgba(255, 0, 0, .1)" : state[cell] != null ? "rgba(0, 192, 0, .1)" : "none")}' />
                         {(state.Grid[cell] != null
                             ? $"<text x='{cell % width + .5}' y='{cell / width + .8}' font-size='.8'>{cnv(state.Grid[cell].Value)}</text>"
-                            : Enumerable.Range(0, values).Where(v => state.Available[cell].Contains(v)).Select(v => $"<text x='{cell % width + 1d / (wrap + 1) * (1 + v % wrap)}' y='{cell / width + 1d / (wrap + 1) * (1 + v / wrap) + .1}' font-size='.2'>{cnv(v)}</text>").JoinString()
+                            : Enumerable.Range(0, values).Where(v => !state.IsImpossible(cell, v)).Select(v => $"<text x='{cell % width + 1d / (wrap + 1) * (1 + v % wrap)}' y='{cell / width + 1d / (wrap + 1) * (1 + v / wrap) + .1}' font-size='.2'>{cnv(v)}</text>").JoinString()
                         )}
                     ").JoinString()}
                     <text text-anchor='left' x='{width + .1}' y='1' font-size='.1'>{recursionDepth}</text>
@@ -520,136 +525,8 @@ namespace PuzzleSolvers
             ");
         }
 
-        private string __debug_string(SolverStateImpl state, int width, string chars = null) =>
+        private string __debug_string(SolverStateImplBase state, int width, string chars = null) =>
             Enumerable.Range(0, state.GridSize).Select(ix => state[ix] == null ? "?" : chars == null ? state[ix].Value.ToString() : chars[state[ix].Value].ToString())
                 .Split(width).Select(row => row.JoinString(" ")).JoinString("\n");
-
-        private sealed class SolverStateImpl : SolverState, IProgressVisualizerData
-        {
-            internal Puzzle Puzzle;
-            internal int?[] Grid;
-            internal List<int>[] Available;
-            internal int? LastPlacedIx;
-            internal (bool changed, Constraint initiator)[] AvailablesChanged;
-            internal Constraint CurrentConstraint;
-
-            internal int RecursionDepth;
-            internal List<Constraint> Constraints;
-            internal bool VisualizingProgress;
-            internal object ProgressVisualizationObject;
-            internal int StartAt;
-            internal int CurrentTValue;
-            internal bool IsSingularValue;
-
-            internal void ClearAvailablesChanged()
-            {
-                if (AvailablesChanged != null)
-                    for (var i = 0; i < Puzzle.GridSize; i++)
-                        AvailablesChanged[i] = default;
-            }
-
-            private void MarkImpossibleImpl(int cell, int valueIx)
-            {
-                var list = Available[cell];
-                if (valueIx < list.Count - 1)
-                    list[valueIx] = list[list.Count - 1];
-                list.RemoveAt(list.Count - 1);
-                MarkCellChanged(cell);
-            }
-
-            private void MarkCellChanged(int cell)
-            {
-                AvailablesChanged ??= new (bool changed, Constraint initiator)[GridSize];
-                if (!AvailablesChanged[cell].changed)
-                    AvailablesChanged[cell] = (true, CurrentConstraint);
-                else if (AvailablesChanged[cell].initiator != CurrentConstraint)
-                    AvailablesChanged[cell] = (true, null);
-            }
-
-            public override void MarkImpossible(int cell, int value)
-            {
-                if (Grid[cell] != null)
-                    return;
-                if (Available[cell].IndexOf(value) is { } valueIx and not -1)
-                    MarkImpossibleImpl(cell, valueIx);
-            }
-
-            public override void MarkImpossible(int cell, Func<int, bool> isImpossible)
-            {
-                if (Grid[cell] != null)
-                    return;
-                var valueIx = 0;
-                while (valueIx < Available[cell].Count)
-                {
-                    if (isImpossible(Available[cell][valueIx]))
-                        MarkImpossibleImpl(cell, valueIx);
-                    else
-                        valueIx++;
-                }
-            }
-
-            public override void MustBe(int cell, int value)
-            {
-                if (Grid[cell] != null)
-                {
-                    if (Grid[cell].Value != value)
-                        throw new InvalidOperationException("A constraint attempted to set a cell to a value that is already set to a different value.");
-                    return;
-                }
-                if (Available[cell].Count != 1 || Available[cell][0] != value)
-                {
-                    var wasThere = Available[cell].Contains(value);
-                    Available[cell].Clear();
-                    if (wasThere)
-                        Available[cell].Add(value);
-                    MarkCellChanged(cell);
-                }
-            }
-
-            public override bool AllSame<T>(int cell, Func<int, T> selector, out T result)
-            {
-                if (Grid[cell] != null)
-                {
-                    result = selector(Grid[cell].Value);
-                    return true;
-                }
-                T tmpResult = default;
-                var found = false;
-                for (var value = Puzzle.MinValue; value <= Puzzle.MaxValue; value++)
-                    if (Available[cell].Contains(value))
-                    {
-                        var mapped = selector(value);
-                        if (!found)
-                        {
-                            tmpResult = mapped;
-                            found = true;
-                        }
-                        else if (!mapped.Equals(tmpResult))
-                        {
-                            result = default;
-                            return false;
-                        }
-                    }
-                result = tmpResult;
-                return found;
-            }
-
-            public override int? this[int cell] => Grid[cell];
-            public override bool IsImpossible(int cell, int value) => value < Puzzle.MinValue || value > Puzzle.MaxValue || (Grid[cell] != null ? Grid[cell].Value != value : !Available[cell].Contains(value));
-            public override int? LastPlacedCell => LastPlacedIx;
-            public override int MinValue => Puzzle.MinValue;
-            public override int MaxValue => Puzzle.MaxValue;
-            public override int GridSize => Puzzle.GridSize;
-
-            int? IProgressVisualizerData.GetValue(int cell) => Grid[cell];
-            bool IProgressVisualizerData.IsTaken(int cell, int value) => !Available[cell].Contains(value);
-            internal List<int>[] prevAvailable = null;
-
-            bool IProgressVisualizerData.WasTaken(int cell, int value) => !prevAvailable[cell].Contains(value);
-            int IProgressVisualizerData.Depth => RecursionDepth;
-            int? IProgressVisualizerData.CurrentCell => LastPlacedIx;
-            int IProgressVisualizerData.StartAt => Available[LastPlacedIx.Value][StartAt];
-            object IProgressVisualizerData.ProgressVisualizationObject => ProgressVisualizationObject;
-        }
     }
 }

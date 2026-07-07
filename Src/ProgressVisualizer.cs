@@ -53,7 +53,7 @@ namespace PuzzleSolvers
                 {
                     string valueId(int v) => GetValueName != null ? GetValueName(v) : v.ToString();
                     var cellLine = Enumerable.Range(data.MinValue, data.MaxValue - data.MinValue + 1)
-                        .Select(v => valueId(v).Color(data.WasTaken(cell, v) != data.IsTaken(cell, v) ? ConsoleColor.Red : data.IsTaken(cell, v) ? ConsoleColor.DarkGray : ConsoleColor.Yellow))
+                        .Select(v => valueId(v).Color(data.WasImpossible(cell, v) != data.IsImpossible(cell, v) ? ConsoleColor.Red : data.IsImpossible(cell, v) ? ConsoleColor.DarkGray : ConsoleColor.Yellow))
                         .JoinColoredString(" ");
                     var cellStr = (GetCellName != null ? GetCellName(cell) : cell.ToString()).PadLeft(numDigits, ' ') + ". ";
                     ConsoleUtil.WriteLine($"{cellStr.Color(cell == data.CurrentCell ? ConsoleColor.Cyan : ConsoleColor.DarkCyan)}{cellLine}   {(data.GetValue(cell) is { } value ? valueId(value).Color(ConsoleColor.Green) : "?".Color(ConsoleColor.DarkGreen))}", null);
@@ -70,9 +70,9 @@ namespace PuzzleSolvers
             var numValues = data.MaxValue - data.MinValue + 1;
             var output = new ConsoleColoredString($"Cell {cellName}: " + Enumerable.Range(0, numValues)
                 .Select(i => (i + data.StartAt) % numValues + data.MinValue)
-                .Where(v => !Shortened || !data.IsTaken(data.CurrentCell.Value, v))
+                .Where(v => !Shortened || !data.IsImpossible(data.CurrentCell.Value, v))
                 .Select(v => (GetValueName?.Invoke(v) ?? v.ToString()).Color(
-                    data.IsTaken(data.CurrentCell.Value, v) ? ConsoleColor.DarkBlue : v == curValue ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
+                    data.IsImpossible(data.CurrentCell.Value, v) ? ConsoleColor.DarkBlue : v == curValue ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
                     v == curValue ? ConsoleColor.DarkGreen : ConsoleColor.Black)).JoinColoredString(" "));
             lock (LockObject ?? DefaultLockObject)
             {
