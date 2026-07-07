@@ -9,9 +9,9 @@
     <PackageIcon>Icon.png</PackageIcon>
     <PackageTags>puzzle;puzzles;logic;sudoku;solve;solver;masyu;akari;aquapelago;binairo;castlewall;fillomino;heyawake;nonogram;numberlink;slitherlink;yajilin;yinyang</PackageTags>
     <LangVersion>12.0</LangVersion>
-    <Version>1.6.0</Version>
-    <AssemblyVersion>1.6.0.0</AssemblyVersion>
-    <FileVersion>1.6.0.0</FileVersion>
+    <Version>1.7.0</Version>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
+    <FileVersion>1.7.0.0</FileVersion>
     <PackageProjectUrl>https://github.com/Timwi/PuzzleSolvers</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Timwi/PuzzleSolvers</RepositoryUrl>
     <Authors>Timwi</Authors>
