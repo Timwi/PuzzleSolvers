@@ -460,14 +460,12 @@ namespace PuzzleSolvers
                 goto violation;
             }
 
-            state.SetStartAt(curCell, instr?.Randomizer, instr?.ValuePriority);
-
             immediate:
             state.LastPlacedIx = curCell;
             state.VisualizingProgress = !state.IsSingularValue && instr?.ProgressVisualizer?.IsActive(state.RecursionDepth) == true;
 
             // Loop to go through possible values for the current cell
-            state.SetCandidates();
+            state.SetCandidates(curCell, instr?.Randomizer, instr?.ValuePriority);
             nextCandidate:
             curCell = state.LastPlacedIx.Value;
             if (!state.GetNextCandidate(out var val))

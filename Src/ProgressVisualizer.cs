@@ -30,10 +30,6 @@ namespace PuzzleSolvers
         public int ConsoleTop = 0;
         /// <summary>Leaves a number of columns on the left of the console window beside the debug display.</summary>
         public int ConsoleLeft = 0;
-        /// <summary>
-        ///     Only show candidate values for each cell; useful when cells can have many possible values but the majority of
-        ///     them are not applicable most of the time.</summary>
-        public bool Shortened = false;
 
         /// <summary>
         ///     If <see cref="LockObject"/> is <c>null</c>, a lock is obtained on this default object while outputting to the
@@ -68,11 +64,9 @@ namespace PuzzleSolvers
             var curValue = data.GetValue(data.CurrentCell.Value);
             var cellName = GetCellName == null ? data.CurrentCell.Value.ToString().PadLeft((data.GridSize - 1).ToString().Length) : GetCellName(data.CurrentCell.Value);
             var numValues = data.MaxValue - data.MinValue + 1;
-            var output = new ConsoleColoredString($"Cell {cellName}: " + Enumerable.Range(0, numValues)
-                .Select(i => (i + data.StartAt) % numValues + data.MinValue)
-                .Where(v => !Shortened || !data.IsImpossible(data.CurrentCell.Value, v))
+            var output = new ConsoleColoredString($"Cell {cellName}: " + data.Candidates
                 .Select(v => (GetValueName?.Invoke(v) ?? v.ToString()).Color(
-                    data.IsImpossible(data.CurrentCell.Value, v) ? ConsoleColor.DarkBlue : v == curValue ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
+                    v == curValue ? ConsoleColor.Yellow : ConsoleColor.DarkCyan,
                     v == curValue ? ConsoleColor.DarkGreen : ConsoleColor.Black)).JoinColoredString(" "));
             lock (LockObject ?? DefaultLockObject)
             {

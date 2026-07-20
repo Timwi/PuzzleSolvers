@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace PuzzleSolvers
 {
     /// <summary>
@@ -48,10 +50,8 @@ namespace PuzzleSolvers
         public bool WasImpossible(int cell, int value);
 
         /// <summary>
-        ///     This is <c>0</c> (zero) unless <see cref="SolverInstructions.Randomizer"/> or <see
-        ///     cref="SolverInstructions.ValuePriority"/> is specified, in which case this indicates at which value the solver
-        ///     starts to examine possible values for the cell.</summary>
-        public int StartAt { get; }
+        ///     Returns the set of candidate values currently under consideration, in the order in which they are considered.</summary>
+        public IEnumerable<int> Candidates { get; }
         /// <summary>
         ///     During calls to <see cref="IProgressVisualizer.VisualizeProgress(IProgressVisualizerData)"/>, when examining a
         ///     new cell, this is <c>null</c>. When examining a different value in the same cell, or during calls to <see

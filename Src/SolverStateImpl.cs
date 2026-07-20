@@ -98,11 +98,10 @@ namespace PuzzleSolvers
         internal abstract bool WasIntendedSolutionPossible();
         internal abstract SolverStateImplBase CloneForNextIteration(int curCell);
         internal abstract int AvailableCount(int cell);
-        internal abstract void SetStartAt(int curCell, Random randomizer, int? valuePriority);
 
         protected List<int> _candidates;
         private int _candidateIx;
-        internal abstract void SetCandidates();
+        internal abstract void SetCandidates(int curCell, Random randomizer, int? valuePriority);
         internal bool GetNextCandidate(out int val)
         {
             if (_candidateIx >= _candidates.Count)
@@ -121,10 +120,9 @@ namespace PuzzleSolvers
         protected abstract bool wasImpossible(int cell, int value);
         bool IProgressVisualizerData.WasImpossible(int cell, int value) => wasImpossible(cell, value);
 
+        IEnumerable<int> IProgressVisualizerData.Candidates => _candidates;
         int IProgressVisualizerData.Depth => RecursionDepth;
         int? IProgressVisualizerData.CurrentCell => LastPlacedIx;
-        protected abstract int startAt { get; }
-        int IProgressVisualizerData.StartAt => startAt;
         object IProgressVisualizerData.ProgressVisualizationObject => ProgressVisualizationObject;
     }
 
@@ -188,8 +186,7 @@ namespace PuzzleSolvers
             }
         }
 
-        public override bool IsImpossible(int cell, int value) =>
-            value < Puzzle.MinValue || value > Puzzle.MaxValue || (Grid[cell] != null ? Grid[cell].Value != value : (Available[cell] & (1UL << (value - Puzzle.MinValue))) == 0);
+        public override bool IsImpossible(int cell, int value) => value < Puzzle.MinValue || value > Puzzle.MaxValue || (Grid[cell] != null ? Grid[cell].Value != value : (Available[cell] & (1UL << (value - Puzzle.MinValue))) == 0);
 
         internal override bool IntendedSolutionPossible(int[] intendedSolution) =>
             intendedSolution.All((v, cell) => Grid[cell] == v || (Grid[cell] == null && (Available[cell] & (1UL << (v - Puzzle.MinValue))) != 0));
@@ -212,16 +209,19 @@ namespace PuzzleSolvers
             return (int) ((v * 0x0101010101010101UL) >> 56);
         }
 
-        private int _startAt;
-        protected override int startAt => _startAt + Puzzle.MinValue;
-        internal override void SetStartAt(int curCell, Random randomizer, int? valuePriority) =>
-            _startAt = randomizer?.Next(0, Puzzle.MaxValue - Puzzle.MinValue + 1) ?? valuePriority - Puzzle.MinValue ?? 0;
-        internal override void SetCandidates()
+        internal override void SetCandidates(int curCell, Random randomizer, int? valuePriority)
         {
             _candidates = [];
-            for (var i = Puzzle.MinValue; i <= Puzzle.MaxValue; i++)
-                if ((Available[LastPlacedIx.Value] & (1UL << (i - Puzzle.MinValue))) != 0)
-                    _candidates.Add(i);
+            var av = Available[LastPlacedIx.Value];
+            var num = Puzzle.MaxValue - Puzzle.MinValue + 1;
+            for (var j = 0; j < num; j++)
+            {
+                var i = valuePriority is { } vp ? (j + vp) % num : j;
+                if ((av & (1UL << i)) != 0)
+                    _candidates.Add(i + Puzzle.MinValue);
+            }
+            if (randomizer != null)
+                _candidates.Shuffle(randomizer);
         }
     }
 
@@ -285,8 +285,7 @@ namespace PuzzleSolvers
             }
         }
 
-        public override bool IsImpossible(int cell, int value) =>
-            value < Puzzle.MinValue || value > Puzzle.MaxValue || (Grid[cell] != null ? Grid[cell].Value != value : !Available[cell].Contains(value));
+        public override bool IsImpossible(int cell, int value) => value < Puzzle.MinValue || value > Puzzle.MaxValue || (Grid[cell] != null ? Grid[cell].Value != value : !Available[cell].Contains(value));
 
         internal override bool IntendedSolutionPossible(int[] intendedSolution) =>
             intendedSolution.All((v, cell) => Grid[cell] == v || (Grid[cell] == null && Available[cell].Contains(v)));
@@ -302,12 +301,16 @@ namespace PuzzleSolvers
             new SolverStateImplInefficient(Puzzle, Grid, Ut.NewArray(GridSize, ix => Grid[ix] == null ? Available[ix].ToList() : null), Constraints);
         internal override int AvailableCount(int cell) => Available[cell].Count;
 
-        private int _startAt;
-        protected override int startAt => Available[LastPlacedIx.Value][_startAt];
-        internal override void SetStartAt(int curCell, Random randomizer, int? valuePriority) =>
-            _startAt = randomizer?.Next(0, Available[curCell].Count) ??
-                (valuePriority is { } v && Available[curCell].IndexOf(v) is { } vIx and not -1 ? vIx : 0);
-
-        internal override void SetCandidates() => _candidates = Available[LastPlacedIx.Value];
+        internal override void SetCandidates(int curCell, Random randomizer, int? valuePriority)
+        {
+            _candidates = Available[LastPlacedIx.Value];
+            if (randomizer == null && valuePriority is { } _startAt)
+                _candidates = Available[LastPlacedIx.Value].Skip(_startAt).Concat(Available[LastPlacedIx.Value].Take(_startAt)).ToList();
+            else
+            {
+                _candidates = _candidates.ToList();
+                _candidates.Shuffle(randomizer);
+            }
+        }
     }
 }
