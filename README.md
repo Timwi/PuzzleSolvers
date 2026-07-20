@@ -17,3 +17,5 @@ This library can be used to solve or generate logic puzzles, including:
 * Yin Yang
 
 It can also be used to fill crossword puzzles and other word grids.
+
+Full documentation at: https://docs.timwi.de/PuzzleSolvers/PuzzleSolvers
